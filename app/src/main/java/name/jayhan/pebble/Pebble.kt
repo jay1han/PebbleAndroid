@@ -26,14 +26,12 @@ class Pebble(
     val applicationContext = applicationContext
 
     fun isConnected(): Boolean {
-        return false
         if (applicationContext != null)
             return PebbleKit.isWatchConnected(applicationContext)
         return false
     }
 
     fun send(pebbleDict: PebbleDictionary) {
-        return
         if (applicationContext != null) {
             pebbleDict.addInt32(KeyTimezoneHour, 0)
             pebbleDict.addInt32(KeyTimezoneMin, 0)

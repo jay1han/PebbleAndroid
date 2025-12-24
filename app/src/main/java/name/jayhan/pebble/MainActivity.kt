@@ -42,11 +42,14 @@ import com.getpebble.android.kit.PebbleKit
 
 
 class MainActivity : ComponentActivity() {
-    val pebble = Pebble(applicationContext)
-    val timezone = Timezone(pebble)
+    lateinit var pebble: Pebble
+    lateinit var timezone: Timezone
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        pebble = Pebble(applicationContext)
+        timezone = Timezone(pebble)
+
         setContent {
             Scaffold(
                 topBar = {
