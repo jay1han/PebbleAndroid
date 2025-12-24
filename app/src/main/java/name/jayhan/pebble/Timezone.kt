@@ -1,6 +1,15 @@
 package name.jayhan.pebble
 
-class Timezone {
+import android.content.Context
+import com.getpebble.android.kit.util.PebbleDictionary
+
+const val KeyTimezoneHour = 1
+const val KeyTimezoneMin = 2
+
+class Timezone(
+    pebble: Pebble
+) {
+    val pebble = pebble
     var hours: Int = 0
     var minutes: Int = 0
 
@@ -27,7 +36,11 @@ class Timezone {
         return decimal.toString()
     }
 
-    fun toMsg(): String {
-        return "$hours.$minutes"
+    fun toPebble() {
+        var pebbleDict = PebbleDictionary()
+        pebbleDict.addInt8(KeyMsgType, MsgType.TIMEZONE.code)
+        pebbleDict.addInt8(KeyTimezoneHour, hours.toByte())
+        pebbleDict.addInt8(KeyTimezoneMin, minutes.toByte())
+        pebble.send(pebbleDict)
     }
 }

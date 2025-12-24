@@ -38,10 +38,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.preferencesDataStore
+import com.getpebble.android.kit.PebbleKit
 
-val timezone = Timezone()
 
 class MainActivity : ComponentActivity() {
+    val pebble = Pebble(applicationContext)
+    val timezone = Timezone(pebble)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -57,7 +60,11 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             ) { innerPadding ->
-                Pebble(Modifier.padding(innerPadding))
+                MainPage(
+                    pebble = pebble,
+                    timezone = timezone,
+                    Modifier.padding(innerPadding),
+                    )
             }
         }
     }
@@ -73,15 +80,18 @@ fun Section(text: String = "") {
 }
 
 @Composable
-fun Pebble(modifier: Modifier = Modifier) {
+fun MainPage(
+    pebble: Pebble,
+    timezone: Timezone,
+    modifier: Modifier = Modifier,
+    ) {
     Column(
         modifier = modifier,
     ) {
-        Watchface()
-        Box(Modifier.height(8.dp))
+        Watchface(pebble)
         PermissionsChecked()
         Box(Modifier.height(8.dp))
-        AwayTimezone()
+        AwayTimezone(pebble, timezone)
         Box(Modifier.height(8.dp))
         NotificationsList()
         Box(Modifier.height(8.dp))
@@ -90,12 +100,17 @@ fun Pebble(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun Watchface(modifier: Modifier = Modifier) {
-    Column(modifier) {
-        Section("Connected")
+fun Watchface(
+    pebble: Pebble
+) {
+    Column() {
+        Section(
+            if (pebble.isConnected()) "Connected"
+            else "Disconnected"
+        )
         Image(
             painter = painterResource(R.drawable.help),
-            modifier = modifier.height(200.dp).padding(8.dp).fillMaxWidth(),
+            modifier = Modifier.height(200.dp).padding(8.dp).fillMaxWidth(),
             contentScale = ContentScale.Fit,
             contentDescription = "Help",
         )
@@ -103,12 +118,15 @@ fun Watchface(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun PermissionsChecked(modifier: Modifier = Modifier) {
+fun PermissionsChecked() {
     Section("Permissions")
 }
 
 @Composable
-fun AwayTimezone(modifier: Modifier = Modifier) {
+fun AwayTimezone(
+    pebble: Pebble,
+    timezone: Timezone,
+) {
     var tz by remember { mutableStateOf(timezone.get()) }
 
     Row (
@@ -122,7 +140,7 @@ fun AwayTimezone(modifier: Modifier = Modifier) {
         OutlinedTextField(
             value = tz,
             onValueChange = {tz = it},
-            modifier = modifier.width(120.dp),
+            modifier = Modifier.width(120.dp),
             textStyle = TextStyle(fontSize = 32.sp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
@@ -140,17 +158,19 @@ fun AwayTimezone(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun NotificationsList(modifier: Modifier = Modifier) {
+fun NotificationsList() {
     Section("Notifications")
 }
 
 @Composable
-fun BluetoothDevices(modifier: Modifier = Modifier) {
+fun BluetoothDevices() {
     Section("Bluetooth")
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PebblePreview() {
-    Pebble()
+    val pebble = Pebble()
+    val timezone = Timezone(pebble)
+    MainPage(pebble, timezone)
 }
