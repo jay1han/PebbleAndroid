@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -37,6 +38,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.preferencesDataStore
+
+val timezone = Timezone()
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,7 +109,7 @@ fun PermissionsChecked(modifier: Modifier = Modifier) {
 
 @Composable
 fun AwayTimezone(modifier: Modifier = Modifier) {
-    var tz by remember { mutableStateOf("8.0") }
+    var tz by remember { mutableStateOf(timezone.get()) }
 
     Row (
         verticalAlignment = Alignment.CenterVertically,
@@ -124,10 +127,15 @@ fun AwayTimezone(modifier: Modifier = Modifier) {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
         )
-        Text(
-            text = " hours",
-            fontSize = 32.sp
-        )
+        Button(
+            onClick = {tz = timezone.set(tz)},
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Text(
+                text = "Apply",
+                fontSize = 32.sp,
+            )
+        }
     }
 }
 
