@@ -94,10 +94,10 @@ fun Watchface(modifier: Modifier = Modifier) {
     Column(modifier) {
         Section("Connected")
         Image(
-            painter = painterResource(R.drawable.screenshot),
-            modifier = modifier.height(168.dp).padding(8.dp).fillMaxWidth(),
+            painter = painterResource(R.drawable.help),
+            modifier = modifier.height(200.dp).padding(8.dp).fillMaxWidth(),
             contentScale = ContentScale.Fit,
-            contentDescription = "Screenshot",
+            contentDescription = "Help",
         )
     }
 }
