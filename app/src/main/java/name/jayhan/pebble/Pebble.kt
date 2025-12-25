@@ -52,8 +52,12 @@ enum class MsgType(val code: Byte) {
     ACTION(9)
 }
 
-class DataReceiver(pebble: Pebble): PebbleKit.PebbleDataReceiver(appUuid) {
+class DataReceiver(
+    pebble: Pebble,
+    timezone: Timezone
+    ): PebbleKit.PebbleDataReceiver(appUuid) {
     val pebble = pebble
+    val timezone = timezone
 
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
         PebbleKit.sendAckToPebble(context, transactionId)
@@ -62,9 +66,11 @@ class DataReceiver(pebble: Pebble): PebbleKit.PebbleDataReceiver(appUuid) {
             val msgType = data.getInteger(DictKey.MSG_TYPE.code)
             when (msgType.toByte()) {
                 MsgType.INFO.code -> {
-                    val watchModel = data.getInteger(DictKey.MODEL.code)
-                    val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.code)
+                    val watchModel = data.getInteger(DictKey.MODEL.code).toInt()
+                    val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.code).toInt()
                     pebble.setWatchInfo(watchModel, watchFwVersion)
+                    val tzMinutes = data.getInteger(DictKey.TZ_MINS.code).toInt()
+                    timezone.fromMinutes(tzMinutes)
                 }
             }
         }
@@ -92,12 +98,10 @@ class Pebble(
     }
 
     fun setWatchInfo(
-        watchModelLong: Long,
-        watchFwVersionLong: Long
+        watchModel: Int,
+        watchFwVersion: Int
     ) {
         isConnected = true
-        val watchModel = watchModelLong.toInt()
-        val watchFwVersion = watchFwVersionLong.toInt()
         val versionString = "%d.%d.%d"
             .format(
                 (watchFwVersion shr 16) and 0xFF,

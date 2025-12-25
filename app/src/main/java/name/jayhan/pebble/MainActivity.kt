@@ -4,7 +4,6 @@ package name.jayhan.pebble
 
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
-import android.content.ReceiverCallNotAllowedException
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -37,12 +36,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE
-import com.getpebble.android.kit.PebbleKit
 
 
 val titleSize = 28.sp
@@ -59,7 +58,7 @@ class MainActivity : ComponentActivity() {
 
         pebble = Pebble(applicationContext)
         timezone = Timezone(pebble)
-        dataReceiver = DataReceiver(pebble)
+        dataReceiver = DataReceiver(pebble, timezone)
 
         val filter = IntentFilter(INTENT_APP_RECEIVE)
         val receiverFlags = ContextCompat.RECEIVER_EXPORTED
@@ -156,7 +155,9 @@ fun AwayTimezone(
     pebble: Pebble,
     timezone: Timezone,
 ) {
-    var tz by remember { mutableStateOf(timezone.get()) }
+    val tzWatch: String by timezone.tzFlow.collectAsState(timezone.get())
+    var tz by remember { mutableStateOf("") }
+    var editing by remember { mutableStateOf(false) }
 
     Row (
         verticalAlignment = Alignment.CenterVertically,
@@ -166,26 +167,47 @@ fun AwayTimezone(
             text = "Away ",
             fontSize = titleSize
         )
-        OutlinedTextField(
-            value = tz,
-            onValueChange = {tz = it},
-            modifier = Modifier.width(120.dp),
-            textStyle = TextStyle(fontSize = textSize),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true,
-        )
-        Text(
-            " hours",
-            fontSize = textSize
-        )
-        Button(
-            onClick = {tz = timezone.set(tz)},
-            modifier = Modifier.padding(padSize)
-        ) {
-            Text(
-                text = "Apply",
-                fontSize = textSize,
+        if (editing) {
+            OutlinedTextField(
+                value = tz,
+                onValueChange = { tz = it },
+                modifier = Modifier.width(100.dp),
+                textStyle = TextStyle(fontSize = textSize),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
             )
+            Text(
+                " hours",
+                fontSize = textSize
+            )
+            Button(
+                onClick = {
+                    editing = false
+                    tz = timezone.fromString(tz)
+                },
+                modifier = Modifier.padding(padSize)
+            ) {
+                Text(
+                    text = "Apply",
+                    fontSize = textSize,
+                )
+            }
+        } else {
+            Text(
+                text = "$tzWatch hours",
+                modifier = Modifier.width(140.dp),
+                fontSize = textSize,
+                textAlign = TextAlign.Center
+            )
+            Button(
+                onClick = {editing = true},
+                modifier = Modifier.padding(padSize)
+            ) {
+                Text(
+                    text = "Edit",
+                    fontSize = textSize,
+                )
+            }
         }
     }
 }
