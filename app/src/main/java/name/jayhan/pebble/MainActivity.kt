@@ -2,7 +2,7 @@
 
 package name.jayhan.pebble
 
-import android.content.Context
+import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -37,8 +37,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.datastore.preferences.preferencesDataStore
+import androidx.core.content.ContextCompat
+import com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE
 import com.getpebble.android.kit.PebbleKit
+
 
 val textSize = 28.sp
 val padSize = 12.dp
@@ -46,11 +48,17 @@ val padSize = 12.dp
 class MainActivity : ComponentActivity() {
     lateinit var pebble: Pebble
     lateinit var timezone: Timezone
+    val dataReceiver = DataReceiver()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         pebble = Pebble(applicationContext)
         timezone = Timezone(pebble)
+
+        val filter = IntentFilter(INTENT_APP_RECEIVE)
+        val receiverFlags = ContextCompat.RECEIVER_EXPORTED
+        ContextCompat.registerReceiver(applicationContext, dataReceiver, filter, receiverFlags)
+        pebble.askInfo()
 
         setContent {
             Scaffold(
@@ -69,7 +77,7 @@ class MainActivity : ComponentActivity() {
                     pebble = pebble,
                     timezone = timezone,
                     Modifier.padding(innerPadding),
-                    )
+                )
             }
         }
     }
@@ -115,7 +123,10 @@ fun Watchface(
         )
         Image(
             painter = painterResource(R.drawable.help),
-            modifier = Modifier.height(200.dp).padding(padSize).fillMaxWidth(),
+            modifier = Modifier
+                .height(200.dp)
+                .padding(padSize)
+                .fillMaxWidth(),
             contentScale = ContentScale.Fit,
             contentDescription = "Help",
         )
