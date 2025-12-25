@@ -8,16 +8,28 @@ import java.util.UUID
 
 val appUuid = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
 
-const val KeyMsgType = 0
-enum class MsgType(val code: Byte) {
-    TEST(0),
-    TIMEZONE(1),
-    QUIET(2),
-    BATTERY(3),
-    WIFI(4),
-    BT(5),
+enum class DictKey(val code: Int) {
+    MSG_TYPE(1),
+    TZ_MINS(2),
+    PHONE_DND(3),
+    PHONE_BATT(4),
+    PHONE_CHG(5),
     NET(6),
-    NOTI(7)
+    WIFI(7),
+    BTID(8),
+    BTC(9),
+    NOTI(10),
+    ACTION(11)
+}
+enum class MsgType(val code: Byte) {
+    TZ(1),
+    PHONE_DND(2),
+    PHONE_CHG(3),
+    NET(4),
+    WIFI(5),
+    BT(6),
+    NOTI(7),
+    ACTION(8)
 }
 
 class Pebble(
@@ -26,15 +38,14 @@ class Pebble(
     val applicationContext = applicationContext
 
     fun isConnected(): Boolean {
-        if (applicationContext != null)
+        if (applicationContext != null) {
             return PebbleKit.isWatchConnected(applicationContext)
+        }
         return false
     }
 
     fun send(pebbleDict: PebbleDictionary) {
         if (applicationContext != null) {
-            pebbleDict.addInt32(KeyTimezoneHour, 0)
-            pebbleDict.addInt32(KeyTimezoneMin, 0)
             PebbleKit.sendDataToPebble(applicationContext, appUuid, pebbleDict)
         }
     }

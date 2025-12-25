@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.preferencesDataStore
 import com.getpebble.android.kit.PebbleKit
 
+val textSize = 28.sp
+val padSize = 12.dp
 
 class MainActivity : ComponentActivity() {
     lateinit var pebble: Pebble
@@ -57,7 +59,7 @@ class MainActivity : ComponentActivity() {
                         title = {
                             Text(
                                 stringResource(R.string.app_title),
-                                fontSize = 32.sp
+                                fontSize = textSize
                             )
                         }
                     )
@@ -77,7 +79,7 @@ class MainActivity : ComponentActivity() {
 fun Section(text: String = "") {
     Text(
         text = text,
-        fontSize = 32.sp,
+        fontSize = textSize,
         modifier = Modifier.fillMaxWidth()
     )
 }
@@ -93,11 +95,11 @@ fun MainPage(
     ) {
         Watchface(pebble)
         PermissionsChecked()
-        Box(Modifier.height(8.dp))
+        Box(Modifier.height(padSize))
         AwayTimezone(pebble, timezone)
-        Box(Modifier.height(8.dp))
+        Box(Modifier.height(padSize))
         NotificationsList()
-        Box(Modifier.height(8.dp))
+        Box(Modifier.height(padSize))
         BluetoothDevices()
     }
 }
@@ -113,7 +115,7 @@ fun Watchface(
         )
         Image(
             painter = painterResource(R.drawable.help),
-            modifier = Modifier.height(200.dp).padding(8.dp).fillMaxWidth(),
+            modifier = Modifier.height(200.dp).padding(padSize).fillMaxWidth(),
             contentScale = ContentScale.Fit,
             contentDescription = "Help",
         )
@@ -138,23 +140,23 @@ fun AwayTimezone(
     ) {
         Text(
             text = "Away ",
-            fontSize = 32.sp
+            fontSize = textSize
         )
         OutlinedTextField(
             value = tz,
             onValueChange = {tz = it},
             modifier = Modifier.width(120.dp),
-            textStyle = TextStyle(fontSize = 32.sp),
+            textStyle = TextStyle(fontSize = textSize),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
         )
         Button(
             onClick = {tz = timezone.set(tz)},
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(padSize)
         ) {
             Text(
                 text = "Apply",
-                fontSize = 32.sp,
+                fontSize = textSize,
             )
         }
     }

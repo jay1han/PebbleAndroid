@@ -3,9 +3,6 @@ package name.jayhan.pebble
 import android.content.Context
 import com.getpebble.android.kit.util.PebbleDictionary
 
-const val KeyTimezoneHour = 1
-const val KeyTimezoneMin = 2
-
 class Timezone(
     pebble: Pebble
 ) {
@@ -28,6 +25,7 @@ class Timezone(
             }
         }
 
+        toPebble()
         return get()
     }
 
@@ -37,10 +35,16 @@ class Timezone(
     }
 
     fun toPebble() {
+        var tz_minutes = hours * 60;
+        if (hours < 0) {
+            tz_minutes -= minutes;
+        } else {
+            tz_minutes += minutes;
+        }
+
         var pebbleDict = PebbleDictionary()
-        pebbleDict.addInt8(KeyMsgType, MsgType.TIMEZONE.code)
-        pebbleDict.addInt8(KeyTimezoneHour, hours.toByte())
-        pebbleDict.addInt8(KeyTimezoneMin, minutes.toByte())
+        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.TZ.code)
+        pebbleDict.addInt16(DictKey.TZ_MINS.code, tz_minutes.toShort())
         pebble.send(pebbleDict)
     }
 }
