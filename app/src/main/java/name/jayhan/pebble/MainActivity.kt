@@ -2,7 +2,9 @@
 
 package name.jayhan.pebble
 
+import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import android.content.ReceiverCallNotAllowedException
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,22 +45,26 @@ import com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE
 import com.getpebble.android.kit.PebbleKit
 
 
-val textSize = 28.sp
-val padSize = 12.dp
+val titleSize = 28.sp
+val textSize = 20.sp
+val padSize = 8.dp
 
 class MainActivity : ComponentActivity() {
     lateinit var pebble: Pebble
     lateinit var timezone: Timezone
-    val dataReceiver = DataReceiver()
+    lateinit var dataReceiver: BroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         pebble = Pebble(applicationContext)
         timezone = Timezone(pebble)
+        dataReceiver = DataReceiver(pebble)
 
         val filter = IntentFilter(INTENT_APP_RECEIVE)
         val receiverFlags = ContextCompat.RECEIVER_EXPORTED
         ContextCompat.registerReceiver(applicationContext, dataReceiver, filter, receiverFlags)
+
         pebble.askInfo()
 
         setContent {
@@ -67,7 +74,7 @@ class MainActivity : ComponentActivity() {
                         title = {
                             Text(
                                 stringResource(R.string.app_title),
-                                fontSize = textSize
+                                fontSize = titleSize
                             )
                         }
                     )
@@ -87,7 +94,7 @@ class MainActivity : ComponentActivity() {
 fun Section(text: String = "") {
     Text(
         text = text,
-        fontSize = textSize,
+        fontSize = titleSize,
         modifier = Modifier.fillMaxWidth()
     )
 }
@@ -116,10 +123,16 @@ fun MainPage(
 fun Watchface(
     pebble: Pebble
 ) {
+    val watchInfo: String by pebble.infoFlow.collectAsState("")
+
     Column() {
         Section(
-            if (pebble.isConnected()) "Connected"
+            if (pebble.isConnected) "Connected"
             else "Disconnected"
+        )
+        Text(
+            text = watchInfo,
+            fontSize = textSize,
         )
         Image(
             painter = painterResource(R.drawable.help),
@@ -151,7 +164,7 @@ fun AwayTimezone(
     ) {
         Text(
             text = "Away ",
-            fontSize = textSize
+            fontSize = titleSize
         )
         OutlinedTextField(
             value = tz,
@@ -160,6 +173,10 @@ fun AwayTimezone(
             textStyle = TextStyle(fontSize = textSize),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
+        )
+        Text(
+            " hours",
+            fontSize = textSize
         )
         Button(
             onClick = {tz = timezone.set(tz)},

@@ -3,6 +3,9 @@ package name.jayhan.pebble
 import android.content.Context
 import com.getpebble.android.kit.PebbleKit
 import com.getpebble.android.kit.util.PebbleDictionary
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOf
 import java.util.UUID
 
 val appUuid = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
@@ -49,21 +52,22 @@ enum class MsgType(val code: Byte) {
     ACTION(9)
 }
 
-class DataReceiver: PebbleKit.PebbleDataReceiver(appUuid) {
+class DataReceiver(pebble: Pebble): PebbleKit.PebbleDataReceiver(appUuid) {
+    val pebble = pebble
+
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
         PebbleKit.sendAckToPebble(context, transactionId)
 
         if (data != null) {
             val msgType = data.getInteger(DictKey.MSG_TYPE.code)
             when (msgType.toByte()) {
-                MsgType.INFO.code -> processWatchInfo(data)
+                MsgType.INFO.code -> {
+                    val watchModel = data.getInteger(DictKey.MODEL.code)
+                    val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.code)
+                    pebble.setWatchInfo(watchModel, watchFwVersion)
+                }
             }
         }
-    }
-
-    fun processWatchInfo(data: PebbleDictionary) {
-        val watchModel = data.getInteger(DictKey.MODEL.code)
-        val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.code)
     }
 }
 
@@ -71,6 +75,9 @@ class Pebble(
     applicationContext: Context? = null,
 ) {
     val applicationContext = applicationContext
+    var isConnected = false
+
+    val infoFlow = MutableStateFlow("")
 
     fun askInfo() {
         val initDict = PebbleDictionary()
@@ -78,16 +85,25 @@ class Pebble(
         send(initDict)
     }
 
-    fun isConnected(): Boolean {
-        if (applicationContext != null) {
-            return PebbleKit.isWatchConnected(applicationContext)
-        }
-        return false
-    }
-
     fun send(pebbleDict: PebbleDictionary) {
         if (applicationContext != null) {
             PebbleKit.sendDataToPebble(applicationContext, appUuid, pebbleDict)
         }
+    }
+
+    fun setWatchInfo(
+        watchModelLong: Long,
+        watchFwVersionLong: Long
+    ) {
+        isConnected = true
+        val watchModel = watchModelLong.toInt()
+        val watchFwVersion = watchFwVersionLong.toInt()
+        val versionString = "%d.%d.%d"
+            .format(
+                (watchFwVersion shr 16) and 0xFF,
+                (watchFwVersion shr 8) and 0xFF,
+                watchFwVersion and 0xFF
+            )
+        infoFlow.value = "Model: ${WatchModels[watchModel]}\nVersion: $versionString"
     }
 }
