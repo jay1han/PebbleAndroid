@@ -5,7 +5,6 @@ package name.jayhan.pebble
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothProfile
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -14,6 +13,8 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.os.BatteryManager
 import android.os.Bundle
+import android.service.notification.NotificationListenerService
+import android.service.notification.StatusBarNotification
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -52,7 +53,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE
 import com.getpebble.android.kit.util.PebbleDictionary
-import kotlin.reflect.typeOf
 
 
 val titleSize = 28.sp
@@ -84,15 +84,50 @@ class BluetoothReceiver(pebble: Pebble): BroadcastReceiver() {
         if (state != BluetoothAdapter.STATE_CONNECTED) {
             val device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
             if (device != null) {
-                print(device.name)
+                var pebbleDict = PebbleDictionary()
+                pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.BT.code)
+                pebbleDict.addString(DictKey.BTID.code, device.name.take(20))
+                pebbleDict.addInt8(DictKey.BTC.code, 0)
+                pebble.send(pebbleDict)
             }
         }
     }
 }
 
-class NetworkCallback: ConnectivityManager.NetworkCallback() {
+class NetworkCallback(pebble: Pebble): ConnectivityManager.NetworkCallback() {
+    val pebble = pebble
+
     override fun onAvailable(network: Network) {
         super.onAvailable(network)
+        var pebbleDict = PebbleDictionary()
+        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.WIFI.code)
+        pebbleDict.addString(DictKey.WIFI.code, "WiFi")
+        pebble.send(pebbleDict)
+    }
+}
+
+class NotificationListener (
+    pebble: Pebble,
+    notifications: Notifications
+): NotificationListenerService() {
+    val pebble = pebble
+    val notifications = notifications
+
+    override fun onNotificationPosted(sbn: StatusBarNotification?) {
+        super.onNotificationPosted(sbn)
+
+        var compact = mutableSetOf<Char>()
+        for (notification in this.activeNotifications) {
+            val letter = notifications.find(notification.packageName)
+            compact.add(letter)
+        }
+
+        val text = compact.joinToString("").take(10)
+
+        var pebbleDict = PebbleDictionary()
+        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NOTI.code)
+        pebbleDict.addString(DictKey.NOTI.code, text)
+        pebble.send(pebbleDict)
     }
 }
 
@@ -118,16 +153,22 @@ class MainActivity : ComponentActivity() {
 
         val bluetoothManager: BluetoothManager = applicationContext.getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter = bluetoothManager.adapter
-        val bluetoothState = bluetoothAdapter.getProfileConnectionState(BluetoothProfile.A2DP)
-        print(bluetoothState)
+        // android.permission.BLUETOOTH_CONNECT
+        // val bluetoothState = bluetoothAdapter.getProfileConnectionState(BluetoothProfile.A2DP)
 
         val bluetoothReceiver = BluetoothReceiver(pebble)
         val bluetoothFilter = IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
         ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, bluetoothFilter, receiverFlags)
 
-        val networkCallback = NetworkCallback()
+        val networkCallback = NetworkCallback(pebble)
         val connectivityManager = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-//        connectivityManager.registerDefaultNetworkCallback(networkCallback)
+        // android.permission.ACCESS_NETWORK_STATE
+        // connectivityManager.registerDefaultNetworkCallback(networkCallback)
+
+        // https://developer.android.com/reference/android/service/notification/NotificationListenerService
+        // https://developer.android.com/reference/android/service/notification/StatusBarNotification
+        val notifications = Notifications()
+        val notificationListener = NotificationListener(pebble, notifications)
 
         pebble.askInfo()
 
