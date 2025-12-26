@@ -63,7 +63,7 @@ class BatteryReceiver(pebble: Pebble): BroadcastReceiver() {
     val pebble = pebble
 
     override fun onReceive(context: Context, intent: Intent) {
-        val isCharging = intent.getIntExtra(BatteryManager.EXTRA_CHARGING_STATUS, 0)
+        val isCharging = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0)
         val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0)
         val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 0)
         val percent = 100.0 * level.toFloat() / scale
@@ -86,7 +86,8 @@ class BluetoothReceiver(pebble: Pebble): BroadcastReceiver() {
             if (device != null) {
                 var pebbleDict = PebbleDictionary()
                 pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.BT.code)
-                pebbleDict.addString(DictKey.BTID.code, device.name.take(20))
+                // android.permission.BLUETOOTH_CONNECT
+                // pebbleDict.addString(DictKey.BTID.code, device.name.take(20))
                 pebbleDict.addInt8(DictKey.BTC.code, 0)
                 pebble.send(pebbleDict)
             }
