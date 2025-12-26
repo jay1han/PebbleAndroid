@@ -2,6 +2,7 @@ package name.jayhan.pebble
 
 import com.getpebble.android.kit.util.PebbleDictionary
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlin.math.absoluteValue
 
 class Timezone(
     pebble: Pebble
@@ -9,7 +10,7 @@ class Timezone(
     val pebble = pebble
     var minutes: Int = 0
 
-    val tzFlow = MutableStateFlow("")
+    val tzFlow = MutableStateFlow("+0.0")
 
     fun fromString(text: String): String {
         if (text.isEmpty()) return get()
@@ -27,7 +28,6 @@ class Timezone(
             }
         }
         if (negative) minutes = -minutes
-        tzFlow.value = (minutes.toFloat() / 60f).toString()
 
         toPebble()
         return get()
@@ -35,11 +35,16 @@ class Timezone(
 
     fun fromMinutes(tzMinutes: Int) {
         minutes = tzMinutes
-        tzFlow.value = (minutes.toFloat() / 60f).toString()
+        get()
     }
 
     fun get(): String {
-        return tzFlow.value
+        val sign = if (minutes < 0) "-" else "+"
+        val hours = minutes.absoluteValue / 60
+        val frac = 100 * (minutes.absoluteValue - hours * 60) / 60
+        val string = "$sign${hours}.$frac"
+        tzFlow.value = string
+        return string
     }
 
     fun toPebble() {

@@ -2,8 +2,17 @@
 
 package name.jayhan.pebble
 
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothProfile
 import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
 import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.net.Network
+import android.os.BatteryManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -42,27 +51,83 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE
+import com.getpebble.android.kit.util.PebbleDictionary
+import kotlin.reflect.typeOf
 
 
 val titleSize = 28.sp
 val textSize = 20.sp
 val padSize = 8.dp
 
+class BatteryReceiver(pebble: Pebble): BroadcastReceiver() {
+    val pebble = pebble
+
+    override fun onReceive(context: Context, intent: Intent) {
+        val isCharging = intent.getIntExtra(BatteryManager.EXTRA_CHARGING_STATUS, 0)
+        val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0)
+        val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 0)
+        val percent = 100.0 * level.toFloat() / scale
+
+        var pebbleDict = PebbleDictionary()
+        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.PHONE_CHG.code)
+        pebbleDict.addInt8(DictKey.PHONE_CHG.code, isCharging.toByte())
+        pebbleDict.addInt8(DictKey.PHONE_BATT.code, percent.toInt().toByte())
+        pebble.send(pebbleDict)
+    }
+}
+
+class BluetoothReceiver(pebble: Pebble): BroadcastReceiver() {
+    val pebble = pebble
+
+    override fun onReceive(context: Context, intent: Intent) {
+        val state = intent.getIntExtra(BluetoothAdapter.EXTRA_CONNECTION_STATE, BluetoothAdapter.STATE_DISCONNECTED)
+        if (state != BluetoothAdapter.STATE_CONNECTED) {
+            val device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+            if (device != null) {
+                print(device.name)
+            }
+        }
+    }
+}
+
+class NetworkCallback: ConnectivityManager.NetworkCallback() {
+    override fun onAvailable(network: Network) {
+        super.onAvailable(network)
+    }
+}
+
 class MainActivity : ComponentActivity() {
     lateinit var pebble: Pebble
     lateinit var timezone: Timezone
-    lateinit var dataReceiver: BroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         pebble = Pebble(applicationContext)
         timezone = Timezone(pebble)
-        dataReceiver = DataReceiver(pebble, timezone)
 
-        val filter = IntentFilter(INTENT_APP_RECEIVE)
         val receiverFlags = ContextCompat.RECEIVER_EXPORTED
-        ContextCompat.registerReceiver(applicationContext, dataReceiver, filter, receiverFlags)
+
+        val dataReceiver = DataReceiver(pebble, timezone)
+        val dataFilter = IntentFilter(INTENT_APP_RECEIVE)
+        ContextCompat.registerReceiver(applicationContext, dataReceiver, dataFilter, receiverFlags)
+
+        val batteryReceiver = BatteryReceiver(pebble)
+        val batteryFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+        ContextCompat.registerReceiver(applicationContext, batteryReceiver, batteryFilter, receiverFlags)
+
+        val bluetoothManager: BluetoothManager = applicationContext.getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
+        val bluetoothAdapter = bluetoothManager.adapter
+        val bluetoothState = bluetoothAdapter.getProfileConnectionState(BluetoothProfile.A2DP)
+        print(bluetoothState)
+
+        val bluetoothReceiver = BluetoothReceiver(pebble)
+        val bluetoothFilter = IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
+        ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, bluetoothFilter, receiverFlags)
+
+        val networkCallback = NetworkCallback()
+        val connectivityManager = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+//        connectivityManager.registerDefaultNetworkCallback(networkCallback)
 
         pebble.askInfo()
 
@@ -113,8 +178,6 @@ fun MainPage(
         AwayTimezone(pebble, timezone)
         Box(Modifier.height(padSize))
         NotificationsList()
-        Box(Modifier.height(padSize))
-        BluetoothDevices()
     }
 }
 
@@ -155,8 +218,8 @@ fun AwayTimezone(
     pebble: Pebble,
     timezone: Timezone,
 ) {
-    val tzWatch: String by timezone.tzFlow.collectAsState(timezone.get())
-    var tz by remember { mutableStateOf("") }
+    val tzWatch: String by timezone.tzFlow.collectAsState("+0.0")
+    var tz by remember { mutableStateOf("+0.0") }
     var editing by remember { mutableStateOf(false) }
 
     Row (
@@ -164,7 +227,7 @@ fun AwayTimezone(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = "Away ",
+            text = "Timezone",
             fontSize = titleSize
         )
         if (editing) {
@@ -175,10 +238,6 @@ fun AwayTimezone(
                 textStyle = TextStyle(fontSize = textSize),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
-            )
-            Text(
-                " hours",
-                fontSize = textSize
             )
             Button(
                 onClick = {
@@ -193,9 +252,10 @@ fun AwayTimezone(
                 )
             }
         } else {
+            tz = tzWatch
             Text(
-                text = "$tzWatch hours",
-                modifier = Modifier.width(140.dp),
+                text = tzWatch,
+                modifier = Modifier.width(100.dp),
                 fontSize = textSize,
                 textAlign = TextAlign.Center
             )
@@ -215,11 +275,6 @@ fun AwayTimezone(
 @Composable
 fun NotificationsList() {
     Section("Notifications")
-}
-
-@Composable
-fun BluetoothDevices() {
-    Section("Bluetooth")
 }
 
 @Preview(showBackground = true)
