@@ -70,7 +70,8 @@ class MainActivity : ComponentActivity() {
         pebble = Pebble(applicationContext)
         timezone = Timezone(pebble)
         notifications = Notifications(pebble)
-        notifications.register('S', "com.google.android.apps.messaging")
+
+        // TODO: Ask runtime permissions
 
         val receiverFlagsCompat = ContextCompat.RECEIVER_EXPORTED
 
@@ -78,22 +79,29 @@ class MainActivity : ComponentActivity() {
         val dataFilter = IntentFilter(INTENT_APP_RECEIVE)
         ContextCompat.registerReceiver(applicationContext, dataReceiver, dataFilter, receiverFlagsCompat)
 
+        // TODO: Manage DND
+
+        // TODO: Read init battery state
         val batteryReceiver = BatteryReceiver(pebble)
         val batteryFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         ContextCompat.registerReceiver(applicationContext, batteryReceiver, batteryFilter, receiverFlagsCompat)
 
+        // TODO: Read init bluetooth device
         val bluetoothReceiver = BluetoothReceiver(pebble)
         val bluetoothFilter = IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
         ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, bluetoothFilter, receiverFlagsCompat)
 
+        // TODO: Read init WiFi SSID
         val connMan = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkCallback = WiFiCallback(connMan, pebble)
         connMan.registerDefaultNetworkCallback(networkCallback)
 
+        // TODO: Read init mobile network
         val teleMan = applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         val mobileCallback = MobileCallback(teleMan, pebble)
         teleMan.registerTelephonyCallback(TelephonyManager.INCLUDE_LOCATION_DATA_FINE, applicationContext.mainExecutor, mobileCallback)
 
+        // TODO: Read init notifications list
         val filter = IntentFilter()
         filter.addAction("name.jayhan.pebble.STATUS_BAR_NOTIFICATIONS")
         registerReceiver(notifications, filter, Context.RECEIVER_EXPORTED)
@@ -237,4 +245,6 @@ fun AwayTimezone(
 @Composable
 fun NotificationsList() {
     Section("Notifications")
+
+    // TODO: List notifications and edit
 }

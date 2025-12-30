@@ -38,6 +38,11 @@ class Notifications(
     private val pebble = pebble
     private var letterFromApp: MutableMap<Char, String> = mutableMapOf()
 
+    init {
+        register('S', "com.google.android.apps.messaging")
+        // TODO: Retrieve stored notifications list
+    }
+
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent == null) return
 
