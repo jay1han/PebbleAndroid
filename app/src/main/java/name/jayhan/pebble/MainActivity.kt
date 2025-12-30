@@ -92,17 +92,12 @@ class MainActivity : ComponentActivity() {
         val bluetoothManager: BluetoothManager = applicationContext.getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter = bluetoothManager.adapter
 
-        try {
-            val bluetoothState = bluetoothAdapter.getProfileConnectionState(BluetoothProfile.A2DP)
-        } catch (e: Exception) {
-            println(e)
-        }
         val bluetoothReceiver = BluetoothReceiver(pebble)
         val bluetoothFilter = IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
         ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, bluetoothFilter, receiverFlagsCompat)
 
         val connMan = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkCallback = NetworkCallback(connMan, pebble)
+        val networkCallback = WiFiCallback(connMan, pebble)
         connMan.registerDefaultNetworkCallback(networkCallback)
 
         val teleMan = applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager

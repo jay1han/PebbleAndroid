@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Network
+import android.net.NetworkCapabilities
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.BatteryManager
@@ -64,7 +65,7 @@ class BluetoothReceiver(pebble: Pebble): BroadcastReceiver() {
     }
 }
 
-class NetworkCallback(
+class WiFiCallback(
     connMan: ConnectivityManager,
     pebble: Pebble,
     ): ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
@@ -75,9 +76,21 @@ class NetworkCallback(
     override fun onAvailable(network: Network) {
         super.onAvailable(network)
 
-        val capa = connMan.getNetworkCapabilities(network)!!
+        val capa = connMan.getNetworkCapabilities(network)
+        if (capa != null) sendToPebble(capa)
+    }
+
+    override fun onCapabilitiesChanged(
+        network: Network,
+        networkCapabilities: NetworkCapabilities
+    ) {
+        super.onCapabilitiesChanged(network, networkCapabilities)
+        sendToPebble(networkCapabilities)
+    }
+
+    fun sendToPebble(capa: NetworkCapabilities) {
         val info = capa.transportInfo as WifiInfo
-        val ssid = info.ssid
+        val ssid = info.ssid.removeSurrounding("\"")
 
         var pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.WIFI.code)
