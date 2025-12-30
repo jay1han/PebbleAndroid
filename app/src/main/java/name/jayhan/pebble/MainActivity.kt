@@ -4,14 +4,9 @@ package name.jayhan.pebble
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothProfile
-import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.net.ConnectivityManager
-import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.telephony.TelephonyManager
 import androidx.activity.ComponentActivity
@@ -47,7 +42,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -92,19 +86,19 @@ class MainActivity : ComponentActivity() {
         ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, bluetoothFilter, receiverFlagsCompat)
 
         // TODO: Read init WiFi SSID
-        val connMan = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connMan = applicationContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkCallback = WiFiCallback(connMan, pebble)
         connMan.registerDefaultNetworkCallback(networkCallback)
 
         // TODO: Read init mobile network
-        val teleMan = applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        val teleMan = applicationContext.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
         val mobileCallback = MobileCallback(teleMan, pebble)
         teleMan.registerTelephonyCallback(TelephonyManager.INCLUDE_LOCATION_DATA_FINE, applicationContext.mainExecutor, mobileCallback)
 
         // TODO: Read init notifications list
         val filter = IntentFilter()
         filter.addAction("name.jayhan.pebble.STATUS_BAR_NOTIFICATIONS")
-        registerReceiver(notifications, filter, Context.RECEIVER_EXPORTED)
+        registerReceiver(notifications, filter, RECEIVER_EXPORTED)
 
         pebble.askInfo()
 
@@ -150,7 +144,7 @@ fun MainPage(
         modifier = modifier,
     ) {
         Watchface(pebble)
-        AwayTimezone(pebble, timezone)
+        AwayTimezone(timezone)
         Box(Modifier.height(padSize))
         NotificationsList()
     }
@@ -162,7 +156,7 @@ fun Watchface(
 ) {
     val watchInfo: String by pebble.infoFlow.collectAsState("")
 
-    Column() {
+    Column {
         Section(
             if (pebble.isConnected) "Connected"
             else "Disconnected"
@@ -185,7 +179,6 @@ fun Watchface(
 
 @Composable
 fun AwayTimezone(
-    pebble: Pebble,
     timezone: Timezone,
 ) {
     val tzWatch: String by timezone.tzFlow.collectAsState("+0.0")
