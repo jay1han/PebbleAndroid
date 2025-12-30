@@ -82,11 +82,7 @@ class BatteryReceiver(pebble: Pebble): BroadcastReceiver() {
 }
 
 class BluetoothReceiver(pebble: Pebble): BroadcastReceiver() {
-    val pebble = pebble
-
-// Source - https://stackoverflow.com/a
-// Posted by Kirill Martyuk
-// Retrieved 2025-12-30, License - CC BY-SA 4.0
+    private val pebble = pebble
 
     private fun getBatteryLevel(pairedDevice: BluetoothDevice?): Int {
         val level = pairedDevice?.let { bluetoothDevice ->
@@ -115,7 +111,7 @@ class BluetoothReceiver(pebble: Pebble): BroadcastReceiver() {
 }
 
 class NetworkCallback(pebble: Pebble): ConnectivityManager.NetworkCallback() {
-    val pebble = pebble
+    private val pebble = pebble
 
     override fun onAvailable(network: Network) {
         super.onAvailable(network)
@@ -130,8 +126,8 @@ class NotificationListener (
     pebble: Pebble,
     notifications: Notifications
 ): NotificationListenerService() {
-    val pebble = pebble
-    val notifications = notifications
+    private val pebble = pebble
+    private val notifications = notifications
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         super.onNotificationPosted(sbn)
@@ -152,8 +148,8 @@ class NotificationListener (
 }
 
 class MainActivity : ComponentActivity() {
-    lateinit var pebble: Pebble
-    lateinit var timezone: Timezone
+    private lateinit var pebble: Pebble
+    private lateinit var timezone: Timezone
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -193,7 +189,6 @@ class MainActivity : ComponentActivity() {
 
         val networkCallback = NetworkCallback(pebble)
         val connectivityManager = applicationContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        // android.permission.ACCESS_NETWORK_STATE
          connectivityManager.registerDefaultNetworkCallback(networkCallback)
 
         // https://developer.android.com/reference/android/service/notification/NotificationListenerService

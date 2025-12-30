@@ -1,7 +1,7 @@
 package name.jayhan.pebble
 
 class Notifications {
-    var letterFromApp: MutableMap<Char, String> = mutableMapOf()
+    private var letterFromApp: MutableMap<Char, String> = mutableMapOf()
 
     fun register(letter: Char, app: String) {
         letterFromApp[letter] = app

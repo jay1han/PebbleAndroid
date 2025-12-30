@@ -7,8 +7,8 @@ import kotlin.math.absoluteValue
 class Timezone(
     pebble: Pebble
 ) {
-    val pebble = pebble
-    var minutes: Int = 0
+    private val pebble = pebble
+    private var minutes: Int = 0
 
     val tzFlow = MutableStateFlow("+0.0")
 

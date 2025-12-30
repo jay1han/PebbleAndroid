@@ -56,8 +56,8 @@ class DataReceiver(
     pebble: Pebble,
     timezone: Timezone
     ): PebbleKit.PebbleDataReceiver(appUuid) {
-    val pebble = pebble
-    val timezone = timezone
+    private val pebble = pebble
+    private val timezone = timezone
 
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
         PebbleKit.sendAckToPebble(context, transactionId)
@@ -80,7 +80,7 @@ class DataReceiver(
 class Pebble(
     applicationContext: Context? = null,
 ) {
-    val applicationContext = applicationContext
+    private val applicationContext = applicationContext
     var isConnected = false
 
     val infoFlow = MutableStateFlow("")
