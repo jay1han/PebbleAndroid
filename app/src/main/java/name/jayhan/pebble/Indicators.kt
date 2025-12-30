@@ -8,7 +8,11 @@ import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Network
+import android.net.wifi.WifiInfo
+import android.net.wifi.WifiManager
 import android.os.BatteryManager
+import android.telephony.TelephonyCallback
+import android.telephony.TelephonyManager
 import androidx.annotation.RequiresPermission
 import com.getpebble.android.kit.util.PebbleDictionary
 
@@ -43,28 +47,41 @@ class BluetoothReceiver(pebble: Pebble): BroadcastReceiver() {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun onReceive(context: Context, intent: Intent) {
         val state = intent.getIntExtra(BluetoothAdapter.EXTRA_CONNECTION_STATE, BluetoothAdapter.STATE_DISCONNECTED)
-        if (state != BluetoothAdapter.STATE_CONNECTED) {
+        var pebbleDict = PebbleDictionary()
+        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.BT.code)
+        if (state == BluetoothAdapter.STATE_CONNECTED) {
             val device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
             if (device != null) {
-                var pebbleDict = PebbleDictionary()
-                pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.BT.code)
-                // android.permission.BLUETOOTH_CONNECT
-                pebbleDict.addString(DictKey.BTID.code, device.name.take(20))
+                pebbleDict.addString(DictKey.BTID.code, device.name.take(19))
                 pebbleDict.addInt8(DictKey.BTC.code, getBatteryLevel(device).toByte())
-                pebble.send(pebbleDict)
             }
+        } else {
+            // android.permission.BLUETOOTH_CONNECT
+            pebbleDict.addString(DictKey.BTID.code, "")
+            pebbleDict.addInt8(DictKey.BTC.code, 0)
         }
+        pebble.send(pebbleDict)
     }
 }
 
-class NetworkCallback(pebble: Pebble): ConnectivityManager.NetworkCallback() {
+class NetworkCallback(
+    connMan: ConnectivityManager,
+    pebble: Pebble,
+    ): ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
     private val pebble = pebble
+    private val connMan = connMan
 
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     override fun onAvailable(network: Network) {
         super.onAvailable(network)
+
+        val capa = connMan.getNetworkCapabilities(network)!!
+        val info = capa.transportInfo as WifiInfo
+        val ssid = info.ssid
+
         var pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.WIFI.code)
-        pebbleDict.addString(DictKey.WIFI.code, network.toString())
+        pebbleDict.addString(DictKey.WIFI.code, ssid.take(19))
         pebble.send(pebbleDict)
     }
 }

@@ -11,7 +11,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import android.net.wifi.WifiManager
 import android.os.Bundle
+import android.telephony.TelephonyManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresPermission
@@ -61,6 +63,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var timezone: Timezone
     private lateinit var notifications: Notifications
 
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -98,9 +101,11 @@ class MainActivity : ComponentActivity() {
         val bluetoothFilter = IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
         ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, bluetoothFilter, receiverFlagsCompat)
 
-        val networkCallback = NetworkCallback(pebble)
-        val connectivityManager = applicationContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        connectivityManager.registerDefaultNetworkCallback(networkCallback)
+        val connMan = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkCallback = NetworkCallback(connMan, pebble)
+        connMan.registerDefaultNetworkCallback(networkCallback)
+
+        val teleMan = applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 
         val filter = IntentFilter()
         filter.addAction("name.jayhan.pebble.STATUS_BAR_NOTIFICATIONS")
@@ -150,8 +155,6 @@ fun MainPage(
         modifier = modifier,
     ) {
         Watchface(pebble)
-        PermissionsChecked()
-        Box(Modifier.height(padSize))
         AwayTimezone(pebble, timezone)
         Box(Modifier.height(padSize))
         NotificationsList()
@@ -183,11 +186,6 @@ fun Watchface(
             contentDescription = "Help",
         )
     }
-}
-
-@Composable
-fun PermissionsChecked() {
-    Section("Permissions")
 }
 
 @Composable
@@ -252,12 +250,4 @@ fun AwayTimezone(
 @Composable
 fun NotificationsList() {
     Section("Notifications")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PebblePreview() {
-    val pebble = Pebble()
-    val timezone = Timezone(pebble)
-    MainPage(pebble, timezone)
 }
