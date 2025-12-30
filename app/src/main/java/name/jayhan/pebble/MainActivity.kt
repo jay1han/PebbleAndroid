@@ -122,28 +122,15 @@ class NetworkCallback(pebble: Pebble): ConnectivityManager.NetworkCallback() {
     }
 }
 
-class NotificationListener (
-    pebble: Pebble,
-    notifications: Notifications
-): NotificationListenerService() {
-    private val pebble = pebble
-    private val notifications = notifications
+class NotificationListener () : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         super.onNotificationPosted(sbn)
 
-        var compact = mutableSetOf<Char>()
+        var compact = mutableSetOf<String>()
         for (notification in this.activeNotifications) {
-            val letter = notifications.find(notification.packageName)
-            compact.add(letter)
+            compact.add(notification.packageName)
         }
-
-        val text = compact.joinToString("").take(10)
-
-        var pebbleDict = PebbleDictionary()
-        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NOTI.code)
-        pebbleDict.addString(DictKey.NOTI.code, text)
-        pebble.send(pebbleDict)
     }
 }
 
@@ -193,8 +180,7 @@ class MainActivity : ComponentActivity() {
 
         // https://developer.android.com/reference/android/service/notification/NotificationListenerService
         // https://developer.android.com/reference/android/service/notification/StatusBarNotification
-        val notifications = Notifications()
-        val notificationListener = NotificationListener(pebble, notifications)
+        val notifications = Notifications(pebble)
 
         pebble.askInfo()
 
