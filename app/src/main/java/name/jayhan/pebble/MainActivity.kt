@@ -2,13 +2,16 @@
 
 package name.jayhan.pebble
 
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothProfile
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Network
 import android.os.BatteryManager
@@ -17,6 +20,8 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -79,6 +84,20 @@ class BatteryReceiver(pebble: Pebble): BroadcastReceiver() {
 class BluetoothReceiver(pebble: Pebble): BroadcastReceiver() {
     val pebble = pebble
 
+// Source - https://stackoverflow.com/a
+// Posted by Kirill Martyuk
+// Retrieved 2025-12-30, License - CC BY-SA 4.0
+
+    private fun getBatteryLevel(pairedDevice: BluetoothDevice?): Int {
+        val level = pairedDevice?.let { bluetoothDevice ->
+            (bluetoothDevice.javaClass.getMethod("getBatteryLevel"))
+                .invoke(pairedDevice) as Int
+        } ?: 0
+        return level
+    }
+
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun onReceive(context: Context, intent: Intent) {
         val state = intent.getIntExtra(BluetoothAdapter.EXTRA_CONNECTION_STATE, BluetoothAdapter.STATE_DISCONNECTED)
         if (state != BluetoothAdapter.STATE_CONNECTED) {
@@ -87,8 +106,8 @@ class BluetoothReceiver(pebble: Pebble): BroadcastReceiver() {
                 var pebbleDict = PebbleDictionary()
                 pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.BT.code)
                 // android.permission.BLUETOOTH_CONNECT
-                // pebbleDict.addString(DictKey.BTID.code, device.name.take(20))
-                pebbleDict.addInt8(DictKey.BTC.code, 0)
+                pebbleDict.addString(DictKey.BTID.code, device.name.take(20))
+                pebbleDict.addInt8(DictKey.BTC.code, getBatteryLevel(device).toByte())
                 pebble.send(pebbleDict)
             }
         }
@@ -136,6 +155,7 @@ class MainActivity : ComponentActivity() {
     lateinit var pebble: Pebble
     lateinit var timezone: Timezone
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -152,19 +172,29 @@ class MainActivity : ComponentActivity() {
         val batteryFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         ContextCompat.registerReceiver(applicationContext, batteryReceiver, batteryFilter, receiverFlags)
 
+        if (ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED) {
+            println(0)
+        }
+
         val bluetoothManager: BluetoothManager = applicationContext.getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter = bluetoothManager.adapter
-        // android.permission.BLUETOOTH_CONNECT
-        // val bluetoothState = bluetoothAdapter.getProfileConnectionState(BluetoothProfile.A2DP)
 
+        try {
+            val bluetoothState = bluetoothAdapter.getProfileConnectionState(BluetoothProfile.A2DP)
+        } catch (e: Exception) {
+            println(e)
+        }
         val bluetoothReceiver = BluetoothReceiver(pebble)
         val bluetoothFilter = IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
         ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, bluetoothFilter, receiverFlags)
 
         val networkCallback = NetworkCallback(pebble)
-        val connectivityManager = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager = applicationContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         // android.permission.ACCESS_NETWORK_STATE
-        // connectivityManager.registerDefaultNetworkCallback(networkCallback)
+         connectivityManager.registerDefaultNetworkCallback(networkCallback)
 
         // https://developer.android.com/reference/android/service/notification/NotificationListenerService
         // https://developer.android.com/reference/android/service/notification/StatusBarNotification
