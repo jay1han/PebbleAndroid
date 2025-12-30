@@ -12,9 +12,11 @@ import android.net.NetworkCapabilities
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.BatteryManager
+import android.telephony.ServiceState
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresPermission
+import androidx.navigationevent.NavigationEventInfo
 import com.getpebble.android.kit.util.PebbleDictionary
 
 class BatteryReceiver(pebble: Pebble): BroadcastReceiver() {
@@ -96,5 +98,45 @@ class WiFiCallback(
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.WIFI.code)
         pebbleDict.addString(DictKey.WIFI.code, ssid.take(19))
         pebble.send(pebbleDict)
+    }
+}
+
+class MobileCallback(
+    teleMan: TelephonyManager,
+    pebble: Pebble
+): TelephonyCallback(), TelephonyCallback.ServiceStateListener {
+
+    private val teleMan = teleMan
+    private val pebble = pebble
+
+    override fun onServiceStateChanged(serviceState: ServiceState) {
+        var mobile = 0
+        fun bumpTo(to: Int) {
+            if (to > mobile) mobile = to
+        }
+
+        if (serviceState.state == ServiceState.STATE_IN_SERVICE) {
+            for (reginfo in serviceState.networkRegistrationInfoList) {
+                when (reginfo.accessNetworkTechnology) {
+                    TelephonyManager.NETWORK_TYPE_GSM,
+                    TelephonyManager.NETWORK_TYPE_GPRS,
+                    TelephonyManager.NETWORK_TYPE_EDGE,
+                        -> bumpTo(2)
+                    TelephonyManager.NETWORK_TYPE_HSPA,
+                    TelephonyManager.NETWORK_TYPE_UMTS,
+                        -> bumpTo(3)
+                    TelephonyManager.NETWORK_TYPE_LTE
+                        -> bumpTo(4)
+                    TelephonyManager.NETWORK_TYPE_NR
+                        -> bumpTo(5)
+                    else -> null
+                }
+            }
+
+            var pebbleDict = PebbleDictionary()
+            pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NET.code)
+            pebbleDict.addInt8(DictKey.NET.code, mobile.toByte())
+            pebble.send(pebbleDict)
+        }
     }
 }

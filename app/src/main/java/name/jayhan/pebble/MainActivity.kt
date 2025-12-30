@@ -82,16 +82,6 @@ class MainActivity : ComponentActivity() {
         val batteryFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         ContextCompat.registerReceiver(applicationContext, batteryReceiver, batteryFilter, receiverFlagsCompat)
 
-        if (ContextCompat.checkSelfPermission(
-                applicationContext,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED) {
-            println(0)
-        }
-
-        val bluetoothManager: BluetoothManager = applicationContext.getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
-        val bluetoothAdapter = bluetoothManager.adapter
-
         val bluetoothReceiver = BluetoothReceiver(pebble)
         val bluetoothFilter = IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
         ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, bluetoothFilter, receiverFlagsCompat)
@@ -101,6 +91,8 @@ class MainActivity : ComponentActivity() {
         connMan.registerDefaultNetworkCallback(networkCallback)
 
         val teleMan = applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        val mobileCallback = MobileCallback(teleMan, pebble)
+        teleMan.registerTelephonyCallback(TelephonyManager.INCLUDE_LOCATION_DATA_FINE, applicationContext.mainExecutor, mobileCallback)
 
         val filter = IntentFilter()
         filter.addAction("name.jayhan.pebble.STATUS_BAR_NOTIFICATIONS")
