@@ -2,16 +2,24 @@
 
 package name.jayhan.pebble
 
-import android.Manifest
+import android.app.AutomaticZenRule
+import android.app.NotificationManager
 import android.bluetooth.BluetoothAdapter
+import android.content.BroadcastReceiver
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.service.notification.Condition
+import android.service.notification.ZenPolicy
 import android.telephony.TelephonyManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.RequiresPermission
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -57,9 +65,15 @@ class MainActivity : ComponentActivity() {
     private lateinit var timezone: Timezone
     private lateinit var notifications: Notifications
 
-    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val intent = getIntent()
+        if (intent.action == null || intent.action == NotificationManager.ACTION_AUTOMATIC_ZEN_RULE) {
+            finish()
+            return
+        }
 
         pebble = Pebble(applicationContext)
         timezone = Timezone(pebble)
@@ -67,13 +81,52 @@ class MainActivity : ComponentActivity() {
 
         // TODO: Ask runtime permissions
 
+        val notiMan = applicationContext.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val zenUri = Uri.Builder()
+            .scheme(Condition.SCHEME)
+            .appendPath("jayhan.name")
+            .query("dnd")
+            .build()
+        val zenPolicy = ZenPolicy.Builder()
+            .disallowAllSounds()
+            .allowAlarms(true)
+            .allowCalls(ZenPolicy.PEOPLE_TYPE_STARRED)
+            .showAllVisualEffects()
+            .build()
+        val zenRule = AutomaticZenRule.Builder("pebble", zenUri)
+            .setTriggerDescription("Toggled via Pebble watch")
+            .setType(AutomaticZenRule.TYPE_OTHER)
+            .setManualInvocationAllowed(true)
+            .setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+            .setEnabled(true)
+            .setZenPolicy(zenPolicy)
+            .setConfigurationActivity(ComponentName(applicationContext, MainActivity::class.java))
+            .build()
+
+        var ruleId = ""
+        for (rule in notiMan.automaticZenRules) {
+            if (rule.value.name == "pebble") {
+                ruleId = rule.key
+                break
+            }
+        }
+
+        if (ruleId == "") {
+            try {
+                ruleId = notiMan.addAutomaticZenRule(zenRule)
+            } catch (e: Exception) {
+                println(e)
+            }
+        } else {
+            notiMan.updateAutomaticZenRule(ruleId, zenRule)
+            notiMan.setAutomaticZenRuleState(ruleId, Condition(zenUri, "Disabled", Condition.STATE_FALSE))
+        }
+
         val receiverFlagsCompat = ContextCompat.RECEIVER_EXPORTED
 
         val dataReceiver = DataReceiver(pebble, timezone)
         val dataFilter = IntentFilter(INTENT_APP_RECEIVE)
         ContextCompat.registerReceiver(applicationContext, dataReceiver, dataFilter, receiverFlagsCompat)
-
-        // TODO: Manage DND
 
         // TODO: Read init battery state
         val batteryReceiver = BatteryReceiver(pebble)
@@ -123,6 +176,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 }
 
 @Composable
