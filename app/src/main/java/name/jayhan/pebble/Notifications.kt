@@ -33,9 +33,8 @@ class NotificationListener () : NotificationListenerService() {
 }
 
 class Notifications(
-    pebble: Pebble
+    private val pebble: Pebble
 ): BroadcastReceiver() {
-    private val pebble = pebble
     private var letterFromApp: MutableMap<Char, String> = mutableMapOf()
 
     init {
@@ -47,7 +46,7 @@ class Notifications(
         if (intent == null) return
 
         val count = intent.getIntExtra("count", 0)
-        var compact: MutableSet<Char> = mutableSetOf()
+        val compact: MutableSet<Char> = mutableSetOf()
         for (index in 0..< count) {
             val name = intent.getStringExtra(index.toString())
             if (name != null) {
@@ -58,7 +57,7 @@ class Notifications(
         compact.remove('-')
         val text = compact.joinToString("").take(10)
 
-        var pebbleDict = PebbleDictionary()
+        val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NOTI.code)
         pebbleDict.addString(DictKey.NOTI.code, text)
         pebble.send(pebbleDict)

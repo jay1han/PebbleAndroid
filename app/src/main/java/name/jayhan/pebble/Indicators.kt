@@ -10,17 +10,16 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiInfo
-import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.telephony.ServiceState
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresPermission
-import androidx.navigationevent.NavigationEventInfo
 import com.getpebble.android.kit.util.PebbleDictionary
 
-class BatteryReceiver(pebble: Pebble): BroadcastReceiver() {
-    val pebble = pebble
+class BatteryReceiver(
+    val pebble: Pebble
+): BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val isCharging = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0)
@@ -28,7 +27,7 @@ class BatteryReceiver(pebble: Pebble): BroadcastReceiver() {
         val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 0)
         val percent = 100.0 * level.toFloat() / scale
 
-        var pebbleDict = PebbleDictionary()
+        val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.PHONE_CHG.code)
         pebbleDict.addInt8(DictKey.PHONE_CHG.code, isCharging.toByte())
         pebbleDict.addInt8(DictKey.PHONE_BATT.code, percent.toInt().toByte())
@@ -36,8 +35,9 @@ class BatteryReceiver(pebble: Pebble): BroadcastReceiver() {
     }
 }
 
-class BluetoothReceiver(pebble: Pebble): BroadcastReceiver() {
-    private val pebble = pebble
+class BluetoothReceiver(
+    private val pebble: Pebble
+): BroadcastReceiver() {
 
     private fun getBatteryLevel(pairedDevice: BluetoothDevice?): Int {
         val level = pairedDevice?.let { bluetoothDevice ->
@@ -50,7 +50,7 @@ class BluetoothReceiver(pebble: Pebble): BroadcastReceiver() {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun onReceive(context: Context, intent: Intent) {
         val state = intent.getIntExtra(BluetoothAdapter.EXTRA_CONNECTION_STATE, BluetoothAdapter.STATE_DISCONNECTED)
-        var pebbleDict = PebbleDictionary()
+        val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.BT.code)
         if (state == BluetoothAdapter.STATE_CONNECTED) {
             val device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
@@ -68,11 +68,9 @@ class BluetoothReceiver(pebble: Pebble): BroadcastReceiver() {
 }
 
 class WiFiCallback(
-    connMan: ConnectivityManager,
-    pebble: Pebble,
+    private val connMan: ConnectivityManager,
+    private val pebble: Pebble,
     ): ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
-    private val pebble = pebble
-    private val connMan = connMan
 
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     override fun onAvailable(network: Network) {
@@ -94,7 +92,7 @@ class WiFiCallback(
         val info = capa.transportInfo as WifiInfo
         val ssid = info.ssid.removeSurrounding("\"")
 
-        var pebbleDict = PebbleDictionary()
+        val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.WIFI.code)
         pebbleDict.addString(DictKey.WIFI.code, ssid.take(19))
         pebble.send(pebbleDict)
@@ -102,12 +100,9 @@ class WiFiCallback(
 }
 
 class MobileCallback(
-    teleMan: TelephonyManager,
-    pebble: Pebble
+    private val teleMan: TelephonyManager,
+    private val pebble: Pebble
 ): TelephonyCallback(), TelephonyCallback.ServiceStateListener {
-
-    private val teleMan = teleMan
-    private val pebble = pebble
 
     override fun onServiceStateChanged(serviceState: ServiceState) {
         var mobile = 0
@@ -133,7 +128,7 @@ class MobileCallback(
                 }
             }
 
-            var pebbleDict = PebbleDictionary()
+            val pebbleDict = PebbleDictionary()
             pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NET.code)
             pebbleDict.addInt8(DictKey.NET.code, mobile.toByte())
             pebble.send(pebbleDict)

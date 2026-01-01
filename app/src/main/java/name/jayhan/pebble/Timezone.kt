@@ -5,9 +5,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.math.absoluteValue
 
 class Timezone(
-    pebble: Pebble
+    private val pebble: Pebble
 ) {
-    private val pebble = pebble
     private var minutes: Int = 0
 
     val tzFlow = MutableStateFlow("+0.0")
@@ -48,7 +47,7 @@ class Timezone(
     }
 
     fun toPebble() {
-        var pebbleDict = PebbleDictionary()
+        val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.TZ.code)
         pebbleDict.addInt16(DictKey.TZ_MINS.code, minutes.toShort())
         pebble.send(pebbleDict)

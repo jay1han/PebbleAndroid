@@ -4,11 +4,9 @@ import android.content.Context
 import com.getpebble.android.kit.PebbleKit
 import com.getpebble.android.kit.util.PebbleDictionary
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flowOf
 import java.util.UUID
 
-val appUuid = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
+val appUuid: UUID? = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
 
 val WatchModels = listOf(
     "Unknown",
@@ -53,11 +51,9 @@ enum class MsgType(val code: Byte) {
 }
 
 class DataReceiver(
-    pebble: Pebble,
-    timezone: Timezone
+    private val pebble: Pebble,
+    private val timezone: Timezone
     ): PebbleKit.PebbleDataReceiver(appUuid) {
-    private val pebble = pebble
-    private val timezone = timezone
 
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
         PebbleKit.sendAckToPebble(context, transactionId)
@@ -78,9 +74,8 @@ class DataReceiver(
 }
 
 class Pebble(
-    applicationContext: Context? = null,
+    private val applicationContext: Context? = null,
 ) {
-    private val applicationContext = applicationContext
     var isConnected = false
 
     val infoFlow = MutableStateFlow("")
