@@ -5,9 +5,7 @@ package name.jayhan.pebble
 import android.app.AutomaticZenRule
 import android.app.NotificationManager
 import android.bluetooth.BluetoothAdapter
-import android.content.BroadcastReceiver
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
@@ -21,21 +19,25 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,9 +46,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -154,20 +156,19 @@ class MainActivity : ComponentActivity() {
         registerReceiver(notifications, filter, RECEIVER_EXPORTED)
 
         pebble.askInfo()
+        val colorBlack = Color(0xFFFF8000)
 
         setContent {
             Scaffold(
                 topBar = {
-                    TopAppBar(
-                        title = {
-                            Text(
-                                stringResource(R.string.app_title),
-                                fontSize = titleSize
-                            )
-                        }
+                    Spacer(
+                        modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars)
+                            .fillMaxWidth()
+                            .background(colorBlack)
                     )
                 }
-            ) { innerPadding ->
+            ) {
+                innerPadding ->
                 MainPage(
                     pebble = pebble,
                     timezone = timezone,
