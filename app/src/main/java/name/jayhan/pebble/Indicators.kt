@@ -23,6 +23,7 @@ import android.telephony.TelephonyManager
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
 import com.getpebble.android.kit.util.PebbleDictionary
+import kotlin.reflect.typeOf
 
 class BatteryReceiver(
     val pebble: Pebble
@@ -122,32 +123,41 @@ class WiFiCallback(
     ): ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
 
     init {
-        val pebbleDict = PebbleDictionary()
-        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.WIFI.code)
-        pebbleDict.addString(DictKey.WIFI.code, "")
-        pebble.send(pebbleDict)
+        sendToPebble("")
     }
 
     override fun onAvailable(network: Network) {
         super.onAvailable(network)
 
-        val capa = connMan.getNetworkCapabilities(network)
-        if (capa != null) sendToPebble(capa)
+        val info = connMan.getNetworkCapabilities(network)?.transportInfo as WifiInfo
+        if (info != null) {
+            sendToPebble(info.ssid)
+        }
+    }
+
+    override fun onLost(network: Network) {
+        super.onLost(network)
+
+        val info = connMan.getNetworkCapabilities(network)?.transportInfo
+        if (info is WifiInfo) {
+            sendToPebble("")
+        }
+
     }
 
     override fun onCapabilitiesChanged(
         network: Network,
-        networkCapabilities: NetworkCapabilities
+        capabilities: NetworkCapabilities
     ) {
-        super.onCapabilitiesChanged(network, networkCapabilities)
-        sendToPebble(networkCapabilities)
-    }
+        super.onCapabilitiesChanged(network, capabilities)
 
-    private fun sendToPebble(capa: NetworkCapabilities) {
-        val info = capa.transportInfo as WifiInfo
+        val info = capabilities.transportInfo as WifiInfo
         val ssid = info.ssid.removeSurrounding("\"")
         if (ssid == UNKNOWN_SSID) return
+        sendToPebble(ssid)
+    }
 
+    private fun sendToPebble(ssid: String) {
         val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.WIFI.code)
         pebbleDict.addString(DictKey.WIFI.code, ssid.take(19))
