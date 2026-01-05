@@ -26,7 +26,7 @@ import com.getpebble.android.kit.util.PebbleDictionary
 
 class BatteryReceiver(
     private val pebble: Pebble,
-    private val applicationContext: Context
+    applicationContext: Context
 ): BroadcastReceiver() {
 
     init {
@@ -80,7 +80,7 @@ private fun BluetoothDevice.getBatteryLevel(): Int {
 
 class BluetoothReceiver(
     private val pebble: Pebble,
-    private val applicationContext: Context
+    applicationContext: Context
 ): BroadcastReceiver() {
 
     init {
