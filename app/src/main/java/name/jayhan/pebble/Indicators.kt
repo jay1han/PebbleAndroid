@@ -23,7 +23,6 @@ import android.telephony.TelephonyManager
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
 import com.getpebble.android.kit.util.PebbleDictionary
-import kotlin.reflect.typeOf
 
 class BatteryReceiver(
     val pebble: Pebble
@@ -76,8 +75,8 @@ private fun BluetoothDevice.getBatteryLevel(): Int {
 }
 
 class BluetoothReceiver(
-    private val blueMan: BluetoothManager,
-    private val pebble: Pebble
+    private val pebble: Pebble,
+    blueMan: BluetoothManager
 ): BroadcastReceiver() {
 
     init {
@@ -118,8 +117,8 @@ class BluetoothReceiver(
 }
 
 class WiFiCallback(
-    private val connMan: ConnectivityManager,
     private val pebble: Pebble,
+    private val connMan: ConnectivityManager,
     ): ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
 
     init {
@@ -129,9 +128,10 @@ class WiFiCallback(
     override fun onAvailable(network: Network) {
         super.onAvailable(network)
 
-        val info = connMan.getNetworkCapabilities(network)?.transportInfo as WifiInfo
+        val info = connMan.getNetworkCapabilities(network)?.transportInfo
         if (info != null) {
-            sendToPebble(info.ssid)
+            val wifiInfo = info as WifiInfo
+            sendToPebble(wifiInfo.ssid)
         }
     }
 
@@ -166,8 +166,8 @@ class WiFiCallback(
 }
 
 class PhoneCallback(
-    private val teleMan: TelephonyManager,
-    private val pebble: Pebble
+    private val pebble: Pebble,
+    teleMan: TelephonyManager
 ): TelephonyCallback(), TelephonyCallback.ServiceStateListener {
 
     init {
@@ -218,15 +218,15 @@ class PhoneCallback(
 
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 fun setupIndicators(
-    applicationContext: Context,
-    pebble: Pebble
+    pebble: Pebble,
+    applicationContext: Context
 ) {
     val batteryReceiver = BatteryReceiver(pebble)
     val batteryFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
     ContextCompat.registerReceiver(applicationContext, batteryReceiver, batteryFilter, ContextCompat.RECEIVER_EXPORTED)
 
     val blueMan = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    val bluetoothReceiver = BluetoothReceiver(blueMan, pebble)
+    val bluetoothReceiver = BluetoothReceiver(pebble, blueMan)
     val bluetoothFilter = IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
     try {
         val intent = ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, bluetoothFilter, ContextCompat.RECEIVER_EXPORTED)
@@ -238,7 +238,7 @@ fun setupIndicators(
     }
 
     val connMan = applicationContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-    val networkCallback = WiFiCallback(connMan, pebble)
+    val networkCallback = WiFiCallback(pebble, connMan)
     val networkRequest = NetworkRequest.Builder()
         .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
         .build()
@@ -249,7 +249,7 @@ fun setupIndicators(
     }
 
     val teleMan = applicationContext.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
-    val phoneCallback = PhoneCallback(teleMan, pebble)
+    val phoneCallback = PhoneCallback(pebble, teleMan)
     try {
         teleMan.registerTelephonyCallback(
             TelephonyManager.INCLUDE_LOCATION_DATA_FINE,

@@ -56,7 +56,6 @@ enum class MsgType(val code: Byte) {
 
 class DataReceiver(
     private val pebble: Pebble,
-    private val timezone: Timezone
     ): PebbleKit.PebbleDataReceiver(appUuid) {
 
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
@@ -70,7 +69,7 @@ class DataReceiver(
                     val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.code).toInt()
                     pebble.setWatchInfo(watchModel, watchFwVersion)
                     val tzMinutes = data.getInteger(DictKey.TZ_MINS.code).toInt()
-                    timezone.fromMinutes(tzMinutes)
+                    pebble.timezone.fromMinutes(tzMinutes)
                 }
             }
         }
@@ -78,11 +77,17 @@ class DataReceiver(
 }
 
 class Pebble(
-    private val applicationContext: Context? = null,
+    private val applicationContext: Context,
 ) {
+    val timezone = Timezone(this)
+    val infoFlow = MutableStateFlow("")
     var isConnected = false
 
-    val infoFlow = MutableStateFlow("")
+    init {
+        val dataReceiver = DataReceiver(this)
+        val dataFilter = IntentFilter(INTENT_APP_RECEIVE)
+        ContextCompat.registerReceiver(applicationContext, dataReceiver, dataFilter, ContextCompat.RECEIVER_EXPORTED)
+    }
 
     fun askInfo() {
         val initDict = PebbleDictionary()
@@ -91,9 +96,7 @@ class Pebble(
     }
 
     fun send(pebbleDict: PebbleDictionary) {
-        if (applicationContext != null) {
-            PebbleKit.sendDataToPebble(applicationContext, appUuid, pebbleDict)
-        }
+        PebbleKit.sendDataToPebble(applicationContext, appUuid, pebbleDict)
     }
 
     fun setWatchInfo(
@@ -109,16 +112,6 @@ class Pebble(
             )
         infoFlow.value = "Model: ${WatchModels[watchModel]}\nVersion: $versionString"
     }
-}
-
-fun setupPebble(
-    applicationContext: Context,
-    pebble: Pebble,
-    timezone: Timezone
-) {
-    val dataReceiver = DataReceiver(pebble, timezone)
-    val dataFilter = IntentFilter(INTENT_APP_RECEIVE)
-    ContextCompat.registerReceiver(applicationContext, dataReceiver, dataFilter, ContextCompat.RECEIVER_EXPORTED)
 }
 
 class Timezone(

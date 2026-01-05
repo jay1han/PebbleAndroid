@@ -3,7 +3,6 @@
 package name.jayhan.pebble
 
 import android.app.NotificationManager
-import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -45,8 +44,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
-import com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE
 
 val titleSize = 28.sp
 val textSize = 20.sp
@@ -54,7 +51,6 @@ val padSize = 8.dp
 
 class MainActivity : ComponentActivity() {
     private lateinit var pebble: Pebble
-    private lateinit var timezone: Timezone
     private lateinit var notifications: Notifications
 
     @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
@@ -69,12 +65,10 @@ class MainActivity : ComponentActivity() {
         }
 
         pebble = Pebble(applicationContext)
-        timezone = Timezone(pebble)
         notifications = Notifications(pebble)
 
-        setupPebble(applicationContext, pebble, timezone)
         setupNotifications(applicationContext, notifications)
-        setupIndicators(applicationContext, pebble)
+        setupIndicators(pebble, applicationContext)
 
         pebble.askInfo()
         val colorBlack = Color(0xFFFF8000)
@@ -92,7 +86,6 @@ class MainActivity : ComponentActivity() {
                 innerPadding ->
                 MainPage(
                     pebble = pebble,
-                    timezone = timezone,
                     Modifier.padding(innerPadding),
                 )
             }
@@ -113,14 +106,13 @@ fun Section(text: String = "") {
 @Composable
 fun MainPage(
     pebble: Pebble,
-    timezone: Timezone,
     modifier: Modifier = Modifier,
     ) {
     Column(
         modifier = modifier,
     ) {
         Watchface(pebble)
-        AwayTimezone(timezone)
+        AwayTimezone(pebble.timezone)
         Box(Modifier.height(padSize))
         NotificationsList()
     }
