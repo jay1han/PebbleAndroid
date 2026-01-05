@@ -13,7 +13,9 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.wifi.WifiInfo
+import android.net.wifi.WifiManager.UNKNOWN_SSID
 import android.os.BatteryManager
 import android.telephony.ServiceState
 import android.telephony.TelephonyCallback
@@ -105,9 +107,10 @@ class WiFiCallback(
         sendToPebble(networkCapabilities)
     }
 
-    fun sendToPebble(capa: NetworkCapabilities) {
+    private fun sendToPebble(capa: NetworkCapabilities) {
         val info = capa.transportInfo as WifiInfo
         val ssid = info.ssid.removeSurrounding("\"")
+        if (ssid == UNKNOWN_SSID) return
 
         val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.WIFI.code)
@@ -199,8 +202,11 @@ fun setupIndicators(
     }
     val connMan = applicationContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
     val networkCallback = WiFiCallback(connMan, pebble)
+    val networkRequest = NetworkRequest.Builder()
+        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+        .build()
     try {
-        connMan.registerDefaultNetworkCallback(networkCallback)
+        connMan.registerNetworkCallback(networkRequest, networkCallback)
     } catch (e: Exception) {
         println(e)
     }
