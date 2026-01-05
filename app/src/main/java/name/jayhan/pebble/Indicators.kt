@@ -134,7 +134,8 @@ class WiFiCallback(
         val info = connMan.getNetworkCapabilities(network)?.transportInfo
         if (info != null) {
             val wifiInfo = info as WifiInfo
-            sendToPebble(wifiInfo.ssid)
+            val ssid = wifiInfo.ssid
+            if (ssid != UNKNOWN_SSID) sendToPebble(wifiInfo.ssid)
         }
     }
 
