@@ -1,10 +1,14 @@
 package name.jayhan.pebble
 
 import android.content.Context
+import android.content.IntentFilter
+import androidx.core.content.ContextCompat
+import com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE
 import com.getpebble.android.kit.PebbleKit
 import com.getpebble.android.kit.util.PebbleDictionary
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.UUID
+import kotlin.math.absoluteValue
 
 val appUuid: UUID? = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
 
@@ -104,5 +108,65 @@ class Pebble(
                 watchFwVersion and 0xFF
             )
         infoFlow.value = "Model: ${WatchModels[watchModel]}\nVersion: $versionString"
+    }
+}
+
+fun setupPebble(
+    applicationContext: Context,
+    pebble: Pebble,
+    timezone: Timezone
+) {
+    val dataReceiver = DataReceiver(pebble, timezone)
+    val dataFilter = IntentFilter(INTENT_APP_RECEIVE)
+    ContextCompat.registerReceiver(applicationContext, dataReceiver, dataFilter, ContextCompat.RECEIVER_EXPORTED)
+}
+
+class Timezone(
+    private val pebble: Pebble
+) {
+    private var minutes: Int = 0
+
+    val tzFlow = MutableStateFlow("+0.0")
+
+    fun fromString(text: String): String {
+        if (text.isEmpty()) return get()
+        val negative = text[0] == '-'
+        val split = (if (negative) text.substring(1) else text).split('.')
+
+        if (split.size >= 1) {
+            if (split[0].isEmpty()) minutes = 0
+            else minutes = split[0].toInt() * 60
+        }
+        if (split.size >= 2) {
+            if (!split[1].isEmpty()) {
+                val decimal = split[1].toFloat() / 100f
+                minutes += (decimal * 60).toInt()
+            }
+        }
+        if (negative) minutes = -minutes
+
+        toPebble()
+        return get()
+    }
+
+    fun fromMinutes(tzMinutes: Int) {
+        minutes = tzMinutes
+        get()
+    }
+
+    fun get(): String {
+        val sign = if (minutes < 0) "-" else "+"
+        val hours = minutes.absoluteValue / 60
+        val frac = 100 * (minutes.absoluteValue - hours * 60) / 60
+        val string = "$sign${hours}.$frac"
+        tzFlow.value = string
+        return string
+    }
+
+    fun toPebble() {
+        val pebbleDict = PebbleDictionary()
+        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.TZ.code)
+        pebbleDict.addInt16(DictKey.TZ_MINS.code, minutes.toShort())
+        pebble.send(pebbleDict)
     }
 }

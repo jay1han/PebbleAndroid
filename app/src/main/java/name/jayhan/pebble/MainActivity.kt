@@ -2,19 +2,10 @@
 
 package name.jayhan.pebble
 
-import android.app.AutomaticZenRule
 import android.app.NotificationManager
-import android.bluetooth.BluetoothAdapter
-import android.content.ComponentName
-import android.content.Intent
 import android.content.IntentFilter
-import android.net.ConnectivityManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.service.notification.Condition
-import android.service.notification.ZenPolicy
-import android.telephony.TelephonyManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -57,7 +48,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE
 
-
 val titleSize = 28.sp
 val textSize = 20.sp
 val padSize = 8.dp
@@ -71,6 +61,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Skip Zen rule setup UI
         val intent = getIntent()
         if (intent.action == null || intent.action == NotificationManager.ACTION_AUTOMATIC_ZEN_RULE) {
             finish()
@@ -81,79 +72,9 @@ class MainActivity : ComponentActivity() {
         timezone = Timezone(pebble)
         notifications = Notifications(pebble)
 
-        // TODO: Ask runtime permissions
-
-        val notiMan = applicationContext.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        val zenUri = Uri.Builder()
-            .scheme(Condition.SCHEME)
-            .appendPath("jayhan.name")
-            .query("dnd")
-            .build()
-        val zenPolicy = ZenPolicy.Builder()
-            .disallowAllSounds()
-            .allowAlarms(true)
-            .allowCalls(ZenPolicy.PEOPLE_TYPE_STARRED)
-            .showAllVisualEffects()
-            .build()
-        val zenRule = AutomaticZenRule.Builder("pebble", zenUri)
-            .setTriggerDescription("Toggled via Pebble watch")
-            .setType(AutomaticZenRule.TYPE_OTHER)
-            .setManualInvocationAllowed(true)
-            .setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
-            .setEnabled(true)
-            .setZenPolicy(zenPolicy)
-            .setConfigurationActivity(ComponentName(applicationContext, MainActivity::class.java))
-            .build()
-
-        var ruleId = ""
-        for (rule in notiMan.automaticZenRules) {
-            if (rule.value.name == "pebble") {
-                ruleId = rule.key
-                break
-            }
-        }
-
-        if (ruleId == "") {
-            try {
-                ruleId = notiMan.addAutomaticZenRule(zenRule)
-            } catch (e: Exception) {
-                println(e)
-            }
-        } else {
-            notiMan.updateAutomaticZenRule(ruleId, zenRule)
-            notiMan.setAutomaticZenRuleState(ruleId, Condition(zenUri, "Disabled", Condition.STATE_FALSE))
-        }
-
-        val receiverFlagsCompat = ContextCompat.RECEIVER_EXPORTED
-
-        val dataReceiver = DataReceiver(pebble, timezone)
-        val dataFilter = IntentFilter(INTENT_APP_RECEIVE)
-        ContextCompat.registerReceiver(applicationContext, dataReceiver, dataFilter, receiverFlagsCompat)
-
-        // TODO: Read init battery state
-        val batteryReceiver = BatteryReceiver(pebble)
-        val batteryFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-        ContextCompat.registerReceiver(applicationContext, batteryReceiver, batteryFilter, receiverFlagsCompat)
-
-        // TODO: Read init bluetooth device
-        val bluetoothReceiver = BluetoothReceiver(pebble)
-        val bluetoothFilter = IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
-        ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, bluetoothFilter, receiverFlagsCompat)
-
-        // TODO: Read init WiFi SSID
-        val connMan = applicationContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkCallback = WiFiCallback(connMan, pebble)
-        connMan.registerDefaultNetworkCallback(networkCallback)
-
-        // TODO: Read init mobile network
-        val teleMan = applicationContext.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
-        val mobileCallback = MobileCallback(teleMan, pebble)
-        teleMan.registerTelephonyCallback(TelephonyManager.INCLUDE_LOCATION_DATA_FINE, applicationContext.mainExecutor, mobileCallback)
-
-        // TODO: Read init notifications list
-        val filter = IntentFilter()
-        filter.addAction("name.jayhan.pebble.STATUS_BAR_NOTIFICATIONS")
-        registerReceiver(notifications, filter, RECEIVER_EXPORTED)
+        setupPebble(applicationContext, pebble, timezone)
+        setupNotifications(applicationContext, notifications)
+        setupIndicators(applicationContext, pebble)
 
         pebble.askInfo()
         val colorBlack = Color(0xFFFF8000)

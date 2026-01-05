@@ -1,10 +1,21 @@
 package name.jayhan.pebble
 
+import android.app.AutomaticZenRule
+import android.app.NotificationManager
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
+import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
+import android.content.IntentFilter
+import android.net.Uri
+import android.os.Build
+import android.service.notification.Condition
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import android.service.notification.ZenPolicy
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat.RECEIVER_EXPORTED
 import com.getpebble.android.kit.util.PebbleDictionary
 
 class NotificationListener () : NotificationListenerService() {
@@ -80,4 +91,55 @@ class Notifications(
 
     fun received(packages: MutableList<String>) {
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+fun setupNotifications(
+    applicationContext: Context,
+    notifications: Notifications
+) {
+    val notiMan = applicationContext.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+    val zenUri = Uri.Builder()
+        .scheme(Condition.SCHEME)
+        .appendPath("jayhan.name")
+        .query("dnd")
+        .build()
+    val zenPolicy = ZenPolicy.Builder()
+        .disallowAllSounds()
+        .allowAlarms(true)
+        .allowCalls(ZenPolicy.PEOPLE_TYPE_STARRED)
+        .showAllVisualEffects()
+        .build()
+    val zenRule = AutomaticZenRule.Builder("pebble", zenUri)
+        .setTriggerDescription("Toggled via Pebble watch")
+        .setType(AutomaticZenRule.TYPE_OTHER)
+        .setManualInvocationAllowed(true)
+        .setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+        .setEnabled(true)
+        .setZenPolicy(zenPolicy)
+        .setConfigurationActivity(ComponentName(applicationContext, MainActivity::class.java))
+        .build()
+
+    var ruleId = ""
+    for (rule in notiMan.automaticZenRules) {
+        if (rule.value.name == "pebble") {
+            ruleId = rule.key
+            break
+        }
+    }
+
+    if (ruleId == "") {
+        try {
+            ruleId = notiMan.addAutomaticZenRule(zenRule)
+        } catch (e: Exception) {
+            println(e)
+        }
+    } else {
+        notiMan.updateAutomaticZenRule(ruleId, zenRule)
+        notiMan.setAutomaticZenRuleState(ruleId, Condition(zenUri, "Disabled", Condition.STATE_FALSE))
+    }
+
+    val filter = IntentFilter()
+    filter.addAction("name.jayhan.pebble.STATUS_BAR_NOTIFICATIONS")
+    applicationContext.registerReceiver(notifications, filter, RECEIVER_EXPORTED)
 }
