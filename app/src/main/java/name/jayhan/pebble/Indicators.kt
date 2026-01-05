@@ -66,7 +66,8 @@ private fun BluetoothDevice.isConnected(): Boolean {
 private fun BluetoothDevice.getBatteryLevel(): Int {
     try {
         val method = this.javaClass.getMethod("getBatteryLevel")
-        val result = method.invoke(this) as Int
+        var result = method.invoke(this) as Int
+        if (result < 0) result = 0
         return result
     } catch (e: Exception) {
         println(e)
@@ -83,9 +84,11 @@ class BluetoothReceiver(
         val bluetoothAdapter = blueMan.adapter
         val devices = bluetoothAdapter.bondedDevices
         val connectedDevice = devices.firstOrNull { it.isConnected() }
-        val deviceName = connectedDevice?.name ?: ""
-        val deviceBattery = connectedDevice?.getBatteryLevel() ?: 0
-        sendToPebble(deviceName, deviceBattery)
+        if (connectedDevice != null) {
+            sendToPebble(connectedDevice.name, connectedDevice.getBatteryLevel())
+        } else {
+            sendToPebble("", 0)
+        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -227,12 +230,12 @@ fun setupIndicators(
 
     val blueMan = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     val bluetoothReceiver = BluetoothReceiver(pebble, blueMan)
-    val bluetoothFilter = IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
     try {
-        val intent = ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, bluetoothFilter, ContextCompat.RECEIVER_EXPORTED)
-        if (intent != null) {
-            println(intent)
-        }
+        var intent: Intent?
+        intent = ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED), ContextCompat.RECEIVER_EXPORTED)
+        if (intent != null) println(intent)
+        intent = ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED), ContextCompat.RECEIVER_EXPORTED)
+        if (intent != null) println(intent)
     } catch (e: Exception) {
         println(e)
     }
