@@ -44,10 +44,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.text.SimpleDateFormat
+import java.util.Date
 
 val titleSize = 28.sp
 val textSize = 20.sp
+val smallSize = 16.sp
 val padSize = 8.dp
+
+var buildDateTime = ""
 
 class MainActivity : ComponentActivity() {
     private lateinit var pebble: Pebble
@@ -56,6 +61,9 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val buildDate = Date(BuildConfig.BUILDTIME)
+        buildDateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(buildDate)
 
         // Skip Zen rule setup UI
         val intent = getIntent()
@@ -108,6 +116,7 @@ fun MainPage(
     pebble: Pebble,
     modifier: Modifier = Modifier,
     ) {
+
     Column(
         modifier = modifier,
     ) {
@@ -128,6 +137,10 @@ fun Watchface(
         Section(
             if (pebble.isConnected) "Connected"
             else "Disconnected"
+        )
+        Text(
+            text = "App built at $buildDateTime",
+            fontSize = smallSize
         )
         Text(
             text = watchInfo,
