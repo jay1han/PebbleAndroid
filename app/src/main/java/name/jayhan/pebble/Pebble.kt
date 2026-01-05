@@ -54,7 +54,7 @@ enum class MsgType(val code: Byte) {
     ACTION(9)
 }
 
-class DataReceiver(
+class PebbleReceiver(
     private val pebble: Pebble,
     ): PebbleKit.PebbleDataReceiver(appUuid) {
 
@@ -80,13 +80,14 @@ class Pebble(
     private val applicationContext: Context,
 ) {
     val timezone = Timezone(this)
+    val notifications = Notifications(this)
     val infoFlow = MutableStateFlow("")
     var isConnected = false
 
     init {
-        val dataReceiver = DataReceiver(this)
+        val pebbleReceiver = PebbleReceiver(this)
         val dataFilter = IntentFilter(INTENT_APP_RECEIVE)
-        ContextCompat.registerReceiver(applicationContext, dataReceiver, dataFilter, ContextCompat.RECEIVER_EXPORTED)
+        ContextCompat.registerReceiver(applicationContext, pebbleReceiver, dataFilter, ContextCompat.RECEIVER_EXPORTED)
     }
 
     fun askInfo() {

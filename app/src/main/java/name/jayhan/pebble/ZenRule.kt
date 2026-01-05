@@ -1,0 +1,57 @@
+package name.jayhan.pebble
+
+import android.app.AutomaticZenRule
+import android.app.NotificationManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.Context.NOTIFICATION_SERVICE
+import android.net.Uri
+import android.service.notification.Condition
+import android.service.notification.ZenPolicy
+
+class ZenRule(
+    private val applicationContext: Context
+) {
+    init {
+        val notiMan = applicationContext.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val zenUri = Uri.Builder()
+            .scheme(Condition.SCHEME)
+            .appendPath("jayhan.name")
+            .query("dnd")
+            .build()
+        val zenPolicy = ZenPolicy.Builder()
+            .disallowAllSounds()
+            .allowAlarms(true)
+            .allowCalls(ZenPolicy.PEOPLE_TYPE_STARRED)
+            .showAllVisualEffects()
+            .build()
+        val zenRule = AutomaticZenRule.Builder("pebble", zenUri)
+            .setTriggerDescription("Toggled via Pebble watch")
+            .setType(AutomaticZenRule.TYPE_OTHER)
+            .setManualInvocationAllowed(true)
+            .setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+            .setEnabled(true)
+            .setZenPolicy(zenPolicy)
+            .setConfigurationActivity(ComponentName(applicationContext, MainActivity::class.java))
+            .build()
+
+        var ruleId = ""
+        for (rule in notiMan.automaticZenRules) {
+            if (rule.value.name == "pebble") {
+                ruleId = rule.key
+                break
+            }
+        }
+
+        if (ruleId == "") {
+            try {
+                ruleId = notiMan.addAutomaticZenRule(zenRule)
+            } catch (e: Exception) {
+                println(e)
+            }
+        } else {
+            notiMan.updateAutomaticZenRule(ruleId, zenRule)
+            notiMan.setAutomaticZenRuleState(ruleId, Condition(zenUri, "Disabled", Condition.STATE_FALSE))
+        }
+    }
+}

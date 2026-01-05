@@ -25,10 +25,13 @@ import androidx.core.content.ContextCompat
 import com.getpebble.android.kit.util.PebbleDictionary
 
 class BatteryReceiver(
-    val pebble: Pebble
+    private val pebble: Pebble,
+    private val applicationContext: Context
 ): BroadcastReceiver() {
 
     init {
+        val batteryFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+        ContextCompat.registerReceiver(applicationContext, this, batteryFilter, ContextCompat.RECEIVER_EXPORTED)
         sendToPebble(0, false)
     }
 
@@ -77,10 +80,12 @@ private fun BluetoothDevice.getBatteryLevel(): Int {
 
 class BluetoothReceiver(
     private val pebble: Pebble,
-    blueMan: BluetoothManager
+    private val applicationContext: Context
 ): BroadcastReceiver() {
 
     init {
+        val blueMan = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+
         val bluetoothAdapter = blueMan.adapter
         val devices = bluetoothAdapter.bondedDevices
         val connectedDevice = devices.firstOrNull { it.isConnected() }
@@ -88,6 +93,16 @@ class BluetoothReceiver(
             sendToPebble(connectedDevice.name, connectedDevice.getBatteryLevel())
         } else {
             sendToPebble("", 0)
+        }
+
+        try {
+            var intent: Intent?
+            intent = ContextCompat.registerReceiver(applicationContext, this, IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED), ContextCompat.RECEIVER_EXPORTED)
+            if (intent != null) println(intent)
+            intent = ContextCompat.registerReceiver(applicationContext, this, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED), ContextCompat.RECEIVER_EXPORTED)
+            if (intent != null) println(intent)
+        } catch (e: Exception) {
+            println(e)
         }
     }
 
@@ -225,22 +240,6 @@ fun setupIndicators(
     pebble: Pebble,
     applicationContext: Context
 ) {
-    val batteryReceiver = BatteryReceiver(pebble)
-    val batteryFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-    ContextCompat.registerReceiver(applicationContext, batteryReceiver, batteryFilter, ContextCompat.RECEIVER_EXPORTED)
-
-    val blueMan = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    val bluetoothReceiver = BluetoothReceiver(pebble, blueMan)
-    try {
-        var intent: Intent?
-        intent = ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED), ContextCompat.RECEIVER_EXPORTED)
-        if (intent != null) println(intent)
-        intent = ContextCompat.registerReceiver(applicationContext, bluetoothReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED), ContextCompat.RECEIVER_EXPORTED)
-        if (intent != null) println(intent)
-    } catch (e: Exception) {
-        println(e)
-    }
-
     val connMan = applicationContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
     val networkCallback = WiFiCallback(pebble, connMan)
     val networkRequest = NetworkRequest.Builder()

@@ -75,7 +75,8 @@ class MainActivity : ComponentActivity() {
         pebble = Pebble(applicationContext)
         notifications = Notifications(pebble)
 
-        setupNotifications(applicationContext, notifications)
+        val batteryReceiver = BatteryReceiver(pebble, applicationContext)
+        val bluetoothReceiver = BluetoothReceiver(pebble, applicationContext)
         setupIndicators(pebble, applicationContext)
 
         pebble.askInfo()
