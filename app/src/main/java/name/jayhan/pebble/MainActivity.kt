@@ -4,9 +4,11 @@ package name.jayhan.pebble
 
 import android.Manifest
 import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -78,6 +80,9 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        if (!hasNotificationAccess(applicationContext))
+            openPermissions(applicationContext)
+
         pebble = Pebble(applicationContext)
         notifications = Notifications(pebble, applicationContext)
 
@@ -110,6 +115,22 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun hasNotificationAccess(context: Context): Boolean {
+        return Settings.Secure.getString(
+            context.contentResolver,
+            "enabled_notification_listeners"
+        ).contains(context.applicationContext.packageName)
+    }
+
+    private fun openPermissions(context: Context) {
+        try {
+            val settingsIntent =
+                Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+            this.startActivity(settingsIntent)
+        } catch (e: Exception) {
+            println(e)
+        }
+    }
 }
 
 @Composable
