@@ -80,7 +80,6 @@ class Pebble(
     private val applicationContext: Context,
 ) {
     val timezone = Timezone(this)
-    val notifications = Notifications(this)
     val infoFlow = MutableStateFlow("")
     var isConnected = false
 

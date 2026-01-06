@@ -243,20 +243,25 @@ class PhoneCallback(
     }
 }
 
-@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 fun setupIndicators(
     pebble: Pebble,
     applicationContext: Context
 ) {
     val connMan = applicationContext.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-    val networkCallback = WiFiCallback(pebble, connMan)
-    val networkRequest = NetworkRequest.Builder()
-        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-        .build()
-    try {
-        connMan.registerNetworkCallback(networkRequest, networkCallback)
-    } catch (e: Exception) {
-        println(e)
+    if (ActivityCompat.checkSelfPermission(
+            applicationContext,
+            Manifest.permission.READ_PHONE_STATE
+        ) == PackageManager.PERMISSION_GRANTED
+    ) {
+        val networkCallback = WiFiCallback(pebble, connMan)
+        val networkRequest = NetworkRequest.Builder()
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .build()
+        try {
+            connMan.registerNetworkCallback(networkRequest, networkCallback)
+        } catch (e: Exception) {
+            println(e)
+        }
     }
 
     val teleMan = applicationContext.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
