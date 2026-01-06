@@ -6,27 +6,31 @@ import com.getpebble.android.kit.util.PebbleDictionary
 
 class Notifications(
     private val pebble: Pebble
-): NotificationListenerService() {
+) {
     private var letterFromApp: MutableMap<Char, String> = mutableMapOf()
+
+    inner class NotificationListener(): NotificationListenerService() {
+        override fun onNotificationPosted(sbn: StatusBarNotification?) {
+            super.onNotificationPosted(sbn)
+            sendToPebble(this)
+        }
+
+        override fun onNotificationRemoved(sbn: StatusBarNotification?) {
+            super.onNotificationRemoved(sbn)
+            sendToPebble(this)
+        }
+    }
 
     init {
         register('S', "com.google.android.apps.messaging")
         // TODO: Retrieve stored notifications list
     }
 
-    override fun onNotificationPosted(sbn: StatusBarNotification?) {
-        super.onNotificationPosted(sbn)
-        sendToPebble()
-    }
-
-    override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        super.onNotificationRemoved(sbn)
-        sendToPebble()
-    }
-
-    private fun sendToPebble() {
+    private fun sendToPebble(
+        listener: NotificationListenerService
+    ) {
         val compact: MutableSet<Char> = mutableSetOf()
-        for (notification in this.activeNotifications) {
+        for (notification in listener.activeNotifications) {
             if (!notification.isOngoing
                 && notification.isClearable
             ) {
