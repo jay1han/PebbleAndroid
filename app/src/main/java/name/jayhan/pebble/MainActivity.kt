@@ -3,6 +3,8 @@
 package name.jayhan.pebble
 
 import android.app.NotificationManager
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -66,10 +68,12 @@ class MainActivity : ComponentActivity() {
         buildDateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(buildDate)
 
         // Skip Zen rule setup UI
-        val intent = getIntent()
-        if (intent.action == null || intent.action == NotificationManager.ACTION_AUTOMATIC_ZEN_RULE) {
-            finish()
-            return
+        run {
+            val intent = getIntent()
+            if (intent.action == null || intent.action == NotificationManager.ACTION_AUTOMATIC_ZEN_RULE) {
+                finish()
+                return
+            }
         }
 
         pebble = Pebble(applicationContext)
@@ -78,6 +82,9 @@ class MainActivity : ComponentActivity() {
         val batteryReceiver = BatteryReceiver(pebble, applicationContext)
         val bluetoothReceiver = BluetoothReceiver(pebble, applicationContext)
         setupIndicators(pebble, applicationContext)
+
+        val intent = Intent(applicationContext, PebbleService::class.java)
+        applicationContext.startForegroundService(intent)
 
         pebble.askInfo()
         val colorBlack = Color(0xFFFF8000)
