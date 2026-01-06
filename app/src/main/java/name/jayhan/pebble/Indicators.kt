@@ -10,6 +10,7 @@ import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.Context.TELEPHONY_SERVICE
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -21,6 +22,7 @@ import android.telephony.ServiceState
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresPermission
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.getpebble.android.kit.util.PebbleDictionary
 
@@ -85,7 +87,6 @@ class BluetoothReceiver(
 
     init {
         val blueMan = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-
         val bluetoothAdapter = blueMan.adapter
         val devices = bluetoothAdapter.bondedDevices
         val connectedDevice = devices.firstOrNull { it.isConnected() }
@@ -96,11 +97,18 @@ class BluetoothReceiver(
         }
 
         try {
-            var intent: Intent?
-            intent = ContextCompat.registerReceiver(applicationContext, this, IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED), ContextCompat.RECEIVER_EXPORTED)
-            if (intent != null) println(intent)
-            intent = ContextCompat.registerReceiver(applicationContext, this, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED), ContextCompat.RECEIVER_EXPORTED)
-            if (intent != null) println(intent)
+            ContextCompat.registerReceiver(
+                applicationContext,
+                this,
+                IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED),
+                ContextCompat.RECEIVER_EXPORTED
+            )
+            ContextCompat.registerReceiver(
+                applicationContext,
+                this,
+                IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED),
+                ContextCompat.RECEIVER_EXPORTED
+            )
         } catch (e: Exception) {
             println(e)
         }
@@ -252,15 +260,20 @@ fun setupIndicators(
     }
 
     val teleMan = applicationContext.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
-    val phoneCallback = PhoneCallback(pebble, teleMan)
-    try {
-        teleMan.registerTelephonyCallback(
-            TelephonyManager.INCLUDE_LOCATION_DATA_FINE,
-            applicationContext.mainExecutor,
-            phoneCallback
-        )
-    } catch (e: Exception) {
-        println(e)
+    if (ActivityCompat.checkSelfPermission(
+            applicationContext,
+            Manifest.permission.READ_PHONE_STATE
+        ) == PackageManager.PERMISSION_GRANTED
+    ) {
+        val phoneCallback = PhoneCallback(pebble, teleMan)
+        try {
+            teleMan.registerTelephonyCallback(
+                TelephonyManager.INCLUDE_LOCATION_DATA_FINE,
+                applicationContext.mainExecutor,
+                phoneCallback
+            )
+        } catch (e: Exception) {
+            println(e)
+        }
     }
-
 }
