@@ -2,17 +2,12 @@
 
 package name.jayhan.pebble
 
-import android.Manifest
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.RequiresApi
-import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -63,35 +58,25 @@ class MainActivity : ComponentActivity() {
     private lateinit var pebble: Pebble
     private lateinit var notifications: Notifications
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val buildDate = Date(BuildConfig.BUILDTIME)
         buildDateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(buildDate)
 
-        // Skip Zen rule setup UI
-        run {
-            val intent = getIntent()
-            if (intent.action == null || intent.action == NotificationManager.ACTION_AUTOMATIC_ZEN_RULE) {
-                finish()
-                return
-            }
-        }
+        val context = applicationContext
+        getNotificationAccess(context)
 
-        if (!hasNotificationAccess(applicationContext))
-            openPermissions(applicationContext)
+        pebble = Pebble(context).apply {init()}
+        notifications = Notifications(pebble).apply {init(context)}
 
-        pebble = Pebble(applicationContext)
-        notifications = Notifications(pebble, applicationContext)
+        BatteryReceiver(pebble).apply {init(context)}
+        BluetoothReceiver(pebble).apply {init(context)}
+        WiFiReceiver(pebble).apply {init(context)}
+        PhoneReceiver(pebble).apply {init(context)}
 
-        val batteryReceiver = BatteryReceiver(pebble, applicationContext)
-        val bluetoothReceiver = BluetoothReceiver(pebble, applicationContext)
-        setupIndicators(pebble, applicationContext)
-
-        val intent = Intent(applicationContext, PebbleService::class.java)
-        applicationContext.startForegroundService(intent)
+        val intent = Intent(context, PebbleService::class.java)
+        context.startForegroundService(intent)
 
         pebble.askInfo()
         val colorBlack = Color(0xFFFF8000)
@@ -115,20 +100,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun hasNotificationAccess(context: Context): Boolean {
-        return Settings.Secure.getString(
-            context.contentResolver,
-            "enabled_notification_listeners"
-        ).contains(context.applicationContext.packageName)
-    }
-
-    private fun openPermissions(context: Context) {
-        try {
+    private fun getNotificationAccess(context: Context) {
+        if (!Settings.Secure.getString(
+                context.contentResolver,
+                "enabled_notification_listeners"
+            ).contains(context.packageName)) {
             val settingsIntent =
                 Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
             this.startActivity(settingsIntent)
-        } catch (e: Exception) {
-            println(e)
         }
     }
 }

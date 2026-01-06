@@ -1,9 +1,9 @@
 package name.jayhan.pebble
 
 import android.content.Context
+import android.content.Context.RECEIVER_EXPORTED
 import android.content.IntentFilter
-import androidx.core.content.ContextCompat
-import com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE
+import com.getpebble.android.kit.Constants
 import com.getpebble.android.kit.PebbleKit
 import com.getpebble.android.kit.util.PebbleDictionary
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,6 +54,11 @@ enum class MsgType(val code: Byte) {
     ACTION(9)
 }
 
+enum class ActionType(val code: Byte) {
+    FIND_PHONE(1),
+    DND_TOGGLE(2)
+}
+
 class PebbleReceiver(
     private val pebble: Pebble,
     ): PebbleKit.PebbleDataReceiver(appUuid) {
@@ -71,22 +76,31 @@ class PebbleReceiver(
                     val tzMinutes = data.getInteger(DictKey.TZ_MINS.code).toInt()
                     pebble.timezone.fromMinutes(tzMinutes)
                 }
+
+                MsgType.ACTION.code -> {
+                    // TODO: perform action
+                    val action = data.getInteger(DictKey.ACTION.code).toInt()
+                    when (action.toByte()) {
+                        ActionType.FIND_PHONE.code -> {}
+                        ActionType.DND_TOGGLE.code -> {}
+                    }
+                }
             }
         }
     }
 }
 
 class Pebble(
-    private val applicationContext: Context,
+    private val context: Context,
 ) {
     val timezone = Timezone(this)
     val infoFlow = MutableStateFlow("")
     var isConnected = false
 
-    init {
+    fun init() {
         val pebbleReceiver = PebbleReceiver(this)
-        val dataFilter = IntentFilter(INTENT_APP_RECEIVE)
-        ContextCompat.registerReceiver(applicationContext, pebbleReceiver, dataFilter, ContextCompat.RECEIVER_EXPORTED)
+        val dataFilter = IntentFilter(Constants.INTENT_APP_RECEIVE)
+        context.registerReceiver(pebbleReceiver, dataFilter, RECEIVER_EXPORTED)
     }
 
     fun askInfo() {
@@ -96,7 +110,7 @@ class Pebble(
     }
 
     fun send(pebbleDict: PebbleDictionary) {
-        PebbleKit.sendDataToPebble(applicationContext, appUuid, pebbleDict)
+        PebbleKit.sendDataToPebble(context, appUuid, pebbleDict)
     }
 
     fun setWatchInfo(
@@ -123,15 +137,15 @@ class Timezone(
 
     fun fromString(text: String): String {
         if (text.isEmpty()) return get()
-        val negative = text[0] == '-'
-        val split = (if (negative) text.substring(1) else text).split('.')
+        val negative = (text[0] == '-')
+        val split = (if (negative) text.substring(1) else text)
+            .split('.')
 
-        if (split.size >= 1) {
-            if (split[0].isEmpty()) minutes = 0
-            else minutes = split[0].toInt() * 60
+        if (split.isNotEmpty()) {
+            minutes = if (split[0].isNotEmpty()) (split[0].toInt() * 60) else 0
         }
         if (split.size >= 2) {
-            if (!split[1].isEmpty()) {
+            if (split[1].isNotEmpty()) {
                 val decimal = split[1].toFloat() / 100f
                 minutes += (decimal * 60).toInt()
             }

@@ -1,16 +1,12 @@
 package name.jayhan.pebble
 
-import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
-import android.provider.Settings
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import androidx.core.content.ContextCompat.registerReceiver
-import androidx.core.content.ContextCompat.startActivity
 import com.getpebble.android.kit.util.PebbleDictionary
 
 class NotificationListener:
@@ -44,19 +40,20 @@ class NotificationListener:
 
 class Notifications(
     private val pebble: Pebble,
-    applicationContext: Context
 ): BroadcastReceiver() {
     private var letterFromApp: MutableMap<Char, String> = mutableMapOf()
 
     init {
+        register('S', "com.google.android.apps.messaging")
+        // TODO: Retrieve stored notifications list
+    }
+
+    fun init(context: Context) {
         val filter = IntentFilter()
             .apply {
                 addAction("name.jayhan.pebble.STATUS_BAR_NOTIFICATIONS")
             }
-        registerReceiver(applicationContext, this, filter, RECEIVER_EXPORTED)
-
-        register('S', "com.google.android.apps.messaging")
-        // TODO: Retrieve stored notifications list
+        context.registerReceiver(this, filter, RECEIVER_EXPORTED)
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {

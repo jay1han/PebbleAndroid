@@ -16,8 +16,8 @@ android {
         applicationId = "name.jayhan.pebble"
         minSdk = 34
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
         buildConfigField("Long", "BUILDTIME", System.currentTimeMillis().toString() + "L")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

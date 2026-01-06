@@ -1,19 +1,28 @@
 package name.jayhan.pebble
 
+import android.app.Activity
 import android.app.AutomaticZenRule
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.net.Uri
+import android.os.Bundle
 import android.service.notification.Condition
 import android.service.notification.ZenPolicy
 
+object ZenRuleActivity: Activity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        finish()
+    }
+}
+
 class ZenRule(
-    private val applicationContext: Context
+    context: Context
 ) {
     init {
-        val notiMan = applicationContext.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val notiMan = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         val zenUri = Uri.Builder()
             .scheme(Condition.SCHEME)
             .appendPath("jayhan.name")
@@ -32,7 +41,7 @@ class ZenRule(
             .setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
             .setEnabled(true)
             .setZenPolicy(zenPolicy)
-            .setConfigurationActivity(ComponentName(applicationContext, MainActivity::class.java))
+            .setConfigurationActivity(ComponentName(context, ZenRuleActivity::class.java))
             .build()
 
         var ruleId = ""

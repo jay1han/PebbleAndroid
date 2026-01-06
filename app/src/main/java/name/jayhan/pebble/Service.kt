@@ -12,25 +12,30 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+import android.net.ConnectivityManager
 import android.os.IBinder
+import android.telephony.TelephonyManager
 import androidx.core.app.ServiceCompat
-import androidx.core.content.ContextCompat
 
 class PebbleService(): Service() {
+    lateinit var context: Context
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        context = applicationContext
+
         val filter = IntentFilter()
             .apply {
                 addAction("name.jayhan.pebble.REVIVE_BACKGROUND")
             }
         val delReceiver = DelReceiver()
-        ContextCompat.registerReceiver(applicationContext, delReceiver, filter,RECEIVER_EXPORTED)
+        context.registerReceiver(delReceiver, filter,RECEIVER_EXPORTED)
 
         try {
-            val notiMan = applicationContext.getSystemService(NOTIFICATION_SERVICE)
+            val notiMan = context.getSystemService(NOTIFICATION_SERVICE)
                     as NotificationManager
             val channel = NotificationChannel(
                 "PebbleService",
@@ -54,6 +59,12 @@ class PebbleService(): Service() {
             println(e)
         }
 
+        val connMan = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        WiFiCallback(context, connMan)
+
+        val teleMan = context.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+        PhoneCallback(context, teleMan)
+
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -63,13 +74,13 @@ class PebbleService(): Service() {
                 putExtra("count", count + 1)
             }
         val pendingIntent = getBroadcast(
-            applicationContext,
+            context,
             1,
             delIntent,
             PendingIntent.FLAG_IMMUTABLE
         )
         val notification = Notification.Builder(
-            applicationContext,
+            context,
             "PebbleService"
         ).apply {
 //            setDeleteIntent(pendingIntent)
