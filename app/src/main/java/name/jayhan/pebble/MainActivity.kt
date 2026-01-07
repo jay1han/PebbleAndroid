@@ -70,10 +70,10 @@ class MainActivity : ComponentActivity() {
         pebble = Pebble(context).apply {init()}
         notifications = Notifications(pebble).apply {init(context)}
 
-        BatteryReceiver(pebble).apply {init(context)}
-        BluetoothReceiver(pebble).apply {init(context)}
-        WiFiReceiver(pebble).apply {init(context)}
-        PhoneReceiver(pebble).apply {init(context)}
+        BatteryReceiver(pebble).init(context)
+        BluetoothReceiver(pebble).init(context)
+        WiFiReceiver(pebble).init(context)
+        PhoneReceiver(pebble).init(context)
 
         val intent = Intent(context, PebbleService::class.java)
         context.startForegroundService(intent)

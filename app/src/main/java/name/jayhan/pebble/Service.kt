@@ -18,6 +18,8 @@ import android.telephony.TelephonyManager
 
 class PebbleService(): Service() {
     private lateinit var context: Context
+    private lateinit var wifiCallback: WiFiCallback
+    private lateinit var phoneCallback: PhoneCallback
     private val delReceiver = DelReceiver()
     private val stopReceiver = StopReceiver()
 
@@ -52,12 +54,19 @@ class PebbleService(): Service() {
         }
 
         val connMan = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        WiFiCallback(context, connMan)
+        wifiCallback = WiFiCallback(context, connMan)
 
         val teleMan = context.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
-        PhoneCallback(context, teleMan)
+        phoneCallback = PhoneCallback(context, teleMan)
+
+        reInit()
 
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun reInit() {
+        wifiCallback.init()
+        phoneCallback.init()
     }
 
     private fun restartForeground() {
@@ -74,14 +83,15 @@ class PebbleService(): Service() {
         ).apply {
             setDeleteIntent(pendingIntent)
             setSmallIcon(R.drawable.ic_launcher_foreground)
-            setContentTitle("Pebble Service")
-            setContentText("Keep the Pebble service active")
+            setContentTitle("")
+            setContentText("")
         }.build()
         this.startForeground(
             1,
             notification,
             FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         )
+        reInit()
     }
 
     inner class DelReceiver: BroadcastReceiver() {
