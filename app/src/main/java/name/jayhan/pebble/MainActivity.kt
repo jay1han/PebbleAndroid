@@ -10,7 +10,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,7 +28,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -146,16 +144,14 @@ class MainActivity : ComponentActivity() {
                 containerColor = colorBack,
             ),
             actions = {
-                if (isConnected) {
-                    IconButton(
-                        onClick = { stopFunction() }
-                    ) {
-                        Icon(
-                            painterResource(R.drawable.outline_close_24),
-                            contentDescription = null,
-                            tint = colorText
-                        )
-                    }
+                IconButton(
+                    onClick = { stopFunction() }
+                ) {
+                    Icon(
+                        painterResource(R.drawable.outline_close_24),
+                        contentDescription = null,
+                        tint = colorText
+                    )
                 }
             }
         )
@@ -396,14 +392,6 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun NotificationLinePreview() {
-        Column {
-            NotificationLine('S', "com.google.android.messaging") {}
-            NotificationLine('G', "com.google.android.gm") {}
-        }
-    }
-
-    @Composable
     private fun ListNotifications(
         onDismiss: () -> Unit,
         onSelect: (String) -> Unit
@@ -534,19 +522,13 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun EditNotificationPreview() {
+    fun EditNotificationPre() {
         EditNotificationItem('S', "com.google.android.messaging") {}
     }
 }
 
 @Preview
 @Composable
-fun NotificationLinePreview() {
-    MainActivity().NotificationLinePreview()
-}
-
-@Preview
-@Composable
 fun EditNotificationPreview() {
-    MainActivity().EditNotificationPreview()
+    MainActivity().EditNotificationPre()
 }
