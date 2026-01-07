@@ -9,10 +9,13 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,11 +23,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -41,8 +49,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.toUpperCase
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -50,6 +61,9 @@ val titleSize = 28.sp
 val textSize = 20.sp
 val smallSize = 16.sp
 val padSize = 8.dp
+
+val colorBack = Color(0xFFFF8000)
+val colorText = Color(0xFFFFFFFF)
 
 var buildDateTime = ""
 
@@ -68,7 +82,7 @@ class MainActivity : ComponentActivity() {
         getNotificationAccess(context)
 
         pebble = Pebble(context).apply {init()}
-        notifications = Notifications(pebble).apply {init(context)}
+        notifications = Notifications(pebble, context).apply {init()}
 
         BatteryReceiver(pebble).init(context)
         BluetoothReceiver(pebble).init(context)
@@ -89,6 +103,7 @@ class MainActivity : ComponentActivity() {
                 innerPadding ->
                 MainPage(
                     pebble = pebble,
+                    notifications = notifications,
                     Modifier.padding(innerPadding),
                 )
             }
@@ -113,173 +128,303 @@ class MainActivity : ComponentActivity() {
             this.startActivity(settingsIntent)
         }
     }
-}
 
-@Composable
-fun TopBar(
-    pebble: Pebble,
-    stopFunction: () -> Unit
-) {
-    val isConnected: Boolean by pebble.isConnected.collectAsState(false)
-    val colorBack = Color(0xFFFF8000)
-    val colorText = Color(0xFFFFFFFF)
+    @Composable
+    private fun TopBar(
+        pebble: Pebble,
+        stopFunction: () -> Unit
+    ) {
+        val isConnected: Boolean by pebble.isConnected.collectAsState(false)
 
-    TopAppBar(
-        title = {
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Pebble",
+                    color = colorText,
+                    fontSize = titleSize
+                )
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = colorBack,
+            ),
+            actions = {
+                if (isConnected) {
+                    IconButton(
+                        onClick = { stopFunction() }
+                    ) {
+                        Icon(
+                            painterResource(R.drawable.baseline_close_24),
+                            contentDescription = null,
+                            tint = colorText
+                        )
+                    }
+                }
+            }
+        )
+    }
+
+    @Composable
+    private fun MainPage(
+        pebble: Pebble,
+        notifications: Notifications,
+        modifier: Modifier = Modifier,
+    ) {
+
+        Column(
+            modifier = modifier,
+        ) {
+            Watchface(pebble)
+            AwayTimezone(pebble.timezone)
+            Box(Modifier.height(padSize))
+            NotificationsList(notifications)
+        }
+    }
+
+    @Composable
+    private fun Section(text: String = "") {
+        Text(
+            text = text,
+            fontSize = titleSize,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+
+    @Composable
+    private fun Watchface(
+        pebble: Pebble
+    ) {
+        val watchInfo: String by pebble.infoFlow.collectAsState("")
+        val isConnected: Boolean by pebble.isConnected.collectAsState(false)
+
+        Column {
+            Section(
+                if (isConnected) "Connected"
+                else "Disconnected"
+            )
             Text(
-                text = "Pebble",
-                color = colorText,
+                text = "App built at $buildDateTime",
+                fontSize = smallSize
+            )
+            if (isConnected) {
+                Text(
+                    text = watchInfo,
+                    fontSize = textSize,
+                )
+            } else {
+                Button(
+                    onClick = { pebble.askInfo() },
+                ) {
+                    Text(
+                        text = "Reconnect",
+                        fontSize = textSize
+                    )
+                }
+            }
+            Image(
+                painter = painterResource(R.drawable.help),
+                modifier = Modifier
+                    .height(200.dp)
+                    .padding(padSize)
+                    .fillMaxWidth(),
+                contentScale = ContentScale.Fit,
+                contentDescription = "Help",
+            )
+        }
+    }
+
+    @Composable
+    private fun AwayTimezone(
+        timezone: Timezone,
+    ) {
+        val tzWatch: String by timezone.tzFlow.collectAsState("+0.0")
+        var tz by remember { mutableStateOf("+0.0") }
+        var editing by remember { mutableStateOf(false) }
+
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Timezone",
                 fontSize = titleSize
             )
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = colorBack,
-        ),
-        actions = {
-            if (isConnected) {
-                IconButton(
-                    onClick = { stopFunction() }
+            if (editing) {
+                OutlinedTextField(
+                    value = tz,
+                    onValueChange = { tz = it },
+                    modifier = Modifier.width(100.dp),
+                    textStyle = TextStyle(fontSize = textSize),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                )
+                Button(
+                    onClick = {
+                        editing = false
+                        tz = timezone.fromString(tz)
+                    },
+                    modifier = Modifier.padding(padSize)
                 ) {
-                    Icon(
-                        painterResource(R.drawable.baseline_close_24),
-                        contentDescription = null,
-                        tint = colorText
+                    Text(
+                        text = "Apply",
+                        fontSize = textSize,
+                    )
+                }
+            } else {
+                tz = tzWatch
+                Text(
+                    text = tzWatch,
+                    modifier = Modifier.width(100.dp),
+                    fontSize = textSize,
+                    textAlign = TextAlign.Center
+                )
+                Button(
+                    onClick = {editing = true},
+                    modifier = Modifier.padding(padSize)
+                ) {
+                    Text(
+                        text = "Edit",
+                        fontSize = textSize,
                     )
                 }
             }
         }
-    )
-}
-
-@Composable
-fun MainPage(
-    pebble: Pebble,
-    modifier: Modifier = Modifier,
-    ) {
-
-    Column(
-        modifier = modifier,
-    ) {
-        Watchface(pebble)
-        AwayTimezone(pebble.timezone)
-        Box(Modifier.height(padSize))
-        NotificationsList()
     }
-}
 
-@Composable
-fun Section(text: String = "") {
-    Text(
-        text = text,
-        fontSize = titleSize,
-        modifier = Modifier.fillMaxWidth()
-    )
-}
+    @Composable
+    private fun NotificationsList(
+        notifications: Notifications
+    ) {
+        val map: CharToString by notifications.mapFlow.collectAsState(mutableMapOf<Char, String>())
 
-@Composable
-fun Watchface(
-    pebble: Pebble
-) {
-    val watchInfo: String by pebble.infoFlow.collectAsState("")
-    val isConnected: Boolean by pebble.isConnected.collectAsState(false)
+        Section("Notifications")
+        for (item in map) {
+            NotificationLine(item.key, item.value)
+        }
+        if (map.size < 9) NotificationAdd()
+    }
 
-    Column {
-        Section(
-            if (isConnected) "Connected"
-            else "Disconnected"
-        )
-        Text(
-            text = "App built at $buildDateTime",
-            fontSize = smallSize
-        )
-        if (isConnected) {
-            Text(
-                text = watchInfo,
-                fontSize = textSize,
-            )
-        } else {
+    @Composable
+    private fun NotificationAdd() {
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Button(
-                onClick = { pebble.askInfo() },
+                onClick = { resetMap() },
             ) {
                 Text(
-                    text = "Reconnect",
+                    text = "Reset",
+                    fontSize = textSize
+                )
+            }
+            Button(
+                onClick = { registerMap('?', "") },
+            ) {
+                Text(
+                    text = "Add",
                     fontSize = textSize
                 )
             }
         }
-        Image(
-            painter = painterResource(R.drawable.help),
-            modifier = Modifier
-                .height(200.dp)
-                .padding(padSize)
-                .fillMaxWidth(),
-            contentScale = ContentScale.Fit,
-            contentDescription = "Help",
-        )
     }
-}
 
-@Composable
-fun AwayTimezone(
-    timezone: Timezone,
-) {
-    val tzWatch: String by timezone.tzFlow.collectAsState("+0.0")
-    var tz by remember { mutableStateOf("+0.0") }
-    var editing by remember { mutableStateOf(false) }
-
-    Row (
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+    @Composable
+    private fun NotificationLine(
+        letter: Char,
+        packageName: String
     ) {
-        Text(
-            text = "Timezone",
-            fontSize = titleSize
-        )
-        if (editing) {
-            OutlinedTextField(
-                value = tz,
-                onValueChange = { tz = it },
-                modifier = Modifier.width(100.dp),
-                textStyle = TextStyle(fontSize = textSize),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-            )
-            Button(
-                onClick = {
-                    editing = false
-                    tz = timezone.fromString(tz)
-                },
-                modifier = Modifier.padding(padSize)
-            ) {
-                Text(
-                    text = "Apply",
-                    fontSize = textSize,
+        var doEdit by remember { mutableStateOf(false) }
+        var key by remember { mutableStateOf(letter) }
+        var value by remember { mutableStateOf(packageName) }
+
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(4.dp)
+        ){
+            if (doEdit) {
+                OutlinedTextField(
+                    value = key.toString(),
+                    onValueChange = { key = if (it.isNotEmpty()) it.uppercase().last() else ' ' },
+                    singleLine = true,
+                    textStyle = TextStyle(
+                        fontSize = titleSize,
+                        color = colorText,
+                    ),
+                    modifier = Modifier.fillMaxWidth(.15f).background(colorBack).padding(horizontal = 0.dp)
                 )
-            }
-        } else {
-            tz = tzWatch
-            Text(
-                text = tzWatch,
-                modifier = Modifier.width(100.dp),
-                fontSize = textSize,
-                textAlign = TextAlign.Center
-            )
-            Button(
-                onClick = {editing = true},
-                modifier = Modifier.padding(padSize)
-            ) {
-                Text(
-                    text = "Edit",
-                    fontSize = textSize,
+                OutlinedTextField(
+                    value = value,
+                    onValueChange = { value = it },
+                    singleLine = true,
+                    textStyle = TextStyle(
+                        fontSize = textSize,
+                    ),
+                    modifier = Modifier.fillMaxWidth(.85f).padding(horizontal = 8.dp)
                 )
+                FilledIconButton(
+                    onClick = {
+                        if (key != ' ') registerMap(key, value)
+                        doEdit = false
+                    },
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.outline_check_24,),
+                        contentDescription = "Edit",
+                    )
+                }
+            } else {
+                Text(
+                    text = letter.toString(),
+                    fontSize = titleSize,
+                    color = colorText,
+                    modifier = Modifier.fillMaxWidth(.15f).background(colorBack).padding(horizontal = 16.dp),
+                    textAlign = TextAlign.Center,
+                )
+                Text(
+                    text = packageName,
+                    fontSize = textSize,
+                    modifier = Modifier.fillMaxWidth(.85f).padding(horizontal = 8.dp)
+                )
+                FilledIconButton(
+                    onClick = { doEdit = true },
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.outline_edit_24,),
+                        contentDescription = "Edit",
+                    )
+                }
             }
+        }
+    }
+
+    private fun registerMap(
+        key: Char,
+        value: String
+    ) {
+        val intent = Intent("name.jayhan.pebble.REGISTER_MAP").apply {
+            putExtra("key", key.toString())
+            putExtra("value", value)
+        }
+        context.sendBroadcast(intent)
+    }
+
+    private fun resetMap() {
+        val intent = Intent("name.jayhan.pebble.RESET_MAP")
+        context.sendBroadcast(intent)
+    }
+
+    @Composable
+    fun NotificationLinePreview() {
+        Column {
+            NotificationLine('S', "com.google.android.messaging")
+            NotificationLine('G', "com.google.android.gm")
+            NotificationAdd()
         }
     }
 }
 
+@Preview
 @Composable
-fun NotificationsList() {
-    Section("Notifications")
-
-    // TODO: List notifications and edit
+fun NotificationLinePreview() {
+    MainActivity().NotificationLinePreview()
 }
