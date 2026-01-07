@@ -46,13 +46,7 @@ class PebbleService(): Service() {
             }
             notiMan.createNotificationChannel(channel)
 
-            val notification = buildNotification(0)
-
-            this.startForeground(
-                1,
-                notification,
-                FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
-            )
+            restartForeground()
         } catch (e: Exception) {
             println(e)
         }
@@ -66,11 +60,8 @@ class PebbleService(): Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    fun buildNotification(count: Int): Notification {
+    private fun restartForeground() {
         val delIntent = Intent("name.jayhan.pebble.REVIVE_FOREGROUND")
-            .apply {
-                putExtra("count", count + 1)
-            }
         val pendingIntent = getBroadcast(
             context,
             1,
@@ -81,21 +72,21 @@ class PebbleService(): Service() {
             context,
             "PebbleService"
         ).apply {
-//            setDeleteIntent(pendingIntent)
+            setDeleteIntent(pendingIntent)
             setSmallIcon(R.drawable.ic_launcher_foreground)
             setContentTitle("Pebble Service")
             setContentText("Keep the Pebble service active")
         }.build()
-        return notification
+        this.startForeground(
+            1,
+            notification,
+            FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+        )
     }
 
     inner class DelReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val count = intent.getIntExtra("count", 1)
-            val notification = buildNotification(count)
-            val notiMan = context.getSystemService(NOTIFICATION_SERVICE)
-                    as NotificationManager
-            notiMan.notify(1, notification)
+            restartForeground()
         }
     }
 

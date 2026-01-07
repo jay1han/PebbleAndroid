@@ -68,8 +68,14 @@ class Notifications(
     private var letterFromApp: MutableMap<Char, String> = mutableMapOf()
 
     init {
-        register('S', "com.google.android.apps.messaging")
         // TODO: Retrieve stored notifications list
+        register('M', "com.google.android.apps.messaging")
+        register('P', "com.google.android.dialer")
+        register('G', "com.google.android.gm")
+        register('W', "com.whatsapp")
+        register('K', "com.kakao.talk")
+        register('T', "com.microsoft.teams")
+        register('O', "com.microsoft.office.outlook")
     }
 
     fun init(context: Context) {
