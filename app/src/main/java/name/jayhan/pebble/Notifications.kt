@@ -8,7 +8,6 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.getpebble.android.kit.util.PebbleDictionary
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 class NotificationListener:
     NotificationListenerService() {
@@ -78,8 +77,7 @@ class Notifications(
         Context.MODE_PRIVATE
     )
 
-    private val _mapFlow = MutableStateFlow<CharToString>(emptyMap())
-    val mapFlow = _mapFlow.asStateFlow()
+    val mapFlow = MutableStateFlow<CharToString>(emptyMap())
 
     private fun readMap() {
         val newMap = emptyMap()
@@ -90,7 +88,7 @@ class Notifications(
                 newMap[letter] = packageName
             }
         }
-        _mapFlow.value = newMap
+        mapFlow.value = newMap
     }
 
     private fun writeMap(map: CharToString) {
@@ -149,24 +147,26 @@ class Notifications(
     private fun resetMap() {
         val newMap = emptyMap()
         writeMap(newMap)
-        _mapFlow.value = newMap
+        mapFlow.value = newMap
     }
 
     private fun register(letter: Char, packageName: String) {
-        val newMap = _mapFlow.value
-        val key = find(packageName)
-        if (key != ' ') {
-            newMap.remove(key)
+        val newMap = emptyMap()
+
+        for (item in mapFlow.value) {
+            if (item.key != letter && item.value != packageName) {
+                newMap[item.key] = item.value
+            }
         }
-        if (letter != ' ') {
+        if (letter != ' ')
             newMap[letter] = packageName
-        }
+
         writeMap(newMap)
-        _mapFlow.value = newMap
+        mapFlow.value = newMap
     }
 
     private fun find(packageName: String): Char {
-        for (item in _mapFlow.value) {
+        for (item in mapFlow.value) {
             if (item.value == packageName) return item.key
         }
         return ' '

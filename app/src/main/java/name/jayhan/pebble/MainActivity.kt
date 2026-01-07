@@ -10,29 +10,24 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -49,11 +44,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
+import androidx.compose.ui.window.Dialog
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -153,7 +147,7 @@ class MainActivity : ComponentActivity() {
                         onClick = { stopFunction() }
                     ) {
                         Icon(
-                            painterResource(R.drawable.baseline_close_24),
+                            painterResource(R.drawable.outline_close_24),
                             contentDescription = null,
                             tint = colorText
                         )
@@ -294,36 +288,55 @@ class MainActivity : ComponentActivity() {
     private fun NotificationsList(
         notifications: Notifications
     ) {
-        val map: CharToString by notifications.mapFlow.collectAsState(mutableMapOf<Char, String>())
+        val map by notifications.mapFlow.collectAsState(emptyMap())
+        var showEditDialog by remember { mutableStateOf(false) }
+        var editLetter by remember { mutableStateOf(' ') }
+        var editPackageName by remember { mutableStateOf("") }
+
+        if (showEditDialog) {
+            EditNotificationItem(
+                editLetter,
+                editPackageName,
+                onClose = { showEditDialog = false }
+            )
+        }
 
         Section("Notifications")
-        for (item in map) {
-            NotificationLine(item.key, item.value)
+        for (item in map.toSortedMap()) {
+            NotificationLine(
+                item.key,
+                item.value,
+                onEdit = {
+                    editLetter = item.key
+                    editPackageName = item.value
+                    showEditDialog = true
+                })
         }
-        if (map.size < 9) NotificationAdd()
-    }
-
-    @Composable
-    private fun NotificationAdd() {
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Button(
-                onClick = { resetMap() },
+        if (map.size < 9) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "Reset",
-                    fontSize = textSize
-                )
-            }
-            Button(
-                onClick = { registerMap('?', "") },
-            ) {
-                Text(
-                    text = "Add",
-                    fontSize = textSize
-                )
+                Button(
+                    onClick = { resetMap() },
+                ) {
+                    Text(
+                        text = "Reset",
+                        fontSize = textSize
+                    )
+                }
+                Button(
+                    onClick = {
+                        editLetter = ' '
+                        editPackageName = ""
+                        showEditDialog = true
+                    },
+                ) {
+                    Text(
+                        text = "Add",
+                        fontSize = textSize
+                    )
+                }
             }
         }
     }
@@ -331,69 +344,34 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun NotificationLine(
         letter: Char,
-        packageName: String
+        packageName: String,
+        onEdit: () -> Unit
     ) {
-        var doEdit by remember { mutableStateOf(false) }
-        var key by remember { mutableStateOf(letter) }
-        var value by remember { mutableStateOf(packageName) }
-
         Row (
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(4.dp)
-        ){
-            if (doEdit) {
-                OutlinedTextField(
-                    value = key.toString(),
-                    onValueChange = { key = if (it.isNotEmpty()) it.uppercase().last() else ' ' },
-                    singleLine = true,
-                    textStyle = TextStyle(
-                        fontSize = titleSize,
-                        color = colorText,
-                    ),
-                    modifier = Modifier.fillMaxWidth(.15f).background(colorBack).padding(horizontal = 0.dp)
+        ) {
+            Text(
+                text = letter.toString(),
+                fontSize = titleSize,
+                color = colorText,
+                modifier = Modifier.fillMaxWidth(.15f).background(colorBack).padding(horizontal = 16.dp),
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = packageName,
+                fontSize = textSize,
+                modifier = Modifier.fillMaxWidth(.85f).padding(horizontal = 8.dp)
+            )
+            FilledIconButton(
+                onClick = onEdit
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.outline_edit_24),
+                    contentDescription = "Edit",
                 )
-                OutlinedTextField(
-                    value = value,
-                    onValueChange = { value = it },
-                    singleLine = true,
-                    textStyle = TextStyle(
-                        fontSize = textSize,
-                    ),
-                    modifier = Modifier.fillMaxWidth(.85f).padding(horizontal = 8.dp)
-                )
-                FilledIconButton(
-                    onClick = {
-                        if (key != ' ') registerMap(key, value)
-                        doEdit = false
-                    },
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.outline_check_24,),
-                        contentDescription = "Edit",
-                    )
-                }
-            } else {
-                Text(
-                    text = letter.toString(),
-                    fontSize = titleSize,
-                    color = colorText,
-                    modifier = Modifier.fillMaxWidth(.15f).background(colorBack).padding(horizontal = 16.dp),
-                    textAlign = TextAlign.Center,
-                )
-                Text(
-                    text = packageName,
-                    fontSize = textSize,
-                    modifier = Modifier.fillMaxWidth(.85f).padding(horizontal = 8.dp)
-                )
-                FilledIconButton(
-                    onClick = { doEdit = true },
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.outline_edit_24,),
-                        contentDescription = "Edit",
-                    )
-                }
             }
+
         }
     }
 
@@ -416,10 +394,84 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun NotificationLinePreview() {
         Column {
-            NotificationLine('S', "com.google.android.messaging")
-            NotificationLine('G', "com.google.android.gm")
-            NotificationAdd()
+            NotificationLine('S', "com.google.android.messaging") {}
+            NotificationLine('G', "com.google.android.gm") {}
         }
+    }
+
+    @Composable
+    private fun EditNotificationItem(
+        letter: Char,
+        packageName: String,
+        onClose: () -> Unit
+    ) {
+        var key by remember { mutableStateOf(letter) }
+        var value by remember { mutableStateOf(packageName) }
+
+        Dialog(
+            onDismissRequest = onClose,
+        ) {
+            Card (
+                modifier = Modifier.fillMaxWidth().padding(20.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = key.toString(),
+                        onValueChange = { key = if (it.isNotEmpty()) it.uppercase().last() else ' ' },
+                        singleLine = true,
+                        textStyle = TextStyle(
+                            fontSize = titleSize,
+                            color = colorText,
+                        ),
+                        modifier = Modifier.fillMaxWidth(.2f).background(colorBack).padding(horizontal = 0.dp)
+                    )
+                    OutlinedTextField(
+                        value = value,
+                        onValueChange = { value = it },
+                        singleLine = true,
+                        textStyle = TextStyle(
+                            fontSize = textSize,
+                        ),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                    )
+                }
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = {
+                            if (key != ' ' && value.isNotEmpty())
+                                registerMap(key, value)
+                            onClose()
+                        },
+                    ) {
+                        Text(
+                            text = "Save",
+                            fontSize = textSize
+                        )
+                    }
+                    Button(
+                        onClick = {
+                            registerMap(' ', value)
+                            onClose()
+                        }
+                    ) {
+                        Text(
+                            text = "Remove",
+                            fontSize = textSize
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun EditNotificationPreview() {
+        EditNotificationItem('S', "com.google.android.messaging") {}
     }
 }
 
@@ -427,4 +479,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun NotificationLinePreview() {
     MainActivity().NotificationLinePreview()
+}
+
+@Preview
+@Composable
+fun EditNotificationPreview() {
+    MainActivity().EditNotificationPreview()
 }
