@@ -79,37 +79,11 @@ class MainActivity : ComponentActivity() {
         context.startForegroundService(intent)
 
         pebble.askInfo()
-        val colorBack = Color(0xFFFF8000)
-        val colorText = Color(0xFFFFFFFF)
 
         setContent {
             Scaffold(
                 topBar = {
-                    TopAppBar(
-                        title = {
-                            Text(
-                                text = "Pebble",
-                                color = colorText,
-                                fontSize = titleSize
-                            )
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = colorBack,
-                        ),
-                        actions = {
-                            IconButton(
-                                onClick = {
-                                    stopServices()
-                                }
-                            ) {
-                                Icon(
-                                    painterResource(R.drawable.baseline_close_24),
-                                    contentDescription = null,
-                                    tint = colorText
-                                )
-                            }
-                        }
-                    )
+                    TopBar(pebble) { stopServices() }
                 }
             ) {
                 innerPadding ->
@@ -139,6 +113,42 @@ class MainActivity : ComponentActivity() {
             this.startActivity(settingsIntent)
         }
     }
+}
+
+@Composable
+fun TopBar(
+    pebble: Pebble,
+    stopFunction: () -> Unit
+) {
+    val isConnected: Boolean by pebble.isConnected.collectAsState(false)
+    val colorBack = Color(0xFFFF8000)
+    val colorText = Color(0xFFFFFFFF)
+
+    TopAppBar(
+        title = {
+            Text(
+                text = "Pebble",
+                color = colorText,
+                fontSize = titleSize
+            )
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = colorBack,
+        ),
+        actions = {
+            if (isConnected) {
+                IconButton(
+                    onClick = { stopFunction() }
+                ) {
+                    Icon(
+                        painterResource(R.drawable.baseline_close_24),
+                        contentDescription = null,
+                        tint = colorText
+                    )
+                }
+            }
+        }
+    )
 }
 
 @Composable
