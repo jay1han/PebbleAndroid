@@ -95,7 +95,7 @@ class Pebble(
 ) {
     val timezone = Timezone(this)
     val infoFlow = MutableStateFlow("")
-    var isConnected = false
+    val isConnected = MutableStateFlow(false)
 
     fun init() {
         val pebbleReceiver = PebbleReceiver(this)
@@ -117,7 +117,7 @@ class Pebble(
         watchModel: Int,
         watchFwVersion: Int
     ) {
-        isConnected = true
+        isConnected.value = true
         val versionString = "%d.%d.%d"
             .format(
                 (watchFwVersion shr 16) and 0xFF,

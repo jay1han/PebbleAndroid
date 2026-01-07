@@ -55,6 +55,7 @@ val padSize = 8.dp
 var buildDateTime = ""
 
 class MainActivity : ComponentActivity() {
+    private lateinit var context: Context
     private lateinit var pebble: Pebble
     private lateinit var notifications: Notifications
 
@@ -64,7 +65,7 @@ class MainActivity : ComponentActivity() {
         val buildDate = Date(BuildConfig.BUILDTIME)
         buildDateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(buildDate)
 
-        val context = applicationContext
+        context = applicationContext
         getNotificationAccess(context)
 
         pebble = Pebble(context).apply {init()}
@@ -100,6 +101,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun stopServices() {
+        val stopForeground = Intent("name.jayhan.pebble.SERVICE_STOP")
+        context.sendBroadcast(stopForeground)
+        val stopListener = Intent("name.jayhan.pebble.LISTENER_STOP")
+        context.sendBroadcast(stopListener)
+    }
+
     private fun getNotificationAccess(context: Context) {
         if (!Settings.Secure.getString(
                 context.contentResolver,
@@ -110,15 +118,6 @@ class MainActivity : ComponentActivity() {
             this.startActivity(settingsIntent)
         }
     }
-}
-
-@Composable
-fun Section(text: String = "") {
-    Text(
-        text = text,
-        fontSize = titleSize,
-        modifier = Modifier.fillMaxWidth()
-    )
 }
 
 @Composable
@@ -138,24 +137,48 @@ fun MainPage(
 }
 
 @Composable
+fun Section(text: String = "") {
+    Text(
+        text = text,
+        fontSize = titleSize,
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+@Composable
 fun Watchface(
     pebble: Pebble
 ) {
     val watchInfo: String by pebble.infoFlow.collectAsState("")
+    val isConnected: Boolean by pebble.isConnected.collectAsState(false)
 
     Column {
         Section(
-            if (pebble.isConnected) "Connected"
+            if (isConnected) "Connected"
             else "Disconnected"
         )
         Text(
             text = "App built at $buildDateTime",
             fontSize = smallSize
         )
-        Text(
-            text = watchInfo,
-            fontSize = textSize,
-        )
+        if (isConnected) {
+            Text(
+                text = watchInfo,
+                fontSize = textSize,
+            )
+        } else {
+            Button(
+                onClick =
+                    {
+                        pebble.askInfo()
+                    },
+            ) {
+                Text(
+                    text = "Reconnect",
+                    fontSize = textSize
+                )
+            }
+        }
         Image(
             painter = painterResource(R.drawable.help),
             modifier = Modifier

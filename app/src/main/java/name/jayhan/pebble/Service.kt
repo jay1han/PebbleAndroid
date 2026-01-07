@@ -19,6 +19,8 @@ import androidx.core.app.ServiceCompat
 
 class PebbleService(): Service() {
     lateinit var context: Context
+    private val delReceiver = DelReceiver()
+    private val stopReceiver = StopReceiver()
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -27,12 +29,10 @@ class PebbleService(): Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         context = applicationContext
 
-        val filter = IntentFilter()
-            .apply {
-                addAction("name.jayhan.pebble.REVIVE_BACKGROUND")
-            }
-        val delReceiver = DelReceiver()
-        context.registerReceiver(delReceiver, filter,RECEIVER_EXPORTED)
+        val filter1 = IntentFilter().apply { addAction("name.jayhan.pebble.SERVICE_STOP") }
+        context.registerReceiver(stopReceiver, filter1, RECEIVER_EXPORTED)
+        val filter2 = IntentFilter().apply { addAction("name.jayhan.pebble.REVIVE_FOREGROUND") }
+        context.registerReceiver(delReceiver, filter2,RECEIVER_EXPORTED)
 
         try {
             val notiMan = context.getSystemService(NOTIFICATION_SERVICE)
@@ -49,8 +49,7 @@ class PebbleService(): Service() {
 
             val notification = buildNotification(0)
 
-            ServiceCompat.startForeground(
-                this,
+            this.startForeground(
                 1,
                 notification,
                 FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
@@ -98,6 +97,14 @@ class PebbleService(): Service() {
             val notiMan = context.getSystemService(NOTIFICATION_SERVICE)
                     as NotificationManager
             notiMan.notify(1, notification)
+        }
+    }
+
+    inner class StopReceiver: BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val action = intent.action
+            if (action == "stop")
+                stopSelf()
         }
     }
 }

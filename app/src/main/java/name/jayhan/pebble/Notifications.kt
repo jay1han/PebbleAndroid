@@ -12,6 +12,15 @@ import com.getpebble.android.kit.util.PebbleDictionary
 class NotificationListener:
     NotificationListenerService() {
 
+    private val stopReceiver = StopReceiver()
+
+    override fun onListenerConnected() {
+        super.onListenerConnected()
+        val context = applicationContext
+        val filter = IntentFilter().apply { addAction("name.jayhan.pebble.LISTENER_STOP") }
+        context.registerReceiver(stopReceiver, filter, RECEIVER_EXPORTED)
+    }
+
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         super.onNotificationPosted(sbn)
         sendToMain()
@@ -35,6 +44,15 @@ class NotificationListener:
         }
         intent.putExtra("count", index)
         sendBroadcast(intent)
+    }
+
+    inner class StopReceiver: BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent != null) {
+                if (intent.action == "stop")
+                    stopSelf()
+            }
+        }
     }
 }
 
