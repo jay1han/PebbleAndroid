@@ -15,10 +15,9 @@ import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
 import android.net.ConnectivityManager
 import android.os.IBinder
 import android.telephony.TelephonyManager
-import androidx.core.app.ServiceCompat
 
 class PebbleService(): Service() {
-    lateinit var context: Context
+    private lateinit var context: Context
     private val delReceiver = DelReceiver()
     private val stopReceiver = StopReceiver()
 
@@ -103,8 +102,11 @@ class PebbleService(): Service() {
     inner class StopReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action
-            if (action == "stop")
+            if (action == "name.jayhan.pebble.SERVICE_STOP") {
+                context.unregisterReceiver(delReceiver)
+                context.unregisterReceiver(stopReceiver)
                 stopSelf()
+            }
         }
     }
 }

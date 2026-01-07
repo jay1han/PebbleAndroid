@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "name.jayhan.pebble"
-        minSdk = 34
+        minSdk = 35
         targetSdk = 36
         versionCode = 2
         versionName = "1.1"

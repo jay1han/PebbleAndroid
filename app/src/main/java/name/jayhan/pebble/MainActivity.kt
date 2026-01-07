@@ -9,25 +9,24 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -80,15 +79,36 @@ class MainActivity : ComponentActivity() {
         context.startForegroundService(intent)
 
         pebble.askInfo()
-        val colorBlack = Color(0xFFFF8000)
+        val colorBack = Color(0xFFFF8000)
+        val colorText = Color(0xFFFFFFFF)
 
         setContent {
             Scaffold(
                 topBar = {
-                    Spacer(
-                        modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars)
-                            .fillMaxWidth()
-                            .background(colorBlack)
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = "Pebble",
+                                color = colorText,
+                                fontSize = titleSize
+                            )
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = colorBack,
+                        ),
+                        actions = {
+                            IconButton(
+                                onClick = {
+                                    stopServices()
+                                }
+                            ) {
+                                Icon(
+                                    painterResource(R.drawable.baseline_close_24),
+                                    contentDescription = null,
+                                    tint = colorText
+                                )
+                            }
+                        }
                     )
                 }
             ) {
@@ -106,6 +126,7 @@ class MainActivity : ComponentActivity() {
         context.sendBroadcast(stopForeground)
         val stopListener = Intent("name.jayhan.pebble.LISTENER_STOP")
         context.sendBroadcast(stopListener)
+        finish()
     }
 
     private fun getNotificationAccess(context: Context) {
@@ -168,10 +189,7 @@ fun Watchface(
             )
         } else {
             Button(
-                onClick =
-                    {
-                        pebble.askInfo()
-                    },
+                onClick = { pebble.askInfo() },
             ) {
                 Text(
                     text = "Reconnect",

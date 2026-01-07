@@ -13,12 +13,14 @@ class NotificationListener:
     NotificationListenerService() {
 
     private val stopReceiver = StopReceiver()
+    private lateinit var thisContext: Context
 
     override fun onListenerConnected() {
         super.onListenerConnected()
-        val context = applicationContext
+
+        thisContext = applicationContext
         val filter = IntentFilter().apply { addAction("name.jayhan.pebble.LISTENER_STOP") }
-        context.registerReceiver(stopReceiver, filter, RECEIVER_EXPORTED)
+        thisContext.registerReceiver(stopReceiver, filter, RECEIVER_EXPORTED)
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
@@ -49,8 +51,11 @@ class NotificationListener:
     inner class StopReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent != null) {
-                if (intent.action == "stop")
+                if (intent.action == "name.jayhan.pebble.LISTENER_STOP") {
+                    thisContext.unregisterReceiver(stopReceiver)
+                    requestUnbind()
                     stopSelf()
+                }
             }
         }
     }
