@@ -21,6 +21,7 @@ class NotificationListener:
         thisContext = applicationContext
         val filter = IntentFilter().apply { addAction("name.jayhan.pebble.LISTENER_STOP") }
         thisContext.registerReceiver(stopReceiver, filter, RECEIVER_EXPORTED)
+        sendToMain()
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {

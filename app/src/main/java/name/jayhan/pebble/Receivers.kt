@@ -16,27 +16,42 @@ class BatteryReceiver(
     private val pebble: Pebble,
 ): BroadcastReceiver() {
 
+    private var isPlugged = false
+    private var percent = 0
+
     fun init(context: Context) {
-        val batteryFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+        sendToPebble()
+
+        val batteryFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_BATTERY_CHANGED)
+            addAction(Intent.ACTION_POWER_CONNECTED)
+            addAction(Intent.ACTION_POWER_DISCONNECTED)
+        }
         context.registerReceiver(this, batteryFilter, RECEIVER_EXPORTED)
-        sendToPebble(0, false)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        val isCharging = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0
-        val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0)
-        val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 0)
-        val percent = 100.0 * level.toFloat() / scale
-        sendToPebble(percent.toInt(), isCharging)
+        when(intent.action) {
+            Intent.ACTION_BATTERY_CHANGED -> {
+                isPlugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0
+                val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0)
+                val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 0)
+                percent = (100.0 * level.toFloat() / scale).toInt()
+            }
+            Intent.ACTION_POWER_CONNECTED -> {
+                isPlugged = true
+            }
+            Intent.ACTION_POWER_DISCONNECTED -> {
+                isPlugged = false
+            }
+        }
+        sendToPebble()
     }
 
-    private fun sendToPebble(
-        percent: Int,
-        isCharging: Boolean
-    ) {
+    private fun sendToPebble() {
         val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.PHONE_CHG.code)
-        pebbleDict.addInt8(DictKey.PHONE_CHG.code, if (isCharging) 1.toByte() else 0.toByte())
+        pebbleDict.addInt8(DictKey.PHONE_CHG.code, if (isPlugged) 1.toByte() else 0.toByte())
         pebbleDict.addInt8(DictKey.PHONE_BATT.code, percent.toByte())
         pebble.send(pebbleDict)
     }
