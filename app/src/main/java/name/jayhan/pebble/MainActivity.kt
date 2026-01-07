@@ -10,6 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,9 +26,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -355,13 +359,13 @@ class MainActivity : ComponentActivity() {
                 text = letter.toString(),
                 fontSize = titleSize,
                 color = colorText,
-                modifier = Modifier.fillMaxWidth(.15f).background(colorBack).padding(horizontal = 16.dp),
+                modifier = Modifier.fillMaxWidth(.1f).background(colorBack).padding(horizontal = 16.dp),
                 textAlign = TextAlign.Center,
             )
             Text(
                 text = packageName,
                 fontSize = textSize,
-                modifier = Modifier.fillMaxWidth(.85f).padding(horizontal = 8.dp)
+                modifier = Modifier.fillMaxWidth(.9f).padding(horizontal = 8.dp)
             )
             FilledIconButton(
                 onClick = onEdit
@@ -400,6 +404,49 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
+    private fun ListNotifications(
+        onDismiss: () -> Unit,
+        onSelect: (String) -> Unit
+    ) {
+        val notificationList by notifications.listFlow.collectAsState(listOf())
+
+        Dialog(
+            onDismissRequest = onDismiss
+        ) {
+            Card(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Select application",
+                        fontSize = titleSize
+                    )
+                    for (packageName in notificationList) {
+                        ListItem(
+                            modifier = Modifier.padding(0.dp),
+                            headlineContent = {
+                                TextButton(
+                                    onClick = {
+                                        onSelect(packageName)
+                                        onDismiss()
+                                    },
+                                    ) {
+                                    Text(
+                                        text = packageName,
+                                        fontSize = textSize
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
     private fun EditNotificationItem(
         letter: Char,
         packageName: String,
@@ -407,62 +454,79 @@ class MainActivity : ComponentActivity() {
     ) {
         var key by remember { mutableStateOf(letter) }
         var value by remember { mutableStateOf(packageName) }
+        var showList by remember { mutableStateOf(false) }
 
-        Dialog(
-            onDismissRequest = onClose,
-        ) {
-            Card (
-                modifier = Modifier.fillMaxWidth().padding(20.dp)
+        if (showList) {
+            ListNotifications(
+                onDismiss = { showList = false }
+            ) { name: String -> value = name }
+        } else {
+            Dialog(
+                onDismissRequest = onClose,
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    OutlinedTextField(
-                        value = key.toString(),
-                        onValueChange = { key = if (it.isNotEmpty()) it.uppercase().last() else ' ' },
-                        singleLine = true,
-                        textStyle = TextStyle(
-                            fontSize = titleSize,
-                            color = colorText,
-                        ),
-                        modifier = Modifier.fillMaxWidth(.2f).background(colorBack).padding(horizontal = 0.dp)
-                    )
-                    OutlinedTextField(
-                        value = value,
-                        onValueChange = { value = it },
-                        singleLine = true,
-                        textStyle = TextStyle(
-                            fontSize = textSize,
-                        ),
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
-                    )
-                }
-                Row (
+                Card(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Button(
-                        onClick = {
-                            if (key != ' ' && value.isNotEmpty())
-                                registerMap(key, value)
-                            onClose()
-                        },
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
+                        OutlinedTextField(
+                            value = key.toString(),
+                            onValueChange = { key = if (it.isNotEmpty()) it.uppercase().last() else ' ' },
+                            singleLine = true,
+                            textStyle = TextStyle(
+                                fontSize = titleSize,
+                                color = colorText,
+                            ),
+                            modifier = Modifier.fillMaxWidth(.2f).background(colorBack).padding(0.dp)
+                        )
+
                         Text(
-                            text = "Save",
-                            fontSize = textSize
+                            text = value,
+                            fontSize = textSize,
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
                         )
                     }
-                    Button(
-                        onClick = {
-                            registerMap(' ', value)
-                            onClose()
-                        }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        Text(
-                            text = "Remove",
-                            fontSize = textSize
-                        )
+                        Button(
+                            onClick = { showList = true }
+                        ) {
+                            Text(
+                                text = "Select application",
+                                fontSize = textSize
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = {
+                                if (key != ' ' && value.isNotEmpty())
+                                    registerMap(key, value)
+                                onClose()
+                            },
+                        ) {
+                            Text(
+                                text = "Save",
+                                fontSize = textSize
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                registerMap(' ', value)
+                                onClose()
+                            }
+                        ) {
+                            Text(
+                                text = "Remove",
+                                fontSize = textSize
+                            )
+                        }
                     }
                 }
             }

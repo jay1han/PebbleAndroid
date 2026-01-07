@@ -49,7 +49,9 @@ class NotificationListener:
         sendBroadcast(intent)
     }
 
-    inner class StopReceiver: BroadcastReceiver() {
+    inner class StopReceiver:
+        BroadcastReceiver() {
+
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent != null) {
                 if (intent.action == "name.jayhan.pebble.LISTENER_STOP") {
@@ -78,6 +80,7 @@ class Notifications(
     )
 
     val mapFlow = MutableStateFlow<CharToString>(emptyMap())
+    val listFlow = MutableStateFlow<MutableList<String>>(mutableListOf())
 
     private fun readMap() {
         val newMap = emptyMap()
@@ -119,14 +122,19 @@ class Notifications(
         when (intent.action) {
             "name.jayhan.pebble.STATUS_BAR_NOTIFICATIONS" -> {
                 val count = intent.getIntExtra("count", 0)
+                val newList: MutableList<String> = mutableListOf()
                 val compact: MutableSet<Char> = mutableSetOf()
+
                 for (index in 0..< count) {
                     val name = intent.getStringExtra(index.toString())
                     if (name != null) {
                         val letter = find(name)
                         compact.add(letter)
+                        newList.add(name)
                     }
                 }
+                listFlow.value = newList
+
                 compact.remove(' ')
                 val text = compact.joinToString("").take(10)
 
