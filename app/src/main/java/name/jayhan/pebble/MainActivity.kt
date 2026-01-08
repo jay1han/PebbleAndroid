@@ -82,7 +82,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             Scaffold(
                 topBar = {
-                    TopBar { stopServices() }
+                    TopBar {
+                        stopServices()
+                        finishAndRemoveTask()
+                    }
                 }
             ) {
                 innerPadding ->
@@ -98,7 +101,6 @@ class MainActivity : ComponentActivity() {
         context.sendBroadcast(stopForeground)
         val stopListener = Intent(AppConstants.INTENT_LISTENER_STOP)
         context.sendBroadcast(stopListener)
-        finish()
     }
 
     private fun getNotificationAccess() {

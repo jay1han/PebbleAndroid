@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun TopBar(
-    stopFunction: () -> Unit
+    onQuit: () -> Unit
 ) {
     val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
 
@@ -55,7 +55,7 @@ fun TopBar(
         ),
         actions = {
             IconButton(
-                onClick = { stopFunction() }
+                onClick = { onQuit() }
             ) {
                 Icon(
                     painterResource(R.drawable.outline_close_24),

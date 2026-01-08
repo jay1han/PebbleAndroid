@@ -48,7 +48,7 @@ class PebbleService(): Service() {
             }
             notiMan.createNotificationChannel(channel)
 
-            restartForeground()
+            setupForeground()
         } catch (e: Exception) {
             println(e)
         }
@@ -69,7 +69,7 @@ class PebbleService(): Service() {
         phoneCallback.init()
     }
 
-    private fun restartForeground() {
+    private fun setupForeground() {
         val delIntent = Intent(AppConstants.INTENT_REVIVE)
         val pendingIntent = getBroadcast(
             context,
@@ -91,12 +91,12 @@ class PebbleService(): Service() {
             notification,
             FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         )
-        reInit()
     }
 
     inner class DelReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            restartForeground()
+            setupForeground()
+            reInit()
         }
     }
 
