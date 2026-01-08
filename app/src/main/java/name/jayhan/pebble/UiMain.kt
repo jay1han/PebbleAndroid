@@ -45,12 +45,12 @@ fun TopBar(
         title = {
             Text(
                 text = "Pebble",
-                color = colorText,
-                fontSize = titleSize
+                color = Constants.colorText,
+                fontSize = Constants.titleSize
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = colorBack,
+            containerColor = Constants.colorBack,
         ),
         actions = {
             IconButton(
@@ -59,7 +59,7 @@ fun TopBar(
                 Icon(
                     painterResource(R.drawable.outline_close_24),
                     contentDescription = null,
-                    tint = colorText
+                    tint = Constants.colorText
                 )
             }
         }
@@ -76,7 +76,7 @@ fun MainPage(
     ) {
         Watchface()
         AwayTimezone()
-        Box(Modifier.height(padSize))
+        Box(Modifier.height(Constants.padSize))
         NotificationsList()
     }
 }
@@ -85,7 +85,7 @@ fun MainPage(
 fun Section(text: String = "") {
     Text(
         text = text,
-        fontSize = titleSize,
+        fontSize = Constants.titleSize,
         modifier = Modifier.fillMaxWidth()
     )
 }
@@ -102,12 +102,12 @@ fun Watchface() {
         )
         Text(
             text = "App built at $buildDateTime",
-            fontSize = smallSize
+            fontSize = Constants.smallSize
         )
         if (isConnected) {
             Text(
                 text = watchInfo,
-                fontSize = textSize,
+                fontSize = Constants.textSize,
             )
         } else {
             Button(
@@ -115,7 +115,7 @@ fun Watchface() {
             ) {
                 Text(
                     text = "Reconnect",
-                    fontSize = textSize
+                    fontSize = Constants.textSize
                 )
             }
         }
@@ -123,7 +123,7 @@ fun Watchface() {
             painter = painterResource(R.drawable.help),
             modifier = Modifier
                 .height(200.dp)
-                .padding(padSize)
+                .padding(Constants.padSize)
                 .fillMaxWidth(),
             contentScale = ContentScale.Fit,
             contentDescription = "Help",
@@ -143,14 +143,14 @@ fun AwayTimezone() {
     ) {
         Text(
             text = "Timezone",
-            fontSize = titleSize
+            fontSize = Constants.titleSize
         )
         if (editing) {
             OutlinedTextField(
                 value = tz,
                 onValueChange = { tz = it },
                 modifier = Modifier.width(100.dp),
-                textStyle = TextStyle(fontSize = textSize),
+                textStyle = TextStyle(fontSize = Constants.textSize),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
             )
@@ -159,11 +159,11 @@ fun AwayTimezone() {
                     editing = false
                     tz = Timezone.fromString(tz)
                 },
-                modifier = Modifier.padding(padSize)
+                modifier = Modifier.padding(Constants.padSize)
             ) {
                 Text(
                     text = "Apply",
-                    fontSize = textSize,
+                    fontSize = Constants.textSize,
                 )
             }
         } else {
@@ -171,16 +171,16 @@ fun AwayTimezone() {
             Text(
                 text = tzWatch,
                 modifier = Modifier.width(100.dp),
-                fontSize = textSize,
+                fontSize = Constants.textSize,
                 textAlign = TextAlign.Center
             )
             Button(
                 onClick = {editing = true},
-                modifier = Modifier.padding(padSize)
+                modifier = Modifier.padding(Constants.padSize)
             ) {
                 Text(
                     text = "Edit",
-                    fontSize = textSize,
+                    fontSize = Constants.textSize,
                 )
             }
         }

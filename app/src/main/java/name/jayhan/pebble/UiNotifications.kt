@@ -29,14 +29,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
 @Composable
-fun ListNotifications(
-    onDismiss: () -> Unit,
+fun ListActiveNotifications(
+    onClose: () -> Unit,
     onSelect: (String) -> Unit
 ) {
     val notificationList by Notifications.listFlow.collectAsState(listOf())
 
     Dialog(
-        onDismissRequest = onDismiss
+        onDismissRequest = onClose
     ) {
         Card(
             modifier = Modifier.fillMaxWidth()
@@ -46,7 +46,7 @@ fun ListNotifications(
             ) {
                 Text(
                     text = "Select application",
-                    fontSize = titleSize
+                    fontSize = Constants.titleSize
                 )
                 for (packageName in notificationList) {
                     ListItem(
@@ -55,12 +55,12 @@ fun ListNotifications(
                             TextButton(
                                 onClick = {
                                     onSelect(packageName)
-                                    onDismiss()
+                                    onClose()
                                 },
                             ) {
                                 Text(
                                     text = packageName,
-                                    fontSize = textSize
+                                    fontSize = Constants.textSize
                                 )
                             }
                         }
@@ -82,8 +82,8 @@ fun EditNotificationItem(
     var showList by remember { mutableStateOf(false) }
 
     if (showList) {
-        ListNotifications(
-            onDismiss = { showList = false }
+        ListActiveNotifications(
+            onClose = { showList = false }
         ) { name: String -> value = name }
     } else {
         Dialog(
@@ -100,15 +100,18 @@ fun EditNotificationItem(
                         onValueChange = { key = if (it.isNotEmpty()) it.uppercase().last() else ' ' },
                         singleLine = true,
                         textStyle = TextStyle(
-                            fontSize = titleSize,
-                            color = colorText,
+                            fontSize = Constants.titleSize,
+                            color = Constants.colorText,
                         ),
-                        modifier = Modifier.fillMaxWidth(.2f).background(colorBack).padding(0.dp)
+                        modifier = Modifier
+                            .fillMaxWidth(.2f)
+                            .background(Constants.colorBack)
+                            .padding(0.dp)
                     )
 
                     Text(
                         text = value,
-                        fontSize = textSize,
+                        fontSize = Constants.textSize,
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
                     )
                 }
@@ -121,7 +124,7 @@ fun EditNotificationItem(
                     ) {
                         Text(
                             text = "Select application",
-                            fontSize = textSize
+                            fontSize = Constants.textSize
                         )
                     }
                 }
@@ -138,7 +141,7 @@ fun EditNotificationItem(
                     ) {
                         Text(
                             text = "Save",
-                            fontSize = textSize
+                            fontSize = Constants.textSize
                         )
                     }
                     Button(
@@ -149,7 +152,7 @@ fun EditNotificationItem(
                     ) {
                         Text(
                             text = "Remove",
-                            fontSize = textSize
+                            fontSize = Constants.textSize
                         )
                     }
                 }
@@ -194,7 +197,7 @@ fun NotificationsList() {
             ) {
                 Text(
                     text = "Reset",
-                    fontSize = textSize
+                    fontSize = Constants.textSize
                 )
             }
             Button(
@@ -206,7 +209,7 @@ fun NotificationsList() {
             ) {
                 Text(
                     text = "Add",
-                    fontSize = textSize
+                    fontSize = Constants.textSize
                 )
             }
         }
@@ -225,14 +228,17 @@ fun NotificationLine(
     ) {
         Text(
             text = letter.toString(),
-            fontSize = titleSize,
-            color = colorText,
-            modifier = Modifier.fillMaxWidth(.1f).background(colorBack).padding(horizontal = 16.dp),
+            fontSize = Constants.titleSize,
+            color = Constants.colorText,
+            modifier = Modifier
+                .fillMaxWidth(.1f)
+                .background(Constants.colorBack)
+                .padding(horizontal = 16.dp),
             textAlign = TextAlign.Center,
         )
         Text(
             text = packageName,
-            fontSize = textSize,
+            fontSize = Constants.textSize,
             modifier = Modifier.fillMaxWidth(.9f).padding(horizontal = 8.dp)
         )
         FilledIconButton(

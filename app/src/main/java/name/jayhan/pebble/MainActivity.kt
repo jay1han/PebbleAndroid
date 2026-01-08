@@ -18,13 +18,15 @@ import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
 import java.util.Date
 
-val titleSize = 28.sp
-val textSize = 20.sp
-val smallSize = 16.sp
-val padSize = 8.dp
+object Constants {
+    val titleSize = 28.sp
+    val textSize = 20.sp
+    val smallSize = 16.sp
+    val padSize = 8.dp
 
-val colorBack = Color(0xFFFF8000)
-val colorText = Color(0xFFFFFFFF)
+    val colorBack = Color(0xFFFF8000)
+    val colorText = Color(0xFFFFFFFF)
+}
 
 var buildDateTime = ""
 
