@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.getpebble.android.kit.util.PebbleDictionary
@@ -11,16 +12,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class NotificationListener:
     NotificationListenerService() {
-
-    private val stopReceiver = StopReceiver()
     private lateinit var context: Context
 
     override fun onListenerConnected() {
         super.onListenerConnected()
 
         context = applicationContext
+        StopReceiver.init(this)
+
         val filter = IntentFilter().apply { addAction("name.jayhan.pebble.LISTENER_STOP") }
-        context.registerReceiver(stopReceiver, filter, RECEIVER_EXPORTED)
+        context.registerReceiver(StopReceiver, filter, RECEIVER_EXPORTED)
         sendToMain()
     }
 
@@ -49,15 +50,24 @@ class NotificationListener:
         sendBroadcast(intent)
     }
 
-    inner class StopReceiver:
+    fun stop() {
+        context.unregisterReceiver(StopReceiver)
+        requestUnbind()
+        stopSelf()
+    }
+
+    object StopReceiver:
         BroadcastReceiver() {
+        private lateinit var outer: NotificationListener
+
+        fun init(outer: NotificationListener) {
+            this.outer = outer
+        }
 
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent != null) {
                 if (intent.action == "name.jayhan.pebble.LISTENER_STOP") {
-                    this@NotificationListener.context.unregisterReceiver(stopReceiver)
-                    requestUnbind()
-                    stopSelf()
+                    outer.stop()
                 }
             }
         }
@@ -69,15 +79,10 @@ private fun emptyMap(): CharToString {
     return mutableMapOf()
 }
 
-class Notifications(
-    private val pebble: Pebble,
-    private val context: Context
-): BroadcastReceiver() {
-
-    private val prefs = context.getSharedPreferences(
-        "name.jayhan.pebble.NOTIFICATIONS_LIST",
-        Context.MODE_PRIVATE
-    )
+object Notifications:
+    BroadcastReceiver() {
+    private lateinit var context: Context
+    private lateinit var prefs: SharedPreferences
 
     val mapFlow = MutableStateFlow<CharToString>(emptyMap())
     val listFlow = MutableStateFlow<MutableList<String>>(mutableListOf())
@@ -104,7 +109,15 @@ class Notifications(
         }
     }
 
-    fun init() {
+    fun init(
+        context: Context
+    ) {
+        this.context = context
+        prefs = context.getSharedPreferences(
+            "name.jayhan.pebble.NOTIFICATIONS_LIST",
+            Context.MODE_PRIVATE
+        )
+
         readMap()
 
         val filter = IntentFilter()
@@ -141,7 +154,7 @@ class Notifications(
                 val pebbleDict = PebbleDictionary()
                 pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NOTI.code)
                 pebbleDict.addString(DictKey.NOTI.code, text)
-                pebble.send(pebbleDict)
+                Pebble.send(pebbleDict)
             }
             "name.jayhan.pebble.REGISTER_MAP" -> {
                 val key = intent.getStringExtra("key")!![0]

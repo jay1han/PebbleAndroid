@@ -59,9 +59,8 @@ enum class ActionType(val code: Byte) {
     DND_TOGGLE(2)
 }
 
-class PebbleReceiver(
-    private val pebble: Pebble,
-    ): PebbleKit.PebbleDataReceiver(appUuid) {
+object PebbleReceiver:
+    PebbleKit.PebbleDataReceiver(appUuid) {
 
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
         PebbleKit.sendAckToPebble(context, transactionId)
@@ -72,9 +71,9 @@ class PebbleReceiver(
                 MsgType.INFO.code -> {
                     val watchModel = data.getInteger(DictKey.MODEL.code).toInt()
                     val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.code).toInt()
-                    pebble.setWatchInfo(watchModel, watchFwVersion)
+                    Pebble.setWatchInfo(watchModel, watchFwVersion)
                     val tzMinutes = data.getInteger(DictKey.TZ_MINS.code).toInt()
-                    pebble.timezone.fromMinutes(tzMinutes)
+                    Timezone.fromMinutes(tzMinutes)
                 }
 
                 MsgType.ACTION.code -> {
@@ -90,17 +89,18 @@ class PebbleReceiver(
     }
 }
 
-class Pebble(
-    private val context: Context,
-) {
-    val timezone = Timezone(this)
+object Pebble {
+    private lateinit var context: Context
     val infoFlow = MutableStateFlow("")
     val isConnected = MutableStateFlow(false)
 
-    fun init() {
-        val pebbleReceiver = PebbleReceiver(this)
+    fun init(
+        context: Context
+    ) {
+        this.context = context
+
         val dataFilter = IntentFilter(Constants.INTENT_APP_RECEIVE)
-        context.registerReceiver(pebbleReceiver, dataFilter, RECEIVER_EXPORTED)
+        context.registerReceiver(PebbleReceiver, dataFilter, RECEIVER_EXPORTED)
     }
 
     fun askInfo() {
@@ -128,9 +128,7 @@ class Pebble(
     }
 }
 
-class Timezone(
-    private val pebble: Pebble
-) {
+object Timezone {
     private var minutes: Int = 0
 
     val tzFlow = MutableStateFlow("+0.0")
@@ -174,6 +172,6 @@ class Timezone(
         val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.TZ.code)
         pebbleDict.addInt16(DictKey.TZ_MINS.code, minutes.toShort())
-        pebble.send(pebbleDict)
+        Pebble.send(pebbleDict)
     }
 }

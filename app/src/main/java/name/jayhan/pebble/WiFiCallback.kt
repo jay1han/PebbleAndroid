@@ -64,9 +64,8 @@ class WiFiCallback(
     }
 }
 
-class WiFiReceiver(
-    private val pebble: Pebble
-): BroadcastReceiver() {
+object WiFiReceiver:
+    BroadcastReceiver() {
 
     fun init(context: Context) {
         val filter = IntentFilter("name.jayhan.pebble.WIFI_INFO")
@@ -85,6 +84,6 @@ class WiFiReceiver(
         val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.WIFI.code)
         pebbleDict.addString(DictKey.WIFI.code, ssid)
-        pebble.send(pebbleDict)
+        Pebble.send(pebbleDict)
     }
 }

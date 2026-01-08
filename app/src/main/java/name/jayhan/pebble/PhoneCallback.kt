@@ -69,9 +69,8 @@ class PhoneCallback(
     }
 }
 
-class PhoneReceiver(
-    private val pebble: Pebble
-): BroadcastReceiver() {
+object PhoneReceiver:
+    BroadcastReceiver() {
 
     fun init(context: Context) {
         val filter = IntentFilter("name.jayhan.pebble.PHONE_INFO")
@@ -90,6 +89,6 @@ class PhoneReceiver(
         val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NET.code)
         pebbleDict.addInt8(DictKey.NET.code, gen.toByte())
-        pebble.send(pebbleDict)
+        Pebble.send(pebbleDict)
     }
 }

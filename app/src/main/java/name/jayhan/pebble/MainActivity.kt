@@ -46,7 +46,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -65,8 +64,6 @@ var buildDateTime = ""
 
 class MainActivity : ComponentActivity() {
     private lateinit var context: Context
-    private lateinit var pebble: Pebble
-    private lateinit var notifications: Notifications
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,29 +74,27 @@ class MainActivity : ComponentActivity() {
         context = applicationContext
         getNotificationAccess(context)
 
-        pebble = Pebble(context).apply {init()}
-        notifications = Notifications(pebble, context).apply {init()}
+        Pebble.init(context)
+        Notifications.init(context)
 
-        BatteryReceiver(pebble).init(context)
-        BluetoothReceiver(pebble).init(context)
-        WiFiReceiver(pebble).init(context)
-        PhoneReceiver(pebble).init(context)
+        BatteryReceiver.init(context)
+        BluetoothReceiver.init(context)
+        WiFiReceiver.init(context)
+        PhoneReceiver.init(context)
 
         val intent = Intent(context, PebbleService::class.java)
         context.startForegroundService(intent)
 
-        pebble.askInfo()
+        Pebble.askInfo()
 
         setContent {
             Scaffold(
                 topBar = {
-                    TopBar(pebble) { stopServices() }
+                    TopBar(Pebble) { stopServices() }
                 }
             ) {
                 innerPadding ->
                 MainPage(
-                    pebble = pebble,
-                    notifications = notifications,
                     Modifier.padding(innerPadding),
                 )
             }
@@ -159,18 +154,16 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun MainPage(
-        pebble: Pebble,
-        notifications: Notifications,
         modifier: Modifier = Modifier,
     ) {
 
         Column(
             modifier = modifier,
         ) {
-            Watchface(pebble)
-            AwayTimezone(pebble.timezone)
+            Watchface()
+            AwayTimezone()
             Box(Modifier.height(padSize))
-            NotificationsList(notifications)
+            NotificationsList()
         }
     }
 
@@ -184,11 +177,9 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun Watchface(
-        pebble: Pebble
-    ) {
-        val watchInfo: String by pebble.infoFlow.collectAsState("")
-        val isConnected: Boolean by pebble.isConnected.collectAsState(false)
+    private fun Watchface() {
+        val watchInfo: String by Pebble.infoFlow.collectAsState("")
+        val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
 
         Column {
             Section(
@@ -206,7 +197,7 @@ class MainActivity : ComponentActivity() {
                 )
             } else {
                 Button(
-                    onClick = { pebble.askInfo() },
+                    onClick = { Pebble.askInfo() },
                 ) {
                     Text(
                         text = "Reconnect",
@@ -227,10 +218,8 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun AwayTimezone(
-        timezone: Timezone,
-    ) {
-        val tzWatch: String by timezone.tzFlow.collectAsState("+0.0")
+    private fun AwayTimezone() {
+        val tzWatch: String by Timezone.tzFlow.collectAsState("+0.0")
         var tz by remember { mutableStateOf("+0.0") }
         var editing by remember { mutableStateOf(false) }
 
@@ -254,7 +243,7 @@ class MainActivity : ComponentActivity() {
                 Button(
                     onClick = {
                         editing = false
-                        tz = timezone.fromString(tz)
+                        tz = Timezone.fromString(tz)
                     },
                     modifier = Modifier.padding(padSize)
                 ) {
@@ -285,10 +274,8 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun NotificationsList(
-        notifications: Notifications
-    ) {
-        val map by notifications.mapFlow.collectAsState(emptyMap())
+    private fun NotificationsList() {
+        val map by Notifications.mapFlow.collectAsState(emptyMap())
         var showEditDialog by remember { mutableStateOf(false) }
         var editLetter by remember { mutableStateOf(' ') }
         var editPackageName by remember { mutableStateOf("") }
@@ -396,7 +383,7 @@ class MainActivity : ComponentActivity() {
         onDismiss: () -> Unit,
         onSelect: (String) -> Unit
     ) {
-        val notificationList by notifications.listFlow.collectAsState(listOf())
+        val notificationList by Notifications.listFlow.collectAsState(listOf())
 
         Dialog(
             onDismissRequest = onDismiss
@@ -520,15 +507,4 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    @Composable
-    fun EditNotificationPre() {
-        EditNotificationItem('S', "com.google.android.messaging") {}
-    }
-}
-
-@Preview
-@Composable
-fun EditNotificationPreview() {
-    MainActivity().EditNotificationPre()
 }
