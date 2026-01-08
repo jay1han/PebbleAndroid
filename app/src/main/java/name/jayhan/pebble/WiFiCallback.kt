@@ -58,8 +58,8 @@ class WiFiCallback(
     }
 
     private fun send(ssid: String) {
-        val intent = Intent("name.jayhan.pebble.WIFI_INFO")
-            .putExtra("ssid", ssid)
+        val intent = Intent(AppConstants.INTENT_WIFI_INFO)
+            .putExtra(AppConstants.EXTRA_SSID, ssid)
         context.sendBroadcast(intent)
     }
 }
@@ -68,14 +68,14 @@ object WiFiReceiver:
     BroadcastReceiver() {
 
     fun init(context: Context) {
-        val filter = IntentFilter("name.jayhan.pebble.WIFI_INFO")
+        val filter = IntentFilter(AppConstants.INTENT_WIFI_INFO)
         context.registerReceiver(this, filter, Context.RECEIVER_EXPORTED)
         sendToPebble("")
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent != null) {
-            val ssid = intent.getStringExtra("ssid")
+            val ssid = intent.getStringExtra(AppConstants.EXTRA_SSID)
             sendToPebble(ssid ?: "")
         }
     }

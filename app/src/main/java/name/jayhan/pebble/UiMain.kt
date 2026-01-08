@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -44,13 +45,13 @@ fun TopBar(
     TopAppBar(
         title = {
             Text(
-                text = "Pebble",
-                color = Constants.colorText,
-                fontSize = Constants.titleSize
+                text = stringResource(R.string.app_name),
+                color = AppConstants.colorText,
+                fontSize = AppConstants.titleSize
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Constants.colorBack,
+            containerColor = AppConstants.colorBack,
         ),
         actions = {
             IconButton(
@@ -59,7 +60,7 @@ fun TopBar(
                 Icon(
                     painterResource(R.drawable.outline_close_24),
                     contentDescription = null,
-                    tint = Constants.colorText
+                    tint = AppConstants.colorText
                 )
             }
         }
@@ -76,7 +77,7 @@ fun MainPage(
     ) {
         Watchface()
         AwayTimezone()
-        Box(Modifier.height(Constants.padSize))
+        Box(Modifier.height(AppConstants.padSize))
         NotificationsList()
     }
 }
@@ -85,7 +86,7 @@ fun MainPage(
 fun Section(text: String = "") {
     Text(
         text = text,
-        fontSize = Constants.titleSize,
+        fontSize = AppConstants.titleSize,
         modifier = Modifier.fillMaxWidth()
     )
 }
@@ -97,25 +98,25 @@ fun Watchface() {
 
     Column {
         Section(
-            if (isConnected) "Connected"
-            else "Disconnected"
+            if (isConnected) stringResource(R.string.connected)
+            else stringResource(R.string.disconnected)
         )
         Text(
-            text = "App built at $buildDateTime",
-            fontSize = Constants.smallSize
+            text = stringResource(R.string.built) + buildDateTime,
+            fontSize = AppConstants.smallSize
         )
         if (isConnected) {
             Text(
                 text = watchInfo,
-                fontSize = Constants.textSize,
+                fontSize = AppConstants.textSize,
             )
         } else {
             Button(
                 onClick = { Pebble.askInfo() },
             ) {
                 Text(
-                    text = "Reconnect",
-                    fontSize = Constants.textSize
+                    text = stringResource(R.string.reconnect),
+                    fontSize = AppConstants.textSize
                 )
             }
         }
@@ -123,7 +124,7 @@ fun Watchface() {
             painter = painterResource(R.drawable.help),
             modifier = Modifier
                 .height(200.dp)
-                .padding(Constants.padSize)
+                .padding(AppConstants.padSize)
                 .fillMaxWidth(),
             contentScale = ContentScale.Fit,
             contentDescription = "Help",
@@ -143,14 +144,14 @@ fun AwayTimezone() {
     ) {
         Text(
             text = "Timezone",
-            fontSize = Constants.titleSize
+            fontSize = AppConstants.titleSize
         )
         if (editing) {
             OutlinedTextField(
                 value = tz,
                 onValueChange = { tz = it },
                 modifier = Modifier.width(100.dp),
-                textStyle = TextStyle(fontSize = Constants.textSize),
+                textStyle = TextStyle(fontSize = AppConstants.textSize),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
             )
@@ -159,11 +160,11 @@ fun AwayTimezone() {
                     editing = false
                     tz = Timezone.fromString(tz)
                 },
-                modifier = Modifier.padding(Constants.padSize)
+                modifier = Modifier.padding(AppConstants.padSize)
             ) {
                 Text(
                     text = "Apply",
-                    fontSize = Constants.textSize,
+                    fontSize = AppConstants.textSize,
                 )
             }
         } else {
@@ -171,16 +172,16 @@ fun AwayTimezone() {
             Text(
                 text = tzWatch,
                 modifier = Modifier.width(100.dp),
-                fontSize = Constants.textSize,
+                fontSize = AppConstants.textSize,
                 textAlign = TextAlign.Center
             )
             Button(
                 onClick = {editing = true},
-                modifier = Modifier.padding(Constants.padSize)
+                modifier = Modifier.padding(AppConstants.padSize)
             ) {
                 Text(
                     text = "Edit",
-                    fontSize = Constants.textSize,
+                    fontSize = AppConstants.textSize,
                 )
             }
         }

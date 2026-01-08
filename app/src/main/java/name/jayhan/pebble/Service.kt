@@ -30,21 +30,21 @@ class PebbleService(): Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         context = applicationContext
 
-        val filter1 = IntentFilter().apply { addAction("name.jayhan.pebble.SERVICE_STOP") }
+        val filter1 = IntentFilter().apply { addAction(AppConstants.INTENT_SERVICE_STOP) }
         context.registerReceiver(stopReceiver, filter1, RECEIVER_EXPORTED)
-        val filter2 = IntentFilter().apply { addAction("name.jayhan.pebble.REVIVE_FOREGROUND") }
+        val filter2 = IntentFilter().apply { addAction(AppConstants.INTENT_REVIVE) }
         context.registerReceiver(delReceiver, filter2,RECEIVER_EXPORTED)
 
         try {
             val notiMan = context.getSystemService(NOTIFICATION_SERVICE)
                     as NotificationManager
             val channel = NotificationChannel(
-                "PebbleService",
-                "Pebble",
+                AppConstants.CHANNEL_ID,
+                AppString.get(R.string.app_title),
                 IMPORTANCE_LOW
             ).apply {
                 setShowBadge(false)
-                description = "Notification channel"
+                description = AppString.get(R.string.channel_description)
             }
             notiMan.createNotificationChannel(channel)
 
@@ -70,7 +70,7 @@ class PebbleService(): Service() {
     }
 
     private fun restartForeground() {
-        val delIntent = Intent("name.jayhan.pebble.REVIVE_FOREGROUND")
+        val delIntent = Intent(AppConstants.INTENT_REVIVE)
         val pendingIntent = getBroadcast(
             context,
             1,
@@ -79,7 +79,7 @@ class PebbleService(): Service() {
         )
         val notification = Notification.Builder(
             context,
-            "PebbleService"
+            AppConstants.CHANNEL_ID
         ).apply {
             setDeleteIntent(pendingIntent)
             setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -103,7 +103,7 @@ class PebbleService(): Service() {
     inner class StopReceiver: BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action
-            if (action == "name.jayhan.pebble.SERVICE_STOP") {
+            if (action == AppConstants.INTENT_SERVICE_STOP) {
                 context.unregisterReceiver(delReceiver)
                 context.unregisterReceiver(stopReceiver)
                 stopSelf()

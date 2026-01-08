@@ -20,7 +20,7 @@ class NotificationListener:
         context = applicationContext
         StopReceiver.init(this)
 
-        val filter = IntentFilter().apply { addAction("name.jayhan.pebble.LISTENER_STOP") }
+        val filter = IntentFilter().apply { addAction(AppConstants.INTENT_LISTENER_STOP) }
         context.registerReceiver(StopReceiver, filter, RECEIVER_EXPORTED)
         sendToMain()
     }
@@ -36,7 +36,7 @@ class NotificationListener:
     }
 
     private fun sendToMain() {
-        val intent = Intent("name.jayhan.pebble.STATUS_BAR_NOTIFICATIONS")
+        val intent = Intent(AppConstants.INTENT_SBN)
         var index = 0
         for (notification in this.activeNotifications) {
             if (!notification.isOngoing
@@ -46,7 +46,7 @@ class NotificationListener:
                 index++
             }
         }
-        intent.putExtra("count", index)
+        intent.putExtra(AppConstants.EXTRA_MAP_COUNT, index)
         sendBroadcast(intent)
     }
 
@@ -66,7 +66,7 @@ class NotificationListener:
 
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent != null) {
-                if (intent.action == "name.jayhan.pebble.LISTENER_STOP") {
+                if (intent.action == AppConstants.INTENT_LISTENER_STOP) {
                     outer.stop()
                 }
             }
@@ -114,7 +114,7 @@ object Notifications:
     ) {
         this.context = context
         prefs = context.getSharedPreferences(
-            "name.jayhan.pebble.NOTIFICATIONS_LIST",
+            AppConstants.PREF_NAME,
             Context.MODE_PRIVATE
         )
 
@@ -122,9 +122,9 @@ object Notifications:
 
         val filter = IntentFilter()
             .apply {
-                addAction("name.jayhan.pebble.STATUS_BAR_NOTIFICATIONS")
-                addAction("name.jayhan.pebble.REGISTER_MAP")
-                addAction("name.jayhan.pebble.RESET_MAP")
+                addAction(AppConstants.INTENT_SBN)
+                addAction(AppConstants.INTENT_REGISTER_MAP)
+                addAction(AppConstants.INTENT_RESET_MAP)
             }
         context.registerReceiver(this, filter, Context.RECEIVER_EXPORTED)
     }
@@ -133,8 +133,8 @@ object Notifications:
         if (intent == null) return
         
         when (intent.action) {
-            "name.jayhan.pebble.STATUS_BAR_NOTIFICATIONS" -> {
-                val count = intent.getIntExtra("count", 0)
+            AppConstants.INTENT_SBN -> {
+                val count = intent.getIntExtra(AppConstants.EXTRA_MAP_COUNT, 0)
                 val newList: MutableList<String> = mutableListOf()
                 val compact: MutableSet<Char> = mutableSetOf()
 
@@ -156,12 +156,12 @@ object Notifications:
                 pebbleDict.addString(DictKey.NOTI.code, text)
                 Pebble.send(pebbleDict)
             }
-            "name.jayhan.pebble.REGISTER_MAP" -> {
-                val key = intent.getStringExtra("key")!![0]
-                val value = intent.getStringExtra("value")!!
+            AppConstants.INTENT_REGISTER_MAP -> {
+                val key = intent.getStringExtra(AppConstants.EXTRA_MAP_KEY)!![0]
+                val value = intent.getStringExtra(AppConstants.EXTRA_MAP_VALUE)!!
                 register(key, value)
             }
-            "name.jayhan.pebble.RESET_MAP" -> { resetMap() }
+            AppConstants.INTENT_RESET_MAP -> { resetMap() }
         }
     }
 

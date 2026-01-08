@@ -64,7 +64,7 @@ class PhoneCallback(
 
     private fun send(gen: Int) {
         val intent = Intent("name.jayhan.pebble.PHONE_INFO")
-            .putExtra("gen", gen)
+            .putExtra(AppConstants.EXTRA_TELE_GEN, gen)
         context.sendBroadcast(intent)
     }
 }
@@ -73,14 +73,14 @@ object PhoneReceiver:
     BroadcastReceiver() {
 
     fun init(context: Context) {
-        val filter = IntentFilter("name.jayhan.pebble.PHONE_INFO")
+        val filter = IntentFilter(AppConstants.INTENT_PHONE_INFO)
         context.registerReceiver(this, filter, Context.RECEIVER_EXPORTED)
         sendToPebble(0)
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent != null) {
-            val gen = intent.getIntExtra("gen", 0)
+            val gen = intent.getIntExtra(AppConstants.EXTRA_TELE_GEN, 0)
             sendToPebble(gen)
         }
     }

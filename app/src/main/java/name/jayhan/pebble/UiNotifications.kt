@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -45,8 +46,8 @@ fun ListActiveNotifications(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Select application",
-                    fontSize = Constants.titleSize
+                    text = stringResource(R.string.select_package),
+                    fontSize = AppConstants.titleSize
                 )
                 for (packageName in notificationList) {
                     ListItem(
@@ -60,7 +61,7 @@ fun ListActiveNotifications(
                             ) {
                                 Text(
                                     text = packageName,
-                                    fontSize = Constants.textSize
+                                    fontSize = AppConstants.textSize
                                 )
                             }
                         }
@@ -100,19 +101,21 @@ fun EditNotificationItem(
                         onValueChange = { key = if (it.isNotEmpty()) it.uppercase().last() else ' ' },
                         singleLine = true,
                         textStyle = TextStyle(
-                            fontSize = Constants.titleSize,
-                            color = Constants.colorText,
+                            fontSize = AppConstants.titleSize,
+                            color = AppConstants.colorText,
                         ),
                         modifier = Modifier
                             .fillMaxWidth(.2f)
-                            .background(Constants.colorBack)
+                            .background(AppConstants.colorBack)
                             .padding(0.dp)
                     )
 
                     Text(
                         text = value,
-                        fontSize = Constants.textSize,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                        fontSize = AppConstants.textSize,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp)
                     )
                 }
                 Row(
@@ -123,8 +126,8 @@ fun EditNotificationItem(
                         onClick = { showList = true }
                     ) {
                         Text(
-                            text = "Select application",
-                            fontSize = Constants.textSize
+                            text = stringResource(R.string.select_package),
+                            fontSize = AppConstants.textSize
                         )
                     }
                 }
@@ -140,8 +143,8 @@ fun EditNotificationItem(
                         },
                     ) {
                         Text(
-                            text = "Save",
-                            fontSize = Constants.textSize
+                            text = stringResource(R.string.save),
+                            fontSize = AppConstants.textSize
                         )
                     }
                     Button(
@@ -151,8 +154,8 @@ fun EditNotificationItem(
                         }
                     ) {
                         Text(
-                            text = "Remove",
-                            fontSize = Constants.textSize
+                            text = stringResource(R.string.remove),
+                            fontSize = AppConstants.textSize
                         )
                     }
                 }
@@ -176,7 +179,7 @@ fun NotificationsList() {
         )
     }
 
-    Section("Notifications")
+    Section(stringResource(R.string.notifications))
     for (item in map.toSortedMap()) {
         NotificationLine(
             item.key,
@@ -196,8 +199,8 @@ fun NotificationsList() {
                 onClick = { Mapper.reset() },
             ) {
                 Text(
-                    text = "Reset",
-                    fontSize = Constants.textSize
+                    text = stringResource(R.string.reset),
+                    fontSize = AppConstants.textSize
                 )
             }
             Button(
@@ -208,8 +211,8 @@ fun NotificationsList() {
                 },
             ) {
                 Text(
-                    text = "Add",
-                    fontSize = Constants.textSize
+                    text = stringResource(R.string.add),
+                    fontSize = AppConstants.textSize
                 )
             }
         }
@@ -228,25 +231,27 @@ fun NotificationLine(
     ) {
         Text(
             text = letter.toString(),
-            fontSize = Constants.titleSize,
-            color = Constants.colorText,
+            fontSize = AppConstants.titleSize,
+            color = AppConstants.colorText,
             modifier = Modifier
                 .fillMaxWidth(.1f)
-                .background(Constants.colorBack)
+                .background(AppConstants.colorBack)
                 .padding(horizontal = 16.dp),
             textAlign = TextAlign.Center,
         )
         Text(
             text = packageName,
-            fontSize = Constants.textSize,
-            modifier = Modifier.fillMaxWidth(.9f).padding(horizontal = 8.dp)
+            fontSize = AppConstants.textSize,
+            modifier = Modifier
+                .fillMaxWidth(.9f)
+                .padding(horizontal = 8.dp)
         )
         FilledIconButton(
             onClick = onEdit
         ) {
             Icon(
                 painter = painterResource(R.drawable.outline_edit_24),
-                contentDescription = "Edit",
+                contentDescription = stringResource(R.string.edit),
             )
         }
 

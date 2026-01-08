@@ -3,14 +3,10 @@ package name.jayhan.pebble
 import android.content.Context
 import android.content.Context.RECEIVER_EXPORTED
 import android.content.IntentFilter
-import com.getpebble.android.kit.Constants
 import com.getpebble.android.kit.PebbleKit
 import com.getpebble.android.kit.util.PebbleDictionary
 import kotlinx.coroutines.flow.MutableStateFlow
-import java.util.UUID
 import kotlin.math.absoluteValue
-
-val appUuid: UUID? = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
 
 val WatchModels = listOf(
     "Unknown",
@@ -60,7 +56,7 @@ enum class ActionType(val code: Byte) {
 }
 
 object PebbleReceiver:
-    PebbleKit.PebbleDataReceiver(appUuid) {
+    PebbleKit.PebbleDataReceiver(AppConstants.APP_UUID) {
 
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
         PebbleKit.sendAckToPebble(context, transactionId)
@@ -99,7 +95,7 @@ object Pebble {
     ) {
         this.context = context
 
-        val dataFilter = IntentFilter(Constants.INTENT_APP_RECEIVE)
+        val dataFilter = IntentFilter(com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE)
         context.registerReceiver(PebbleReceiver, dataFilter, RECEIVER_EXPORTED)
     }
 
@@ -110,7 +106,7 @@ object Pebble {
     }
 
     fun send(pebbleDict: PebbleDictionary) {
-        PebbleKit.sendDataToPebble(context, appUuid, pebbleDict)
+        PebbleKit.sendDataToPebble(context, AppConstants.APP_UUID, pebbleDict)
     }
 
     fun setWatchInfo(
@@ -124,7 +120,8 @@ object Pebble {
                 (watchFwVersion shr 8) and 0xFF,
                 watchFwVersion and 0xFF
             )
-        infoFlow.value = "Model: ${WatchModels[watchModel]}\nVersion: $versionString"
+        infoFlow.value = context.getString(R.string.model) +
+                ": ${WatchModels[watchModel]}\nVersion: $versionString"
     }
 }
 
