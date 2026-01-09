@@ -12,14 +12,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class NotificationListener:
     NotificationListenerService() {
-    private lateinit var context: Context
 
     override fun onListenerConnected() {
         super.onListenerConnected()
-
-        context = applicationContext
-        StopReceiver.init(this, context)
-
         sendToMain()
     }
 
@@ -46,44 +41,6 @@ class NotificationListener:
         }
         intent.putExtra(AppConstants.EXTRA_MAP_COUNT, index)
         sendBroadcast(intent)
-    }
-
-    override fun onListenerDisconnected() {
-        context.unregisterReceiver(StopReceiver)
-        requestUnbind()
-        super.onListenerDisconnected()
-    }
-
-    fun stop() {
-        context.unregisterReceiver(StopReceiver)
-        requestUnbind()
-        stopSelf()
-    }
-}
-
-object StopReceiver :
-    BroadcastReceiver() {
-    private lateinit var outer: NotificationListener
-
-    fun init(
-        outer: NotificationListener,
-        context: Context
-    ) {
-        if (this::outer.isInitialized) {
-            outer.stop()
-        } else {
-            this.outer = outer
-            val filter = IntentFilter().apply { addAction(AppConstants.INTENT_LISTENER_STOP) }
-            context.registerReceiver(StopReceiver, filter, Context.RECEIVER_EXPORTED)
-        }
-    }
-
-    override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent != null) {
-            if (intent.action == AppConstants.INTENT_LISTENER_STOP) {
-                outer.stop()
-            }
-        }
     }
 }
 

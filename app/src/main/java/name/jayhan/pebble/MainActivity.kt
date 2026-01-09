@@ -32,7 +32,6 @@ object AppConstants {
     val colorText = Color(0xFFFFFFFF)
 
     const val INTENT_SERVICE_STOP = "name.jayhan.pebble.SERVICE_STOP"
-    const val INTENT_LISTENER_STOP = "name.jayhan.pebble.LISTENER_STOP"
     const val INTENT_REGISTER_MAP = "name.jayhan.pebble.REGISTER_MAP"
     const val INTENT_RESET_MAP = "name.jayhan.pebble.RESET_MAP"
     const val INTENT_SBN = "name.jayhan.pebble.STATUS_BAR_NOTIFICATIONS"
@@ -109,7 +108,7 @@ class MainActivity : ComponentActivity() {
                 topBar = {
                     TopBar {
                         stopServices()
-                        finishAndRemoveTask()
+                        finish()
                     }
                 }
             ) {
@@ -124,8 +123,6 @@ class MainActivity : ComponentActivity() {
     private fun stopServices() {
         val stopForeground = Intent(AppConstants.INTENT_SERVICE_STOP)
         context.sendBroadcast(stopForeground)
-        val stopListener = Intent(AppConstants.INTENT_LISTENER_STOP)
-        context.sendBroadcast(stopListener)
     }
 
     override fun onDestroy() {
