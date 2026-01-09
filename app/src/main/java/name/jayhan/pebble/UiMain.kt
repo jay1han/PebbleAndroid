@@ -102,7 +102,7 @@ fun Watchface() {
             else stringResource(R.string.disconnected)
         )
         Text(
-            text = stringResource(R.string.built) + buildDateTime,
+            text = stringResource(R.string.built) + AppConstants.buildDateTime,
             fontSize = AppConstants.smallSize
         )
         if (isConnected) {

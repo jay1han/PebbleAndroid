@@ -53,8 +53,17 @@ class PebbleService(): Service() {
             println(e)
         }
 
+        Mapper.init(context)
+        Pebble.init(context)
+        Notifications.init(context)
+
+        BatteryReceiver.init(context)
+        BluetoothReceiver.init(context)
+
+        Pebble.askInfo()
+
         val connMan = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        wifiCallback = WiFiCallback(context, connMan)
+        wifiCallback = WiFiCallback(connMan)
 
         val teleMan = context.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
         phoneCallback = PhoneCallback(context, teleMan)

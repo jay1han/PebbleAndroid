@@ -18,10 +18,8 @@ class NotificationListener:
         super.onListenerConnected()
 
         context = applicationContext
-        StopReceiver.init(this)
+        StopReceiver.init(this, context)
 
-        val filter = IntentFilter().apply { addAction(AppConstants.INTENT_LISTENER_STOP) }
-        context.registerReceiver(StopReceiver, filter, RECEIVER_EXPORTED)
         sendToMain()
     }
 
@@ -50,25 +48,40 @@ class NotificationListener:
         sendBroadcast(intent)
     }
 
+    override fun onListenerDisconnected() {
+        context.unregisterReceiver(StopReceiver)
+        requestUnbind()
+        super.onListenerDisconnected()
+    }
+
     fun stop() {
         context.unregisterReceiver(StopReceiver)
         requestUnbind()
         stopSelf()
     }
+}
 
-    object StopReceiver:
-        BroadcastReceiver() {
-        private lateinit var outer: NotificationListener
+object StopReceiver :
+    BroadcastReceiver() {
+    private lateinit var outer: NotificationListener
 
-        fun init(outer: NotificationListener) {
+    fun init(
+        outer: NotificationListener,
+        context: Context
+    ) {
+        if (this::outer.isInitialized) {
+            outer.stop()
+        } else {
             this.outer = outer
+            val filter = IntentFilter().apply { addAction(AppConstants.INTENT_LISTENER_STOP) }
+            context.registerReceiver(StopReceiver, filter, Context.RECEIVER_EXPORTED)
         }
+    }
 
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent != null) {
-                if (intent.action == AppConstants.INTENT_LISTENER_STOP) {
-                    outer.stop()
-                }
+    override fun onReceive(context: Context?, intent: Intent?) {
+        if (intent != null) {
+            if (intent.action == AppConstants.INTENT_LISTENER_STOP) {
+                outer.stop()
             }
         }
     }
@@ -112,6 +125,8 @@ object Notifications:
     fun init(
         context: Context
     ) {
+        if (this::context.isInitialized) return
+
         this.context = context
         prefs = context.getSharedPreferences(
             AppConstants.PREF_NAME,

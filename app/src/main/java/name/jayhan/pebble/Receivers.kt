@@ -96,14 +96,12 @@ object BluetoothReceiver:
         }
 
         try {
-            ContextCompat.registerReceiver(
-                context,
+            context.registerReceiver(
                 this,
                 IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED),
                 ContextCompat.RECEIVER_EXPORTED
             )
-            ContextCompat.registerReceiver(
-                context,
+            context.registerReceiver(
                 this,
                 IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED),
                 ContextCompat.RECEIVER_EXPORTED

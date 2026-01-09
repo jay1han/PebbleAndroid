@@ -1,9 +1,6 @@
 package name.jayhan.pebble
 
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.telephony.ServiceState
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
@@ -16,7 +13,7 @@ class PhoneCallback(
 
     fun init() {
         val cellType = teleMan.dataNetworkType
-        send(getCellGen(cellType))
+        sendToPebble(getCellGen(cellType))
 
         try {
             teleMan.registerTelephonyCallback(
@@ -42,7 +39,7 @@ class PhoneCallback(
         } else {
             mobile = 0
         }
-        send(mobile)
+        sendToPebble(mobile)
     }
 
     private fun getCellGen(gen: Int): Int {
@@ -59,29 +56,6 @@ class PhoneCallback(
             TelephonyManager.NETWORK_TYPE_NR
                 -> 5
             else -> 0
-        }
-    }
-
-    private fun send(gen: Int) {
-        val intent = Intent("name.jayhan.pebble.PHONE_INFO")
-            .putExtra(AppConstants.EXTRA_TELE_GEN, gen)
-        context.sendBroadcast(intent)
-    }
-}
-
-object PhoneReceiver:
-    BroadcastReceiver() {
-
-    fun init(context: Context) {
-        val filter = IntentFilter(AppConstants.INTENT_PHONE_INFO)
-        context.registerReceiver(this, filter, Context.RECEIVER_EXPORTED)
-        sendToPebble(0)
-    }
-
-    override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent != null) {
-            val gen = intent.getIntExtra(AppConstants.EXTRA_TELE_GEN, 0)
-            sendToPebble(gen)
         }
     }
 
