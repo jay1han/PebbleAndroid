@@ -82,7 +82,9 @@ object Notifications:
     fun init(
         context: Context
     ) {
-        if (this::context.isInitialized) return
+        if (this::context.isInitialized && this.context != context) {
+            context.unregisterReceiver(this)
+        }
 
         this.context = context
         prefs = context.getSharedPreferences(

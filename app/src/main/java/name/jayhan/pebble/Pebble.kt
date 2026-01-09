@@ -93,6 +93,9 @@ object Pebble {
     fun init(
         context: Context
     ) {
+        if (this::context.isInitialized && this.context != context) {
+            this.context.unregisterReceiver(PebbleReceiver)
+        }
         this.context = context
 
         val dataFilter = IntentFilter(com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE)

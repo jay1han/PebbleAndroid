@@ -14,13 +14,18 @@ import com.getpebble.android.kit.util.PebbleDictionary
 
 object BatteryReceiver:
     BroadcastReceiver() {
-
+    private lateinit var context: Context
     private var isPlugged = false
     private var percent = 0
 
     fun init(
         context: Context
     ) {
+        if (this::context.isInitialized && this.context != context) {
+            this.context.unregisterReceiver(this)
+        }
+        this.context = context
+
         sendToPebble()
 
         val batteryFilter = IntentFilter().apply {
@@ -83,6 +88,7 @@ private fun BluetoothDevice.getBatteryLevel(): Int {
 
 object BluetoothReceiver:
     BroadcastReceiver() {
+    private lateinit var context: Context
 
     fun init(context: Context) {
         val blueMan = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -95,20 +101,19 @@ object BluetoothReceiver:
             sendToPebble("", 0)
         }
 
-        try {
-            context.registerReceiver(
-                this,
-                IntentFilter(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED),
-                ContextCompat.RECEIVER_EXPORTED
-            )
-            context.registerReceiver(
-                this,
-                IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED),
-                ContextCompat.RECEIVER_EXPORTED
-            )
-        } catch (e: Exception) {
-            println(e)
+        if (this::context.isInitialized && this.context != context) {
+            this.context.unregisterReceiver(this)
         }
+        this.context = context
+
+        context.registerReceiver(
+            this,
+            IntentFilter().apply {
+                addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
+                addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
+            },
+            ContextCompat.RECEIVER_EXPORTED
+        )
     }
 
     override fun onReceive(context: Context, intent: Intent) {

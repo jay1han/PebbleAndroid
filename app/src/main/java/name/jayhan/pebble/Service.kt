@@ -18,8 +18,8 @@ import android.telephony.TelephonyManager
 
 class PebbleService(): Service() {
     private lateinit var context: Context
-    private lateinit var wifiCallback: WiFiCallback
-    private lateinit var phoneCallback: PhoneCallback
+    private lateinit var connMan: ConnectivityManager
+    private lateinit var teleMan: TelephonyManager
     private val delReceiver = DelReceiver()
     private val stopReceiver = StopReceiver()
 
@@ -34,6 +34,8 @@ class PebbleService(): Service() {
         context.registerReceiver(stopReceiver, filter1, RECEIVER_EXPORTED)
         val filter2 = IntentFilter().apply { addAction(AppConstants.INTENT_REVIVE) }
         context.registerReceiver(delReceiver, filter2,RECEIVER_EXPORTED)
+        connMan = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        teleMan = context.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
 
         try {
             val notiMan = context.getSystemService(NOTIFICATION_SERVICE)
@@ -53,29 +55,22 @@ class PebbleService(): Service() {
             println(e)
         }
 
-        Mapper.init(context)
+        reInit()
+
+        Pebble.askInfo()
+
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun reInit() {
         Pebble.init(context)
         Notifications.init(context)
 
         BatteryReceiver.init(context)
         BluetoothReceiver.init(context)
 
-        Pebble.askInfo()
-
-        val connMan = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        wifiCallback = WiFiCallback(connMan)
-
-        val teleMan = context.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
-        phoneCallback = PhoneCallback(context, teleMan)
-
-        reInit()
-
-        return super.onStartCommand(intent, flags, startId)
-    }
-
-    private fun reInit() {
-        wifiCallback.init()
-        phoneCallback.init()
+        WifiCallback.init(connMan)
+        PhoneCallback.init(teleMan, context)
     }
 
     private fun setupForeground() {

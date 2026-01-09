@@ -98,6 +98,7 @@ class MainActivity : ComponentActivity() {
 
         context = applicationContext
         AppString.init(context)
+        Mapper.init(context)
         getNotificationAccess()
 
         val intent = Intent(context, PebbleService::class.java)

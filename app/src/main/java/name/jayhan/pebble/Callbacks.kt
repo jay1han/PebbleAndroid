@@ -12,11 +12,18 @@ import android.telephony.ServiceState
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 
-class WiFiCallback(
-    private val connMan: ConnectivityManager,
-): ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
+object WifiCallback :
+    ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
+    private lateinit var connMan: ConnectivityManager
 
-    fun init() {
+    fun init(
+        connMan: ConnectivityManager,
+    ) {
+        if (this::connMan.isInitialized && this.connMan != connMan) {
+            this.connMan.unregisterNetworkCallback(this)
+        }
+        this.connMan = connMan
+
         sendToPebble("")
         val networkRequest = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
@@ -65,12 +72,20 @@ class WiFiCallback(
     }
 }
 
-class PhoneCallback(
-    private val context: Context,
-    private val teleMan: TelephonyManager
-): TelephonyCallback(), TelephonyCallback.ServiceStateListener {
+object PhoneCallback:
+    TelephonyCallback(), TelephonyCallback.ServiceStateListener {
 
-    fun init() {
+    private lateinit var teleMan: TelephonyManager
+
+    fun init(
+        teleMan: TelephonyManager,
+        context: Context
+    ) {
+        if (this::teleMan.isInitialized && this.teleMan != teleMan) {
+            this.teleMan.unregisterTelephonyCallback(this)
+        }
+        this.teleMan = teleMan
+
         val cellType = teleMan.dataNetworkType
         sendToPebble(getCellGen(cellType))
 
