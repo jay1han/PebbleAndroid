@@ -20,6 +20,9 @@ import java.util.Date
 import java.util.UUID
 
 object AppConstants {
+    val buildDateTime: String = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        .format(Date(BuildConfig.BUILDTIME))
+
     val titleSize = 28.sp
     val textSize = 20.sp
     val smallSize = 16.sp
@@ -29,12 +32,9 @@ object AppConstants {
     val colorText = Color(0xFFFFFFFF)
 
     const val INTENT_SERVICE_STOP = "name.jayhan.pebble.SERVICE_STOP"
-    const val INTENT_LISTENER_STOP = "name.jayhan.pebble.LISTENER_STOP"
     const val INTENT_REGISTER_MAP = "name.jayhan.pebble.REGISTER_MAP"
     const val INTENT_RESET_MAP = "name.jayhan.pebble.RESET_MAP"
     const val INTENT_SBN = "name.jayhan.pebble.STATUS_BAR_NOTIFICATIONS"
-    const val INTENT_PHONE_INFO = "name.jayhan.pebble.PHONE_INFO"
-    const val INTENT_WIFI_INFO = "name.jayhan.pebble.WIFI_INFO"
     const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE_FOREGROUND"
 
     const val CHANNEL_ID = "PebbleService"
@@ -42,76 +42,23 @@ object AppConstants {
     const val EXTRA_MAP_COUNT = "count"
     const val EXTRA_MAP_KEY = "letter"
     const val EXTRA_MAP_VALUE = "package"
-    const val EXTRA_TELE_GEN = "gen"
-    const val EXTRA_SSID = "ssid"
 
     const val PREF_NAME = "name.jayhan.pebble.NOTIFICATIONS_LIST"
 
     val APP_UUID: UUID? = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
 }
 
-var buildDateTime = ""
-
-class MainActivity : ComponentActivity() {
+object AppString {
     private lateinit var context: Context
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    fun init(context: Context) {
+        if (this::context.isInitialized) return
 
-        val buildDate = Date(BuildConfig.BUILDTIME)
-        buildDateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(buildDate)
-
-        context = applicationContext
-        AppString.init(context)
-        getNotificationAccess()
-
-        Mapper.init(context)
-        Pebble.init(context)
-        Notifications.init(context)
-
-        BatteryReceiver.init(context)
-        BluetoothReceiver.init(context)
-        WiFiReceiver.init(context)
-        PhoneReceiver.init(context)
-
-        val intent = Intent(context, PebbleService::class.java)
-        context.startForegroundService(intent)
-
-        Pebble.askInfo()
-
-        setContent {
-            Scaffold(
-                topBar = {
-                    TopBar {
-                        stopServices()
-                        finishAndRemoveTask()
-                    }
-                }
-            ) {
-                innerPadding ->
-                MainPage(
-                    Modifier.padding(innerPadding),
-                )
-            }
-        }
+        this.context = context
     }
 
-    private fun stopServices() {
-        val stopForeground = Intent(AppConstants.INTENT_SERVICE_STOP)
-        context.sendBroadcast(stopForeground)
-        val stopListener = Intent(AppConstants.INTENT_LISTENER_STOP)
-        context.sendBroadcast(stopListener)
-    }
-
-    private fun getNotificationAccess() {
-        if (!Settings.Secure.getString(
-                context.contentResolver,
-                "enabled_notification_listeners"
-            ).contains(context.packageName)) {
-            val settingsIntent =
-                Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
-            this.startActivity(settingsIntent)
-        }
+    fun get(id: Int): String {
+        return context.getString(id)
     }
 }
 
@@ -121,6 +68,8 @@ object Mapper {
     fun init(
         context: Context
     ) {
+        if (this::context.isInitialized) return
+
         this.context = context
     }
 
@@ -141,14 +90,53 @@ object Mapper {
     }
 }
 
-object AppString {
+class MainActivity : ComponentActivity() {
     private lateinit var context: Context
 
-    fun init(context: Context) {
-        this.context = context
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        context = applicationContext
+        AppString.init(context)
+        getNotificationAccess()
+
+        val intent = Intent(context, PebbleService::class.java)
+        context.startForegroundService(intent)
+
+        setContent {
+            Scaffold(
+                topBar = {
+                    TopBar {
+                        stopServices()
+                        finish()
+                    }
+                }
+            ) {
+                innerPadding ->
+                MainPage(
+                    Modifier.padding(innerPadding),
+                )
+            }
+        }
     }
 
-    fun get(id: Int): String {
-        return context.getString(id)
+    private fun stopServices() {
+        val stopForeground = Intent(AppConstants.INTENT_SERVICE_STOP)
+        context.sendBroadcast(stopForeground)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+    }
+
+    private fun getNotificationAccess() {
+        if (!Settings.Secure.getString(
+                context.contentResolver,
+                "enabled_notification_listeners"
+            ).contains(context.packageName)) {
+            val settingsIntent =
+                Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+            this.startActivity(settingsIntent)
+        }
     }
 }

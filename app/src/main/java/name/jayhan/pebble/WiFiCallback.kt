@@ -1,9 +1,5 @@
 package name.jayhan.pebble
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -13,12 +9,11 @@ import android.net.wifi.WifiManager
 import com.getpebble.android.kit.util.PebbleDictionary
 
 class WiFiCallback(
-    private val context: Context,
     private val connMan: ConnectivityManager,
 ): ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
 
     fun init() {
-        send("")
+        sendToPebble("")
         val networkRequest = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
             .build()
@@ -32,7 +27,8 @@ class WiFiCallback(
         if (info != null) {
             val wifiInfo = info as WifiInfo
             val ssid = wifiInfo.ssid
-            if (ssid != WifiManager.UNKNOWN_SSID) send(wifiInfo.ssid)
+            if (ssid != WifiManager.UNKNOWN_SSID)
+                sendToPebble(wifiInfo.ssid)
         }
     }
 
@@ -41,7 +37,7 @@ class WiFiCallback(
 
         val info = connMan.getNetworkCapabilities(network)?.transportInfo
         if (info is WifiInfo) {
-            send("")
+            sendToPebble("")
         }
     }
 
@@ -54,30 +50,7 @@ class WiFiCallback(
         val info = capabilities.transportInfo as WifiInfo
         val ssid = info.ssid.removeSurrounding("\"")
         if (ssid == WifiManager.UNKNOWN_SSID) return
-        send(ssid)
-    }
-
-    private fun send(ssid: String) {
-        val intent = Intent(AppConstants.INTENT_WIFI_INFO)
-            .putExtra(AppConstants.EXTRA_SSID, ssid)
-        context.sendBroadcast(intent)
-    }
-}
-
-object WiFiReceiver:
-    BroadcastReceiver() {
-
-    fun init(context: Context) {
-        val filter = IntentFilter(AppConstants.INTENT_WIFI_INFO)
-        context.registerReceiver(this, filter, Context.RECEIVER_EXPORTED)
-        sendToPebble("")
-    }
-
-    override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent != null) {
-            val ssid = intent.getStringExtra(AppConstants.EXTRA_SSID)
-            sendToPebble(ssid ?: "")
-        }
+        sendToPebble(ssid)
     }
 
     private fun sendToPebble(ssid: String) {
