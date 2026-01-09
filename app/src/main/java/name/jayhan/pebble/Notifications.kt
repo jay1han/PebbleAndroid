@@ -12,8 +12,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class NotificationListener:
     NotificationListenerService() {
+    private lateinit var context: Context
 
     override fun onListenerConnected() {
+        context = applicationContext
         super.onListenerConnected()
         sendToMain()
     }
@@ -29,18 +31,23 @@ class NotificationListener:
     }
 
     private fun sendToMain() {
-        val intent = Intent(AppConstants.INTENT_SBN)
-        var index = 0
-        for (notification in this.activeNotifications) {
-            if (!notification.isOngoing
-                && notification.isClearable
-            ) {
-                intent.putExtra(index.toString(), notification.packageName)
-                index++
+        val active = context.getSharedPreferences(AppConstants.NOTI_DB, MODE_PRIVATE)
+        var count = 0
+        with(active.edit()) {
+            clear()
+            for (notification in activeNotifications) {
+                if (!notification.isOngoing
+                    && notification.isClearable
+                ) {
+                    putString(count.toString(), notification.packageName)
+                    count++
+                }
             }
+            putInt(AppConstants.ACTIVE_COUNT, count)
+            apply()
         }
-        intent.putExtra(AppConstants.EXTRA_MAP_COUNT, index)
-        sendBroadcast(intent)
+
+        sendBroadcast(Intent(AppConstants.INTENT_SBN))
     }
 }
 
@@ -108,18 +115,20 @@ object Notifications:
         
         when (intent.action) {
             AppConstants.INTENT_SBN -> {
-                val count = intent.getIntExtra(AppConstants.EXTRA_MAP_COUNT, 0)
                 val newList: MutableList<String> = mutableListOf()
                 val compact: MutableSet<Char> = mutableSetOf()
+                val active = this.context.getSharedPreferences(AppConstants.NOTI_DB, Context.MODE_PRIVATE)
 
-                for (index in 0..< count) {
-                    val name = intent.getStringExtra(index.toString())
+                val count = active.getInt(AppConstants.ACTIVE_COUNT, 0)
+                for (index in 0..<count) {
+                    val name = active.getString(index.toString(), "")
                     if (name != null) {
                         val letter = find(name)
                         compact.add(letter)
                         newList.add(name)
                     }
                 }
+
                 listFlow.value = newList
 
                 compact.remove(' ')
