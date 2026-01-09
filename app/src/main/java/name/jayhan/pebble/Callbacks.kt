@@ -1,10 +1,69 @@
 package name.jayhan.pebble
 
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.net.wifi.WifiInfo
+import android.net.wifi.WifiManager
+import com.getpebble.android.kit.util.PebbleDictionary
 import android.content.Context
 import android.telephony.ServiceState
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
-import com.getpebble.android.kit.util.PebbleDictionary
+
+class WiFiCallback(
+    private val connMan: ConnectivityManager,
+): ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
+
+    fun init() {
+        sendToPebble("")
+        val networkRequest = NetworkRequest.Builder()
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .build()
+        connMan.registerNetworkCallback(networkRequest, this)
+    }
+
+    override fun onAvailable(network: Network) {
+        super.onAvailable(network)
+
+        val info = connMan.getNetworkCapabilities(network)?.transportInfo
+        if (info != null) {
+            val wifiInfo = info as WifiInfo
+            val ssid = wifiInfo.ssid
+            if (ssid != WifiManager.UNKNOWN_SSID)
+                sendToPebble(wifiInfo.ssid)
+        }
+    }
+
+    override fun onLost(network: Network) {
+        super.onLost(network)
+
+        val info = connMan.getNetworkCapabilities(network)?.transportInfo
+        if (info is WifiInfo) {
+            sendToPebble("")
+        }
+    }
+
+    override fun onCapabilitiesChanged(
+        network: Network,
+        capabilities: NetworkCapabilities
+    ) {
+        super.onCapabilitiesChanged(network, capabilities)
+
+        val info = capabilities.transportInfo as WifiInfo
+        val ssid = info.ssid.removeSurrounding("\"")
+        if (ssid == WifiManager.UNKNOWN_SSID) return
+        sendToPebble(ssid)
+    }
+
+    private fun sendToPebble(ssid: String) {
+        val pebbleDict = PebbleDictionary()
+        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.WIFI.code)
+        pebbleDict.addString(DictKey.WIFI.code, ssid)
+        Pebble.send(pebbleDict)
+    }
+}
 
 class PhoneCallback(
     private val context: Context,

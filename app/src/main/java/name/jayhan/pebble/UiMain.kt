@@ -40,8 +40,6 @@ import androidx.compose.ui.unit.dp
 fun TopBar(
     onQuit: () -> Unit
 ) {
-    val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
-
     TopAppBar(
         title = {
             Text(
