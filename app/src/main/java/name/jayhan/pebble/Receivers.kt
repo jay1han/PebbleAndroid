@@ -1,5 +1,6 @@
 package name.jayhan.pebble
 
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
@@ -9,7 +10,7 @@ import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
-import androidx.core.content.ContextCompat
+import androidx.annotation.RequiresPermission
 import com.getpebble.android.kit.util.PebbleDictionary
 
 object BatteryReceiver:
@@ -90,6 +91,7 @@ object BluetoothReceiver:
     BroadcastReceiver() {
     private lateinit var context: Context
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun init(context: Context) {
         val blueMan = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter = blueMan.adapter
@@ -112,10 +114,11 @@ object BluetoothReceiver:
                 addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
                 addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
             },
-            ContextCompat.RECEIVER_EXPORTED
+            RECEIVER_EXPORTED
         )
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun onReceive(context: Context, intent: Intent) {
         val state = intent.getIntExtra(BluetoothAdapter.EXTRA_CONNECTION_STATE, BluetoothAdapter.STATE_DISCONNECTED)
         var name = ""

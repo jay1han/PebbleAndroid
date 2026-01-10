@@ -1,5 +1,6 @@
 package name.jayhan.pebble
 
+import android.Manifest
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -11,6 +12,7 @@ import android.content.Context
 import android.telephony.ServiceState
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
+import androidx.annotation.RequiresPermission
 
 object WifiCallback :
     ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
@@ -77,6 +79,7 @@ object PhoneCallback:
 
     private lateinit var teleMan: TelephonyManager
 
+    @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
     fun init(
         teleMan: TelephonyManager,
         context: Context

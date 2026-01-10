@@ -8,11 +8,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.flow.MutableStateFlow
 
 const val NOTIFICATION_LISTENER = "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
@@ -20,15 +25,17 @@ const val FOREGROUND_SERVICE = "android.permission.FOREGROUND_SERVICE"
 const val POST_NOTIFICATION = "android.permission.POST_NOTIFICATIONS"
 const val PHONE_STATE = "android.permission.READ_PHONE_STATE"
 const val NEARBY_SERVICES = "android.permission.BLUETOOTH_CONNECT"
+const val FINE_LOCATION = "android.permission.ACCESS_FINE_LOCATION"
 const val BACKGROUND_LOCATION = "android.permission.ACCESS_BACKGROUND_LOCATION"
 
-val permissionsList = listOf(
-    NOTIFICATION_LISTENER,
-    FOREGROUND_SERVICE,
-    POST_NOTIFICATION,
-    PHONE_STATE,
-    NEARBY_SERVICES,
-    BACKGROUND_LOCATION
+val permissionsList = mapOf(
+    NOTIFICATION_LISTENER to R.string.notification_listener,
+    FOREGROUND_SERVICE to R.string.foreground_service,
+    POST_NOTIFICATION to R.string.post_notification,
+    PHONE_STATE to R.string.phone_state,
+    NEARBY_SERVICES to R.string.nearby_service,
+    FINE_LOCATION to R.string.fine_location,
+    BACKGROUND_LOCATION to R.string.background_location
 )
 
 class SinglePermission(
@@ -77,10 +84,11 @@ class PermissionsCallback(
 
 object Permissions
 {
-    var allGranted = false
-    val grantFlow = MutableStateFlow(allGranted)
     private lateinit var mainActivity: ComponentActivity
     val list = mutableListOf<SinglePermission>()
+    var allGranted = false
+    val grantFlow = MutableStateFlow(allGranted)
+    val missingFlow = MutableStateFlow(listOf<String>())
     private lateinit var permissionsLauncher: ActivityResultLauncher<Array<String>>
 
     fun start(
@@ -90,8 +98,8 @@ object Permissions
     ) {
         this.mainActivity = mainActivity
 
-        for (name in permissionsList) {
-            list.add(SinglePermission(context, name))
+        for (pair in permissionsList) {
+            list.add(SinglePermission(context, pair.key))
         }
 
         val permissionsContract = ActivityResultContracts.RequestMultiplePermissions()
@@ -109,9 +117,9 @@ object Permissions
 
     fun requestAll() {
         val request = mutableListOf<String>()
-        for (singlePermission in list) {
-            if (!singlePermission.granted) {
-                when (singlePermission.name) {
+        for (permission in list) {
+            if (!permission.granted) {
+                when (permission.name) {
                     NOTIFICATION_LISTENER -> {
                         val settingsIntent =
                             Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
@@ -119,7 +127,9 @@ object Permissions
                     }
 
                     else -> {
-                        request.add(singlePermission.name)
+                        mainActivity.shouldShowRequestPermissionRationale(permission.name)
+                        request.add(permission.name)
+                        break   // TODO: Later, collect requests
                     }
                 }
             }
@@ -131,23 +141,25 @@ object Permissions
     }
 
     fun updateAll() {
-        for (singlePermission in list) {
-            if (!singlePermission.granted) {
-                allGranted = false
-                grantFlow.value = false
-                return
+        val missingList = mutableListOf<String>()
+
+        for (permission in list) {
+            if (!permission.granted) {
+                missingList.add(permission.name)
             }
         }
-        allGranted = true
-        grantFlow.value = true
+
+        allGranted = missingList.isEmpty()
+        grantFlow.value = allGranted
+        missingFlow.value = missingList
     }
 
     fun update(
         name: String
     ) {
-        for (singlePermission in list) {
-            if (singlePermission.name == name) {
-                singlePermission.update()
+        for (permission in list) {
+            if (permission.name == name) {
+                permission.update()
                 break
             }
         }
@@ -157,16 +169,31 @@ object Permissions
 
 @Composable
 fun UiPermissions(
-    modifier: Modifier,
+    modifier: Modifier = Modifier
 ) {
-    Column (
-        modifier = modifier
-    ){
-        Text(
-            "Please grant permissions",
-            fontSize = AppConstants.textSize
+    val missingList by Permissions.missingFlow.collectAsState(listOf())
 
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Top
+    ) {
+        Text(
+            text = "Permissions missing",
+            modifier = Modifier.fillMaxWidth(),
+            fontSize = AppConstants.titleSize,
         )
+        for (permission in missingList) {
+            Text(
+                text = permission,
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = AppConstants.textSize
+            )
+            Text(
+                text = stringResource(permissionsList[permission]!!),
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = AppConstants.textSize
+            )
+        }
         Button (
             onClick = {
                 Permissions.requestAll()

@@ -15,4 +15,12 @@
     <string name="model">Model: </string>
     <string name="channel_description">Notification channel</string>
     <string name="version">"Version: "</string>
+    <string name="notification_listener">Allows to intercept app notifications to display on the watch</string>
+    <string name="foreground_service">Must be set to allow uninterrupted service</string>
+    <string name="post_notification">Must be set to allow uninterrupted service</string>
+    <string name="phone_state">Read the telephony service state: cell coverage, 4G/5G</string>
+    <string name="nearby_service">Needed to check Bluetooth adapter state</string>
+    <string name="fine_location">Needed to check WiFi state</string>
+    <string name="background_location">Also needed for continuous monitoring of Bluetooth and WiFi</string>
+    <string name="coarse_location">Basic access to location information, needed to further access WiFi and Bluetooth states</string>
 </resources>
