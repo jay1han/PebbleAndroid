@@ -196,7 +196,9 @@ fun NotificationsList() {
             modifier = Modifier.fillMaxWidth()
         ) {
             Button(
-                onClick = { Mapper.reset() },
+                onClick = {
+                    Mapper.reset()
+                },
             ) {
                 Text(
                     text = stringResource(R.string.reset),

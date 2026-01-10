@@ -17,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -35,6 +36,31 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+
+@Composable
+fun AppScaffold(
+    onQuit: () -> Unit
+) {
+    val permissionsGranted by remember { mutableStateOf(Permissions.allGranted) }
+
+    Scaffold(
+        topBar = {
+            TopBar {
+                onQuit()
+            }
+        }
+    ) { innerPadding ->
+        if (permissionsGranted) {
+            MainPage(
+                Modifier.padding(innerPadding)
+            )
+        } else {
+            UiPermissions(
+                Modifier.padding(innerPadding)
+            )
+        }
+    }
+}
 
 @Composable
 fun TopBar(

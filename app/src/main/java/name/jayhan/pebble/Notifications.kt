@@ -30,6 +30,8 @@ class NotificationListener:
         sendToMain()
     }
 
+// TODO: Add refresh method
+
     private fun sendToMain() {
         val active = context.getSharedPreferences(AppConstants.NOTI_DB, MODE_PRIVATE)
         var count = 0

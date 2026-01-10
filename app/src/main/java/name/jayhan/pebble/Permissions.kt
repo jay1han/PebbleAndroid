@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
@@ -56,24 +57,30 @@ class SinglePermission(
 class PermissionsCallback(
     private val onAllGranted: () -> Unit
 ):
-    ActivityResultCallback<Map<String, Boolean>> {
+    ActivityResultCallback<Map<String, Boolean>>
+{
     override fun onActivityResult(
         result: Map<String, Boolean>
     ) {
-        for (permission in result) {
-            if (permission.value)
-                Permissions.update(permission.key)
-        }
+        if (result.isNotEmpty()) {
+            for (permission in result) {
+                if (permission.value)
+                    Permissions.update(permission.key)
+            }
 
-        if (Permissions.allGranted())
-            onAllGranted()
+            if (Permissions.allGranted)
+                onAllGranted()
+        }
     }
 }
 
-object Permissions {
+object Permissions
+{
+    var allGranted = false
     private lateinit var context: Context
     private lateinit var mainActivity: ComponentActivity
     val list = mutableListOf<SinglePermission>()
+    private lateinit var permissionsLauncher: ActivityResultLauncher<Array<String>>
 
     fun start(
         context: Context,
@@ -87,43 +94,50 @@ object Permissions {
             list.add(SinglePermission(this.context, name))
         }
 
-        if (allGranted())
+        val permissionsContract = ActivityResultContracts.RequestMultiplePermissions()
+        permissionsLauncher =
+            this.mainActivity.registerForActivityResult(
+                permissionsContract,
+                PermissionsCallback(onAllGranted)
+            )
+
+        updateAll()
+        if (allGranted) {
             onAllGranted()
+        }
     }
 
-    fun requestAll(
-        onAllGranted: (() -> Unit)
-    ) {
-        while (!allGranted()) {
-            val request = mutableListOf<String>()
-            for (singlePermission in list) {
-                if (!singlePermission.granted) {
-                    when (singlePermission.name) {
-                        NOTIFICATION_LISTENER -> {
-                            val settingsIntent =
-                                Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
-                            mainActivity.startActivity(settingsIntent)
-                        }
+    fun requestAll() {
+        val request = mutableListOf<String>()
+        for (singlePermission in list) {
+            if (!singlePermission.granted) {
+                when (singlePermission.name) {
+                    NOTIFICATION_LISTENER -> {
+                        val settingsIntent =
+                            Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+                        mainActivity.startActivity(settingsIntent)
+                    }
 
-                        else -> {
-                            request.add(singlePermission.name)
-                        }
+                    else -> {
+                        request.add(singlePermission.name)
                     }
                 }
             }
+        }
 
-            val permissionsContract = ActivityResultContracts.RequestMultiplePermissions()
-            val permissionsLauncher =
-                mainActivity.registerForActivityResult(permissionsContract, PermissionsCallback(onAllGranted))
+        if (request.isNotEmpty()) {
             permissionsLauncher.launch(request.toTypedArray())
         }
     }
 
-    fun allGranted(): Boolean {
+    fun updateAll() {
         for (singlePermission in list) {
-            if (!singlePermission.granted) return false
+            if (!singlePermission.granted) {
+                allGranted = false
+                return
+            }
         }
-        return true
+        allGranted = true
     }
 
     fun update(
@@ -135,25 +149,30 @@ object Permissions {
                 break
             }
         }
+        updateAll()
     }
 }
 
 @Composable
 fun UiPermissions(
     modifier: Modifier,
-    onAllGranted: () -> Unit
 ) {
-    Column {
+    Column (
+        modifier = modifier
+    ){
         Text(
-            "Please grant permissions"
+            "Please grant permissions",
+            fontSize = AppConstants.textSize
+
         )
         Button (
             onClick = {
-                Permissions.requestAll(onAllGranted)
+                Permissions.requestAll()
             }
         ) {
             Text(
-                "Retry"
+                "Retry",
+                fontSize = AppConstants.textSize
             )
         }
     }

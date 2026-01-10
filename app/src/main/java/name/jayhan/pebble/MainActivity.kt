@@ -93,6 +93,7 @@ object Mapper {
 class MainActivity :
     ComponentActivity() {
     private lateinit var context: Context
+    private var servicesStarted = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,36 +107,25 @@ class MainActivity :
         }
 
         setContent {
-            Scaffold(
-                topBar = {
-                    TopBar {
-                        stopServices()
-                        finish()
-                    }
-                }
-            ) { innerPadding ->
-                if (Permissions.allGranted()) {
-                    MainPage(
-                        Modifier.padding(innerPadding)
-                    )
-                } else {
-                    UiPermissions(
-                        Modifier.padding(innerPadding)
-                    ) {
-                        startServices()
-                    }
-                }
+            AppScaffold() {
+                stopServices()
+                finish()
             }
         }
     }
 
     private fun startServices() {
-        val intent = Intent(context, PebbleService::class.java)
-        context.startForegroundService(intent)
+        if (!servicesStarted) {
+            val intent = Intent(context, PebbleService::class.java)
+            context.startForegroundService(intent)
+            servicesStarted = true
+        }
     }
 
     private fun stopServices() {
-        val stopForeground = Intent(AppConstants.INTENT_SERVICE_STOP)
-        context.sendBroadcast(stopForeground)
+        if (servicesStarted) {
+            val stopForeground = Intent(AppConstants.INTENT_SERVICE_STOP)
+            context.sendBroadcast(stopForeground)
+        }
     }
 }
