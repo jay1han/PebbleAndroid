@@ -24,4 +24,9 @@
     <string name="background_location">Also needed for continuous monitoring of Bluetooth and WiFi</string>
     <string name="coarse_location">Basic access to location information, needed to further access WiFi and Bluetooth states</string>
     <string name="grant">Grant permission</string>
+    <string name="no_package"><![CDATA[<not selected>]]></string>
+    <string name="query_all_packages">Finds application icons</string>
+    <string name="no_active">No application has an active notification, please wait until a notification arrives</string>
+    <string name="indicator">Indicator</string>
+    <string name="application">Application</string>
 </resources>

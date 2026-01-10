@@ -1,6 +1,9 @@
 package name.jayhan.pebble
 
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,6 +26,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -47,30 +52,42 @@ fun SelectPackage(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier.verticalScroll(scrollState),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(10.dp)
+                    .verticalScroll(scrollState),
             ) {
                 Text(
                     text = stringResource(R.string.select_package),
                     fontSize = AppConstants.titleSize,
                     modifier = Modifier.padding(10.dp)
                 )
-                for (packageName in packageList) {
-                    ListItem(
-                        modifier = Modifier.padding(0.dp),
-                        headlineContent = {
-                            TextButton(
-                                onClick = {
-                                    onSelect(packageName)
-                                    onClose()
-                                },
-                            ) {
-                                Text(
-                                    text = packageName,
-                                    fontSize = AppConstants.textSize
-                                )
+                if (packageList.isNotEmpty()) {
+                    for (packageName in packageList) {
+                        ListItem(
+                            modifier = Modifier.padding(0.dp),
+                            headlineContent = {
+                                TextButton(
+                                    modifier = Modifier.padding(0.dp),
+                                    onClick = {
+                                        onSelect(packageName)
+                                        onClose()
+                                    },
+                                ) {
+                                    Text(
+                                        text = packageName,
+                                        fontSize = AppConstants.textSize,
+                                        modifier = Modifier.padding(0.dp),
+                                    )
+                                }
                             }
-                        }
+                        )
+                    }
+                } else {
+                    Text(
+                        text = stringResource(R.string.no_active),
+                        fontSize = AppConstants.textSize,
+                        modifier = Modifier.padding(10.dp)
                     )
                 }
             }
@@ -86,90 +103,155 @@ fun EditPackage(
     packageList: List<String>,
     onClose: () -> Unit
 ) {
-    var key by remember { mutableStateOf(letter) }
-    var value by remember { mutableStateOf(packageName) }
+    var newLetter by remember { mutableStateOf(letter) }
+    var newPackage by remember { mutableStateOf(packageName) }
     var showList by remember { mutableStateOf(false) }
+    var icon: ImageBitmap? = null
+
+    if (packageList != PreviewPackageList && newPackage.isNotEmpty()) {
+        val drawable = LocalContext.current.packageManager
+            .getApplicationIcon(newPackage)
+        if (drawable != null) {
+            val bitmap = Bitmap.createBitmap(
+                drawable.intrinsicWidth,
+                drawable.intrinsicHeight,
+                Bitmap.Config.ARGB_8888
+            )
+            val canvas = android.graphics.Canvas(bitmap)
+            drawable.setBounds(0, 0, canvas.width, canvas.height)
+            drawable.draw(canvas)
+            icon = bitmap.asImageBitmap()
+        }
+    }
 
     if (showList) {
         SelectPackage(
             packageList,
             onClose = { showList = false }
-        ) { name: String -> value = name }
+        ) { name: String -> newPackage = name }
     } else {
         Dialog(
             onDismissRequest = onClose,
         ) {
             Card(
-                modifier = Modifier.fillMaxWidth().padding(20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(0.dp),
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(10.dp),
                 ) {
-                    OutlinedTextField(
-                        value = key.toString(),
-                        onValueChange = { key = if (it.isNotEmpty()) it.uppercase().last() else ' ' },
-                        singleLine = true,
-                        textStyle = TextStyle(
-                            fontSize = AppConstants.titleSize,
-                            color = AppConstants.colorText,
-                            textAlign = TextAlign.Center,
-                        ),
+                    Row(
+                        verticalAlignment = Alignment.Top,
                         modifier = Modifier
-                            .fillMaxWidth(.2f)
-                            .background(AppConstants.colorBack)
-                            .padding(0.dp)
-                    )
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp)
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.Top,
+                            modifier = Modifier
+                                .fillMaxWidth(.5f)
+                                .padding(end = 10.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.indicator),
+                                fontSize = AppConstants.textSize,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp)
+                            )
+                            OutlinedTextField(
+                                value = newLetter.toString(),
+                                onValueChange = { newLetter = if (it.isNotEmpty()) it.uppercase().last() else ' ' },
+                                singleLine = true,
+                                textStyle = TextStyle(
+                                    fontSize = AppConstants.titleSize,
+                                    color = AppConstants.colorText,
+                                    textAlign = TextAlign.Center,
+                                ),
+                                modifier = Modifier
+                                    .background(AppConstants.colorBack)
+                            )
+                        }
+
+                        Column(
+                            verticalArrangement = Arrangement.Top,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.application),
+                                fontSize = AppConstants.textSize,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp)
+                            )
+                            if (icon != null) {
+                                Image(
+                                    bitmap = icon,
+                                    contentDescription = newPackage,
+                                    alignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { showList = true }
+                                )
+                            } else {
+                                TextButton(
+                                    onClick = { showList = true }
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.select_package),
+                                        fontSize = AppConstants.textSize,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+                    }
 
                     Text(
-                        text = value,
+                        text = newPackage.ifEmpty { stringResource(R.string.no_package) },
                         fontSize = AppConstants.textSize,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .align(Alignment.CenterVertically)
-                            .padding(horizontal = 8.dp),
+                            .padding(
+                                horizontal = 0.dp,
+                                vertical = 10.dp
+                            ),
                     )
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Button(
-                        onClick = { showList = true }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Text(
-                            text = stringResource(R.string.select_package),
-                            fontSize = AppConstants.textSize
-                        )
-                    }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Button(
-                        onClick = {
-                            if (key != ' ' && value.isNotEmpty())
-                                mapper.register(key, value)
-                            onClose()
-                        },
-                    ) {
-                        Text(
-                            text = stringResource(R.string.save),
-                            fontSize = AppConstants.textSize
-                        )
-                    }
-                    Button(
-                        onClick = {
-                            mapper.register(' ', value)
-                            onClose()
+                        Button(
+                            onClick = {
+                                if (newLetter != ' ' && newPackage.isNotEmpty())
+                                    mapper.register(newLetter, newPackage)
+                                onClose()
+                            },
+                        ) {
+                            Text(
+                                text = stringResource(R.string.save),
+                                fontSize = AppConstants.textSize
+                            )
                         }
-                    ) {
-                        Text(
-                            text = stringResource(R.string.remove),
-                            fontSize = AppConstants.textSize
-                        )
+                        Button(
+                            onClick = {
+                                mapper.register(' ', newPackage)
+                                onClose()
+                            }
+                        ) {
+                            Text(
+                                text = stringResource(R.string.remove),
+                                fontSize = AppConstants.textSize
+                            )
+                        }
                     }
                 }
             }
@@ -189,12 +271,13 @@ fun PackageList(
 
     if (showEditDialog) {
         EditPackage(
-            mapper,
-            editLetter,
-            editPackageName,
-            packageList,
-            onClose = { showEditDialog = false }
-        )
+            mapper = mapper,
+            letter = editLetter,
+            packageName = editPackageName,
+            packageList = packageList,
+        ) {
+            showEditDialog = false
+        }
     }
 
     Column {
@@ -247,7 +330,7 @@ fun PackageLine(
     packageName: String,
     onEdit: () -> Unit
 ) {
-    Row (
+    Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(4.dp)
     ) {
@@ -283,7 +366,7 @@ fun PackageLine(
 @Preview
 @Composable
 fun SelectPackagePreview() {
-    SelectPackage(PreviewPackageList,{}) { }
+    SelectPackage(PreviewPackageList, {}) { }
 }
 
 @Preview
@@ -291,10 +374,10 @@ fun SelectPackagePreview() {
 fun EditPackagePreview() {
     val mapper = Mapper(LocalContext.current)
     EditPackage(
-        mapper,
-        'S',
-        "com.android.google.messaging",
-        PreviewPackageList
+        mapper = mapper,
+        letter ='S',
+        packageName = "com.android.google.apps.messaging",
+        packageList = PreviewPackageList
     ) { }
 }
 
@@ -303,4 +386,10 @@ fun EditPackagePreview() {
 fun PackageListPreview() {
     val mapper = Mapper(LocalContext.current)
     PackageList(PreviewMap, mapper, PreviewPackageList)
+}
+
+@Preview
+@Composable
+fun SelectPackageEmpty() {
+    SelectPackage(listOf(), {}) { }
 }

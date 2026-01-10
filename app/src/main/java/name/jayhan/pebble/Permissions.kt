@@ -24,6 +24,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.MutableStateFlow
 
+const val ENABLED_LISTENERS = "enabled_notification_listeners"
+const val ACTION_LISTENER = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"
 const val NOTIFICATION_LISTENER = "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
 const val FOREGROUND_SERVICE = "android.permission.FOREGROUND_SERVICE"
 const val POST_NOTIFICATION = "android.permission.POST_NOTIFICATIONS"
@@ -31,6 +33,7 @@ const val PHONE_STATE = "android.permission.READ_PHONE_STATE"
 const val NEARBY_SERVICES = "android.permission.BLUETOOTH_CONNECT"
 const val FINE_LOCATION = "android.permission.ACCESS_FINE_LOCATION"
 const val BACKGROUND_LOCATION = "android.permission.ACCESS_BACKGROUND_LOCATION"
+const val QUERY_ALL_PACKAGES = "android.permission.QUERY_ALL_PACKAGES"
 
 val permissionsList = mapOf(
     NOTIFICATION_LISTENER to R.string.notification_listener,
@@ -39,7 +42,8 @@ val permissionsList = mapOf(
     PHONE_STATE to R.string.phone_state,
     NEARBY_SERVICES to R.string.nearby_service,
     FINE_LOCATION to R.string.fine_location,
-    BACKGROUND_LOCATION to R.string.background_location
+    BACKGROUND_LOCATION to R.string.background_location,
+    QUERY_ALL_PACKAGES to R.string.query_all_packages
 )
 
 class SinglePermission(
@@ -53,7 +57,7 @@ class SinglePermission(
             NOTIFICATION_LISTENER ->
                 Settings.Secure.getString(
                     context.contentResolver,
-                    "enabled_notification_listeners"
+                    ENABLED_LISTENERS
                 )
                     .contains(context.packageName)
 
@@ -126,7 +130,7 @@ object Permissions
                 when (permission.name) {
                     NOTIFICATION_LISTENER -> {
                         val settingsIntent =
-                            Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+                            Intent(ACTION_LISTENER)
                         mainActivity.startActivity(settingsIntent)
                         break
                     }
