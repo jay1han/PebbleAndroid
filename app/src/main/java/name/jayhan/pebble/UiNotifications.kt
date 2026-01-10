@@ -74,6 +74,7 @@ fun ListActiveNotifications(
 
 @Composable
 fun EditNotificationItem(
+    mapper: Mapper,
     letter: Char,
     packageName: String,
     onClose: () -> Unit
@@ -138,7 +139,7 @@ fun EditNotificationItem(
                     Button(
                         onClick = {
                             if (key != ' ' && value.isNotEmpty())
-                                Mapper.register(key, value)
+                                mapper.register(key, value)
                             onClose()
                         },
                     ) {
@@ -149,7 +150,7 @@ fun EditNotificationItem(
                     }
                     Button(
                         onClick = {
-                            Mapper.register(' ', value)
+                            mapper.register(' ', value)
                             onClose()
                         }
                     ) {
@@ -165,7 +166,9 @@ fun EditNotificationItem(
 }
 
 @Composable
-fun NotificationsList() {
+fun NotificationsList(
+    mapper: Mapper
+) {
     val map by Notifications.mapFlow.collectAsState(emptyMap())
     var showEditDialog by remember { mutableStateOf(false) }
     var editLetter by remember { mutableStateOf(' ') }
@@ -173,6 +176,7 @@ fun NotificationsList() {
 
     if (showEditDialog) {
         EditNotificationItem(
+            mapper,
             editLetter,
             editPackageName,
             onClose = { showEditDialog = false }
@@ -197,7 +201,7 @@ fun NotificationsList() {
         ) {
             Button(
                 onClick = {
-                    Mapper.reset()
+                    mapper.reset()
                 },
             ) {
                 Text(

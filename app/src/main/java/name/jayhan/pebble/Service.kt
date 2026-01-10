@@ -42,11 +42,11 @@ class PebbleService(): Service() {
                     as NotificationManager
             val channel = NotificationChannel(
                 AppConstants.CHANNEL_ID,
-                AppString.get(R.string.app_title),
+                getString(R.string.app_title),
                 IMPORTANCE_LOW
             ).apply {
                 setShowBadge(false)
-                description = AppString.get(R.string.channel_description)
+                description = getString(R.string.channel_description)
             }
             notiMan.createNotificationChannel(channel)
 

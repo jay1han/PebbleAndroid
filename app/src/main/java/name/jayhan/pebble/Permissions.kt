@@ -13,6 +13,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.flow.MutableStateFlow
 
 const val NOTIFICATION_LISTENER = "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
 const val FOREGROUND_SERVICE = "android.permission.FOREGROUND_SERVICE"
@@ -77,7 +78,7 @@ class PermissionsCallback(
 object Permissions
 {
     var allGranted = false
-    private lateinit var context: Context
+    val grantFlow = MutableStateFlow(allGranted)
     private lateinit var mainActivity: ComponentActivity
     val list = mutableListOf<SinglePermission>()
     private lateinit var permissionsLauncher: ActivityResultLauncher<Array<String>>
@@ -87,11 +88,10 @@ object Permissions
         mainActivity: MainActivity,
         onAllGranted: () -> Unit
     ) {
-        this.context = context
         this.mainActivity = mainActivity
 
         for (name in permissionsList) {
-            list.add(SinglePermission(this.context, name))
+            list.add(SinglePermission(context, name))
         }
 
         val permissionsContract = ActivityResultContracts.RequestMultiplePermissions()
@@ -134,10 +134,12 @@ object Permissions
         for (singlePermission in list) {
             if (!singlePermission.granted) {
                 allGranted = false
+                grantFlow.value = false
                 return
             }
         }
         allGranted = true
+        grantFlow.value = true
     }
 
     fun update(

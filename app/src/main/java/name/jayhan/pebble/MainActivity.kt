@@ -7,10 +7,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,31 +45,9 @@ object AppConstants {
     val APP_UUID: UUID? = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
 }
 
-object AppString {
-    private lateinit var context: Context
-
-    fun init(context: Context) {
-        if (this::context.isInitialized) return
-
-        this.context = context
-    }
-
-    fun get(id: Int): String {
-        return context.getString(id)
-    }
-}
-
-object Mapper {
-    private lateinit var context: Context
-
-    fun init(
-        context: Context
-    ) {
-        if (this::context.isInitialized) return
-
-        this.context = context
-    }
-
+class Mapper(
+    private val context: Context
+) {
     fun register(
         key: Char,
         value: String
@@ -99,15 +74,15 @@ class MainActivity :
         super.onCreate(savedInstanceState)
 
         context = applicationContext
-        AppString.init(context)
-        Mapper.init(context)
+        val mapper = Mapper(context)
 
         Permissions.start(context, this) {
             startServices()
         }
 
         setContent {
-            AppScaffold() {
+            AppScaffold(mapper)
+            {
                 stopServices()
                 finish()
             }

@@ -39,9 +39,10 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun AppScaffold(
+    mapper: Mapper,
     onQuit: () -> Unit
 ) {
-    val permissionsGranted by remember { mutableStateOf(Permissions.allGranted) }
+    val permissionsGranted by Permissions.grantFlow.collectAsState(Permissions.allGranted)
 
     Scaffold(
         topBar = {
@@ -52,6 +53,7 @@ fun AppScaffold(
     ) { innerPadding ->
         if (permissionsGranted) {
             MainPage(
+                mapper,
                 Modifier.padding(innerPadding)
             )
         } else {
@@ -93,6 +95,7 @@ fun TopBar(
 
 @Composable
 fun MainPage(
+    mapper: Mapper,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -101,7 +104,7 @@ fun MainPage(
         Watchface()
         AwayTimezone()
         Box(Modifier.height(AppConstants.padSize))
-        NotificationsList()
+        NotificationsList(mapper)
     }
 }
 
