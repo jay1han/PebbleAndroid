@@ -101,12 +101,9 @@ class MainActivity :
         AppString.init(context)
         Mapper.init(context)
 
-        // TODO: Extract to callable function
-        Permissions.start(context, this)
-
-        // TODO: Extract to callable function
-        val intent = Intent(context, PebbleService::class.java)
-        context.startForegroundService(intent)
+        Permissions.start(context, this) {
+            startServices()
+        }
 
         setContent {
             Scaffold(
@@ -117,17 +114,24 @@ class MainActivity :
                     }
                 }
             ) { innerPadding ->
-                if (Permissions.isGranted(NOTIFICATION_LISTENER)) {
+                if (Permissions.allGranted()) {
                     MainPage(
                         Modifier.padding(innerPadding)
                     )
                 } else {
                     UiPermissions(
                         Modifier.padding(innerPadding)
-                    )
+                    ) {
+                        startServices()
+                    }
                 }
             }
         }
+    }
+
+    private fun startServices() {
+        val intent = Intent(context, PebbleService::class.java)
+        context.startForegroundService(intent)
     }
 
     private fun stopServices() {
