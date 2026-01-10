@@ -68,7 +68,7 @@ object WifiCallback :
         val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.WIFI.code)
         pebbleDict.addString(DictKey.WIFI.code, ssid)
-        Pebble.send(pebbleDict)
+        Pebble.sendDict(pebbleDict)
     }
 }
 
@@ -137,6 +137,6 @@ object PhoneCallback:
         val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NET.code)
         pebbleDict.addInt8(DictKey.NET.code, gen.toByte())
-        Pebble.send(pebbleDict)
+        Pebble.sendDict(pebbleDict)
     }
 }

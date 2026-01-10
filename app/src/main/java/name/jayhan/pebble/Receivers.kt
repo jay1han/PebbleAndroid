@@ -59,7 +59,7 @@ object BatteryReceiver:
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.PHONE_CHG.code)
         pebbleDict.addInt8(DictKey.PHONE_CHG.code, if (isPlugged) 1.toByte() else 0.toByte())
         pebbleDict.addInt8(DictKey.PHONE_BATT.code, percent.toByte())
-        Pebble.send(pebbleDict)
+        Pebble.sendDict(pebbleDict)
     }
 }
 
@@ -139,6 +139,6 @@ object BluetoothReceiver:
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.BT.code)
         pebbleDict.addString(DictKey.BTID.code, name.take(19))
         pebbleDict.addInt8(DictKey.BTC.code, battery.toByte())
-        Pebble.send(pebbleDict)
+        Pebble.sendDict(pebbleDict)
     }
 }

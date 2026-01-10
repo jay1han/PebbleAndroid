@@ -9,6 +9,7 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.getpebble.android.kit.util.PebbleDictionary
 import kotlinx.coroutines.flow.MutableStateFlow
+import androidx.core.content.edit
 
 class NotificationListener:
     NotificationListenerService() {
@@ -35,7 +36,7 @@ class NotificationListener:
     private fun sendToMain() {
         val active = context.getSharedPreferences(AppConstants.NOTI_DB, MODE_PRIVATE)
         var count = 0
-        with(active.edit()) {
+        active.edit {
             clear()
             for (notification in activeNotifications) {
                 if (!notification.isOngoing
@@ -46,7 +47,6 @@ class NotificationListener:
                 }
             }
             putInt(AppConstants.ACTIVE_COUNT, count)
-            apply()
         }
 
         sendBroadcast(Intent(AppConstants.INTENT_SBN))
@@ -60,15 +60,15 @@ private fun emptyMap(): CharToString {
 
 object Notifications:
     BroadcastReceiver() {
-    private lateinit var context: Context
-    private lateinit var prefs: SharedPreferences
+    private lateinit var packageList: SharedPreferences
+    private lateinit var notificationsList: SharedPreferences
 
     val mapFlow = MutableStateFlow<CharToString>(emptyMap())
     val listFlow = MutableStateFlow<MutableList<String>>(mutableListOf())
 
     private fun readMap() {
         val newMap = emptyMap()
-        for (item in prefs.all) {
+        for (item in packageList.all) {
             if (item.key.length == 1) {
                 val letter = item.key[0]
                 val packageName = item.value as String
@@ -79,27 +79,24 @@ object Notifications:
     }
 
     private fun writeMap(map: CharToString) {
-        with (prefs.edit()) {
+        packageList.edit {
             clear()
             for (item in map) {
                 putString(item.key.toString(), item.value)
             }
-            apply()
         }
     }
 
     fun init(
         context: Context
     ) {
-        if (this::context.isInitialized && this.context != context) {
-            context.unregisterReceiver(this)
-        }
-
-        this.context = context
-        prefs = context.getSharedPreferences(
+        packageList = context.getSharedPreferences(
             AppConstants.PREF_NAME,
             Context.MODE_PRIVATE
         )
+        notificationsList = context.getSharedPreferences(
+            AppConstants.NOTI_DB,
+            Context.MODE_PRIVATE)
 
         readMap()
 
@@ -119,11 +116,10 @@ object Notifications:
             AppConstants.INTENT_SBN -> {
                 val newList: MutableList<String> = mutableListOf()
                 val compact: MutableSet<Char> = mutableSetOf()
-                val active = this.context.getSharedPreferences(AppConstants.NOTI_DB, Context.MODE_PRIVATE)
 
-                val count = active.getInt(AppConstants.ACTIVE_COUNT, 0)
+                val count = notificationsList.getInt(AppConstants.ACTIVE_COUNT, 0)
                 for (index in 0..<count) {
-                    val name = active.getString(index.toString(), "")
+                    val name = notificationsList.getString(index.toString(), "")
                     if (name != null) {
                         val letter = find(name)
                         compact.add(letter)
@@ -139,7 +135,7 @@ object Notifications:
                 val pebbleDict = PebbleDictionary()
                 pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NOTI.code)
                 pebbleDict.addString(DictKey.NOTI.code, text)
-                Pebble.send(pebbleDict)
+                Pebble.sendDict(pebbleDict)
             }
             AppConstants.INTENT_REGISTER_MAP -> {
                 val key = intent.getStringExtra(AppConstants.EXTRA_MAP_KEY)!![0]

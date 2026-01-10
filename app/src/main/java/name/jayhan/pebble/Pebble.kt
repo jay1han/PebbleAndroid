@@ -69,7 +69,7 @@ object PebbleReceiver:
                     val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.code).toInt()
                     Pebble.setWatchInfo(watchModel, watchFwVersion)
                     val tzMinutes = data.getInteger(DictKey.TZ_MINS.code).toInt()
-                    Timezone.fromMinutes(tzMinutes)
+                    Pebble.fromMinutes(tzMinutes)
                 }
 
                 MsgType.ACTION.code -> {
@@ -85,9 +85,14 @@ object PebbleReceiver:
     }
 }
 
+class WatchInfo(
+    val model: String = "",
+    val version: String = ""
+)
+
 object Pebble {
     private lateinit var context: Context
-    val infoFlow = MutableStateFlow("")
+    val infoFlow = MutableStateFlow(WatchInfo())
     val isConnected = MutableStateFlow(false)
 
     fun init(
@@ -105,10 +110,10 @@ object Pebble {
     fun askInfo() {
         val initDict = PebbleDictionary()
         initDict.addInt8(DictKey.MSG_TYPE.code, MsgType.INFO.code)
-        send(initDict)
+        sendDict(initDict)
     }
 
-    fun send(pebbleDict: PebbleDictionary) {
+    fun sendDict(pebbleDict: PebbleDictionary) {
         PebbleKit.sendDataToPebble(context, AppConstants.APP_UUID, pebbleDict)
     }
 
@@ -123,14 +128,10 @@ object Pebble {
                 (watchFwVersion shr 8) and 0xFF,
                 watchFwVersion and 0xFF
             )
-        infoFlow.value = context.getString(R.string.model) +
-                ": ${WatchModels[watchModel]}\nVersion: $versionString"
+        infoFlow.value = WatchInfo(WatchModels[watchModel], versionString)
     }
-}
 
-object Timezone {
     private var minutes: Int = 0
-
     val tzFlow = MutableStateFlow("+0.0")
 
     fun fromString(text: String): String {
@@ -150,7 +151,7 @@ object Timezone {
         }
         if (negative) minutes = -minutes
 
-        toPebble()
+        timezoneToPebble()
         return get()
     }
 
@@ -168,10 +169,10 @@ object Timezone {
         return string
     }
 
-    fun toPebble() {
+    fun timezoneToPebble() {
         val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.TZ.code)
         pebbleDict.addInt16(DictKey.TZ_MINS.code, minutes.toShort())
-        Pebble.send(pebbleDict)
+        sendDict(pebbleDict)
     }
 }

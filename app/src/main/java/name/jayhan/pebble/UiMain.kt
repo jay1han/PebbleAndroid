@@ -119,7 +119,7 @@ fun Section(text: String = "") {
 
 @Composable
 fun Watchface() {
-    val watchInfo: String by Pebble.infoFlow.collectAsState("")
+    val watchInfo: WatchInfo by Pebble.infoFlow.collectAsState(WatchInfo())
     val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
 
     Column {
@@ -133,7 +133,10 @@ fun Watchface() {
         )
         if (isConnected) {
             Text(
-                text = watchInfo,
+                text = stringResource(R.string.model) + ": " +
+                        watchInfo.model + "\n" +
+                        stringResource(R.string.version) + ": " +
+                        watchInfo.version,
                 fontSize = AppConstants.textSize,
             )
         } else {
@@ -160,7 +163,7 @@ fun Watchface() {
 
 @Composable
 fun AwayTimezone() {
-    val tzWatch: String by Timezone.tzFlow.collectAsState("+0.0")
+    val tzWatch: String by Pebble.tzFlow.collectAsState("+0.0")
     var tz by remember { mutableStateOf("+0.0") }
     var editing by remember { mutableStateOf(false) }
 
@@ -184,7 +187,7 @@ fun AwayTimezone() {
             Button(
                 onClick = {
                     editing = false
-                    tz = Timezone.fromString(tz)
+                    tz = Pebble.fromString(tz)
                 },
                 modifier = Modifier.padding(AppConstants.padSize)
             ) {
