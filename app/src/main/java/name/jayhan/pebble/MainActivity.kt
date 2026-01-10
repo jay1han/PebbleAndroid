@@ -89,6 +89,11 @@ class MainActivity :
         }
     }
 
+    override fun onResume() {
+        Permissions.update(NOTIFICATION_LISTENER)
+        super.onResume()
+    }
+
     private fun startServices() {
         if (!servicesStarted) {
             val intent = Intent(context, PebbleService::class.java)

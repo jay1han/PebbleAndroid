@@ -109,13 +109,13 @@ object Permissions
                 PermissionsCallback(onAllGranted)
             )
 
-        updateAll()
+        collect()
         if (allGranted) {
             onAllGranted()
         }
     }
 
-    fun requestAll() {
+    fun request() {
         val request = mutableListOf<String>()
         for (permission in list) {
             if (!permission.granted) {
@@ -124,12 +124,13 @@ object Permissions
                         val settingsIntent =
                             Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
                         mainActivity.startActivity(settingsIntent)
+                        break
                     }
 
                     else -> {
                         mainActivity.shouldShowRequestPermissionRationale(permission.name)
                         request.add(permission.name)
-                        break   // TODO: Later, collect requests
+                        break
                     }
                 }
             }
@@ -140,7 +141,7 @@ object Permissions
         }
     }
 
-    fun updateAll() {
+    fun collect() {
         val missingList = mutableListOf<String>()
 
         for (permission in list) {
@@ -159,11 +160,11 @@ object Permissions
     ) {
         for (permission in list) {
             if (permission.name == name) {
-                permission.update()
+                if (!permission.granted) permission.update()
                 break
             }
         }
-        updateAll()
+        collect()
     }
 }
 
@@ -191,12 +192,12 @@ fun UiPermissions(
             Text(
                 text = stringResource(permissionsList[permission]!!),
                 modifier = Modifier.fillMaxWidth(),
-                fontSize = AppConstants.textSize
+                fontSize = AppConstants.smallSize
             )
         }
         Button (
             onClick = {
-                Permissions.requestAll()
+                Permissions.request()
             }
         ) {
             Text(
