@@ -69,7 +69,6 @@ fun TopBar(
 fun MainPage(
     modifier: Modifier = Modifier,
 ) {
-
     Column(
         modifier = modifier,
     ) {
@@ -185,3 +184,4 @@ fun AwayTimezone() {
         }
     }
 }
+

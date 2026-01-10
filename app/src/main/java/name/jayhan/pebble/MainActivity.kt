@@ -5,7 +5,6 @@ package name.jayhan.pebble
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
@@ -91,7 +90,8 @@ object Mapper {
     }
 }
 
-class MainActivity : ComponentActivity() {
+class MainActivity :
+    ComponentActivity() {
     private lateinit var context: Context
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,8 +100,11 @@ class MainActivity : ComponentActivity() {
         context = applicationContext
         AppString.init(context)
         Mapper.init(context)
-        getNotificationAccess()
 
+        // TODO: Extract to callable function
+        Permissions.start(context, this)
+
+        // TODO: Extract to callable function
         val intent = Intent(context, PebbleService::class.java)
         context.startForegroundService(intent)
 
@@ -113,11 +116,16 @@ class MainActivity : ComponentActivity() {
                         finish()
                     }
                 }
-            ) {
-                innerPadding ->
-                MainPage(
-                    Modifier.padding(innerPadding),
-                )
+            ) { innerPadding ->
+                if (Permissions.isGranted(NOTIFICATION_LISTENER)) {
+                    MainPage(
+                        Modifier.padding(innerPadding)
+                    )
+                } else {
+                    UiPermissions(
+                        Modifier.padding(innerPadding)
+                    )
+                }
             }
         }
     }
@@ -125,20 +133,5 @@ class MainActivity : ComponentActivity() {
     private fun stopServices() {
         val stopForeground = Intent(AppConstants.INTENT_SERVICE_STOP)
         context.sendBroadcast(stopForeground)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
-    private fun getNotificationAccess() {
-        if (!Settings.Secure.getString(
-                context.contentResolver,
-                "enabled_notification_listeners"
-            ).contains(context.packageName)) {
-            val settingsIntent =
-                Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
-            this.startActivity(settingsIntent)
-        }
     }
 }
