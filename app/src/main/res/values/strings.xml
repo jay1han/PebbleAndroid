@@ -23,5 +23,5 @@
     <string name="fine_location">Needed to check WiFi state</string>
     <string name="background_location">Also needed for continuous monitoring of Bluetooth and WiFi</string>
     <string name="coarse_location">Basic access to location information, needed to further access WiFi and Bluetooth states</string>
-    <string name="retry">Retry</string>
+    <string name="grant">Grant permission</string>
 </resources>

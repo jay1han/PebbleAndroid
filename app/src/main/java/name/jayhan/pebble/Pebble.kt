@@ -90,18 +90,19 @@ class WatchInfo(
     val version: String = ""
 )
 
-object Pebble {
+object Pebble
+{
     private lateinit var context: Context
     val infoFlow = MutableStateFlow(WatchInfo())
     val isConnected = MutableStateFlow(false)
 
     fun init(
-        context: Context
+        newContext: Context
     ) {
-        if (this::context.isInitialized && this.context != context) {
-            this.context.unregisterReceiver(PebbleReceiver)
+        if (this::context.isInitialized && this.context != newContext) {
+            context.unregisterReceiver(PebbleReceiver)
         }
-        this.context = context
+        context = newContext
 
         val dataFilter = IntentFilter(com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE)
         context.registerReceiver(PebbleReceiver, dataFilter, RECEIVER_EXPORTED)
@@ -113,7 +114,9 @@ object Pebble {
         sendDict(initDict)
     }
 
-    fun sendDict(pebbleDict: PebbleDictionary) {
+    fun sendDict(
+        pebbleDict: PebbleDictionary
+    ) {
         PebbleKit.sendDataToPebble(context, AppConstants.APP_UUID, pebbleDict)
     }
 

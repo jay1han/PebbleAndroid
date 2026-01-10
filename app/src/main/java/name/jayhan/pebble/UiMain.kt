@@ -29,7 +29,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -39,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -57,8 +57,8 @@ fun AppScaffold(
     ) { innerPadding ->
         if (permissionsGranted) {
             MainPage(
-                mapper,
-                Modifier.padding(innerPadding)
+                mapper = mapper,
+                modifier = Modifier.padding(innerPadding)
             )
         } else {
             val missingList by Permissions.missingFlow.collectAsState(listOf())
@@ -112,8 +112,10 @@ fun MainPage(
     Column(
         modifier = modifier.verticalScroll(scrollState),
     ) {
-        Watchface()
-        AwayTimezone()
+        Watchface { Pebble.askInfo() }
+        AwayTimezone { tz ->
+            Pebble.fromString(tz)
+        }
         Box(Modifier.height(AppConstants.padSize))
         PackageList(packageMap, mapper, packageList)
     }
@@ -129,7 +131,9 @@ fun Section(text: String = "") {
 }
 
 @Composable
-fun Watchface() {
+fun Watchface(
+    onReconnect: () -> Unit
+) {
     val watchInfo: WatchInfo by Pebble.infoFlow.collectAsState(WatchInfo())
     val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
 
@@ -152,7 +156,7 @@ fun Watchface() {
             )
         } else {
             Button(
-                onClick = { Pebble.askInfo() },
+                onClick = { onReconnect() },
             ) {
                 Text(
                     text = stringResource(R.string.reconnect),
@@ -173,7 +177,9 @@ fun Watchface() {
 }
 
 @Composable
-fun AwayTimezone() {
+fun AwayTimezone(
+    onApply: (String) -> String
+) {
     val tzWatch: String by Pebble.tzFlow.collectAsState("+0.0")
     var tz by remember { mutableStateOf("+0.0") }
     var editing by remember { mutableStateOf(false) }
@@ -198,7 +204,7 @@ fun AwayTimezone() {
             Button(
                 onClick = {
                     editing = false
-                    tz = Pebble.fromString(tz)
+                    tz = onApply(tz)
                 },
                 modifier = Modifier.padding(AppConstants.padSize)
             ) {
@@ -232,5 +238,8 @@ fun AwayTimezone() {
 @Composable
 fun MainPagePreview() {
     val mapper = Mapper(LocalContext.current)
-    MainPage(mapper, Modifier)
+    MainPage(
+        mapper = mapper,
+        modifier = Modifier
+    )
 }

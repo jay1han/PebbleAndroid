@@ -13,10 +13,9 @@ import android.telephony.TelephonyManager
 import com.getpebble.android.kit.util.PebbleDictionary
 
 class WifiCallback(
-    connMan: ConnectivityManager,
+    private val connMan: ConnectivityManager,
 ) :
     ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
-    private lateinit var connMan: ConnectivityManager
 
     init {
         sendToPebble("")

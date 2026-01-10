@@ -210,7 +210,7 @@ fun UiPermissions(
                 },
             ) {
                 Text(
-                    stringResource(R.string.retry),
+                    stringResource(R.string.grant),
                     fontSize = AppConstants.textSize,
                 )
             }

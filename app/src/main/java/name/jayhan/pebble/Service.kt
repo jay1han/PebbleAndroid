@@ -18,6 +18,7 @@ import android.telephony.TelephonyManager
 
 class PebbleService():
     Service() {
+
     private lateinit var context: Context
     private lateinit var connMan: ConnectivityManager
     private lateinit var teleMan: TelephonyManager

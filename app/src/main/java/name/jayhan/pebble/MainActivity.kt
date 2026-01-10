@@ -81,7 +81,8 @@ class MainActivity :
         }
 
         setContent {
-            AppScaffold(mapper)
+            AppScaffold(
+                mapper = mapper)
             {
                 stopServices()
                 finish()
