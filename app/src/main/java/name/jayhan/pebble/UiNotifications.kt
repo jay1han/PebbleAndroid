@@ -34,7 +34,7 @@ fun ListActiveNotifications(
     onClose: () -> Unit,
     onSelect: (String) -> Unit
 ) {
-    val notificationList by Notifications.listFlow.collectAsState(listOf())
+    val notificationList by Notifications.listFlow.collectAsState(Notifications.listFlow.value)
 
     Dialog(
         onDismissRequest = onClose
