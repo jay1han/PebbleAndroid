@@ -10,14 +10,18 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.MutableStateFlow
 
 const val NOTIFICATION_LISTENER = "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
@@ -170,40 +174,57 @@ object Permissions
 
 @Composable
 fun UiPermissions(
+    missingList: List<String>,
     modifier: Modifier = Modifier
 ) {
-    val missingList by Permissions.missingFlow.collectAsState(listOf())
+    val scrollState = rememberScrollState()
 
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.Top
     ) {
-        Text(
-            text = "Permissions missing",
-            modifier = Modifier.fillMaxWidth(),
-            fontSize = AppConstants.titleSize,
-        )
-        for (permission in missingList) {
-            Text(
-                text = permission,
-                modifier = Modifier.fillMaxWidth(),
-                fontSize = AppConstants.textSize
-            )
-            Text(
-                text = stringResource(permissionsList[permission]!!),
-                modifier = Modifier.fillMaxWidth(),
-                fontSize = AppConstants.smallSize
-            )
-        }
-        Button (
-            onClick = {
-                Permissions.request()
+        Column {
+            for (permission in missingList) {
+                Text(
+                    text = permission.removePrefix("android.permission."),
+                    modifier = Modifier.fillMaxWidth(),
+                    fontSize = AppConstants.textSize
+                )
+                Text(
+                    text = stringResource(permissionsList[permission]!!),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    fontSize = AppConstants.smallSize,
+                )
             }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
         ) {
-            Text(
-                "Retry",
-                fontSize = AppConstants.textSize
-            )
+            Button(
+                onClick = {
+                    Permissions.request()
+                },
+            ) {
+                Text(
+                    stringResource(R.string.retry),
+                    fontSize = AppConstants.textSize,
+                )
+            }
         }
     }
+}
+
+@Preview
+@Composable
+fun UiPermissionsPreview() {
+    val missingList = permissionsList.map { it.key }
+
+    UiPermissions(
+        missingList,
+        Modifier
+    )
 }

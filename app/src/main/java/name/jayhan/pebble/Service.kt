@@ -16,10 +16,16 @@ import android.net.ConnectivityManager
 import android.os.IBinder
 import android.telephony.TelephonyManager
 
-class PebbleService(): Service() {
+class PebbleService():
+    Service() {
     private lateinit var context: Context
     private lateinit var connMan: ConnectivityManager
     private lateinit var teleMan: TelephonyManager
+    private lateinit var batteryReceiver: BatteryReceiver
+    private lateinit var bluetoothReceiver: BluetoothReceiver
+    private lateinit var wifiCallback: WifiCallback
+    private lateinit var phoneCallback: PhoneCallback
+
     private val delReceiver = DelReceiver()
     private val stopReceiver = StopReceiver()
 
@@ -66,11 +72,11 @@ class PebbleService(): Service() {
         Pebble.init(context)
         Notifications.init(context)
 
-        BatteryReceiver.init(context)
-        BluetoothReceiver.init(context)
+        batteryReceiver = BatteryReceiver(context)
+        bluetoothReceiver = BluetoothReceiver(context)
 
-        WifiCallback.init(connMan)
-        PhoneCallback.init(teleMan, context)
+        wifiCallback = WifiCallback(connMan)
+        phoneCallback = PhoneCallback(teleMan, context)
     }
 
     private fun setupForeground() {

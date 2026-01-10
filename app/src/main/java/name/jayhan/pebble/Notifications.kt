@@ -65,6 +65,7 @@ object Notifications:
 
     val mapFlow = MutableStateFlow<CharToString>(emptyMap())
     val listFlow = MutableStateFlow<MutableList<String>>(mutableListOf())
+    var activeList = mutableListOf<String>()
 
     private fun readMap() {
         val newMap = emptyMap()
@@ -114,7 +115,7 @@ object Notifications:
         
         when (intent.action) {
             AppConstants.INTENT_SBN -> {
-                val newList: MutableList<String> = mutableListOf()
+                val newList  = mutableListOf<String>()
                 val compact: MutableSet<Char> = mutableSetOf()
 
                 val count = notificationsList.getInt(AppConstants.ACTIVE_COUNT, 0)
@@ -127,7 +128,8 @@ object Notifications:
                     }
                 }
 
-                listFlow.value = newList
+                activeList = newList
+                listFlow.value = activeList
 
                 compact.remove(' ')
                 val text = compact.joinToString("").take(10)

@@ -13,20 +13,14 @@ import android.os.BatteryManager
 import androidx.annotation.RequiresPermission
 import com.getpebble.android.kit.util.PebbleDictionary
 
-object BatteryReceiver:
+class BatteryReceiver(
+    context: Context
+):
     BroadcastReceiver() {
-    private lateinit var context: Context
     private var isPlugged = false
     private var percent = 0
 
-    fun init(
-        context: Context
-    ) {
-        if (this::context.isInitialized && this.context != context) {
-            this.context.unregisterReceiver(this)
-        }
-        this.context = context
-
+    init {
         sendToPebble()
 
         val batteryFilter = IntentFilter().apply {
@@ -87,26 +81,25 @@ private fun BluetoothDevice.getBatteryLevel(): Int {
     }
 }
 
-object BluetoothReceiver:
+class BluetoothReceiver(
+    context: Context
+):
     BroadcastReceiver() {
-    private lateinit var context: Context
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun init(context: Context) {
-        val blueMan = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        val bluetoothAdapter = blueMan.adapter
-        val devices = bluetoothAdapter.bondedDevices
-        val connectedDevice = devices.firstOrNull { it.isConnected() }
-        if (connectedDevice != null) {
-            sendToPebble(connectedDevice.name, connectedDevice.getBatteryLevel())
-        } else {
-            sendToPebble("", 0)
+    init {
+        try {
+            val blueMan = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+            val bluetoothAdapter = blueMan.adapter
+            val devices = bluetoothAdapter.bondedDevices
+            val connectedDevice = devices.firstOrNull { it.isConnected() }
+            if (connectedDevice != null) {
+                sendToPebble(connectedDevice.name, connectedDevice.getBatteryLevel())
+            } else {
+                sendToPebble("", 0)
+            }
+        } catch(e: SecurityException) {
+            println(e)
         }
-
-        if (this::context.isInitialized && this.context != context) {
-            this.context.unregisterReceiver(this)
-        }
-        this.context = context
 
         context.registerReceiver(
             this,

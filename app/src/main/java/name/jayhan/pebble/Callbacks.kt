@@ -1,31 +1,24 @@
 package name.jayhan.pebble
 
-import android.Manifest
+import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
-import com.getpebble.android.kit.util.PebbleDictionary
-import android.content.Context
 import android.telephony.ServiceState
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
-import androidx.annotation.RequiresPermission
+import com.getpebble.android.kit.util.PebbleDictionary
 
-object WifiCallback :
+class WifiCallback(
+    connMan: ConnectivityManager,
+) :
     ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
     private lateinit var connMan: ConnectivityManager
 
-    fun init(
-        connMan: ConnectivityManager,
-    ) {
-        if (this::connMan.isInitialized && this.connMan != connMan) {
-            this.connMan.unregisterNetworkCallback(this)
-        }
-        this.connMan = connMan
-
+    init {
         sendToPebble("")
         val networkRequest = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
@@ -74,31 +67,23 @@ object WifiCallback :
     }
 }
 
-object PhoneCallback:
+class PhoneCallback(
+    teleMan: TelephonyManager,
+    context: Context
+):
     TelephonyCallback(), TelephonyCallback.ServiceStateListener {
 
-    private lateinit var teleMan: TelephonyManager
-
-    @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
-    fun init(
-        teleMan: TelephonyManager,
-        context: Context
-    ) {
-        if (this::teleMan.isInitialized && this.teleMan != teleMan) {
-            this.teleMan.unregisterTelephonyCallback(this)
-        }
-        this.teleMan = teleMan
-
-        val cellType = teleMan.dataNetworkType
-        sendToPebble(getCellGen(cellType))
-
+    init {
         try {
+            val cellType = teleMan.dataNetworkType
+            sendToPebble(getCellGen(cellType))
+
             teleMan.registerTelephonyCallback(
                 TelephonyManager.INCLUDE_LOCATION_DATA_FINE,
                 context.mainExecutor,
                 this
             )
-        } catch (e: Exception) {
+        } catch (e: SecurityException) {
             println(e)
         }
     }

@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledIconButton
@@ -15,26 +17,28 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
 @Composable
-fun ListActiveNotifications(
+fun SelectPackage(
+    packageList: List<String>,
     onClose: () -> Unit,
     onSelect: (String) -> Unit
 ) {
-    val notificationList by Notifications.listFlow.collectAsState(Notifications.listFlow.value)
+    val scrollState = rememberScrollState()
 
     Dialog(
         onDismissRequest = onClose
@@ -43,13 +47,15 @@ fun ListActiveNotifications(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
+                modifier = Modifier.verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = stringResource(R.string.select_package),
-                    fontSize = AppConstants.titleSize
+                    fontSize = AppConstants.titleSize,
+                    modifier = Modifier.padding(10.dp)
                 )
-                for (packageName in notificationList) {
+                for (packageName in packageList) {
                     ListItem(
                         modifier = Modifier.padding(0.dp),
                         headlineContent = {
@@ -73,10 +79,11 @@ fun ListActiveNotifications(
 }
 
 @Composable
-fun EditNotificationItem(
+fun EditPackage(
     mapper: Mapper,
     letter: Char,
     packageName: String,
+    packageList: List<String>,
     onClose: () -> Unit
 ) {
     var key by remember { mutableStateOf(letter) }
@@ -84,7 +91,8 @@ fun EditNotificationItem(
     var showList by remember { mutableStateOf(false) }
 
     if (showList) {
-        ListActiveNotifications(
+        SelectPackage(
+            packageList,
             onClose = { showList = false }
         ) { name: String -> value = name }
     } else {
@@ -92,10 +100,12 @@ fun EditNotificationItem(
             onDismissRequest = onClose,
         ) {
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(20.dp),
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
                 ) {
                     OutlinedTextField(
                         value = key.toString(),
@@ -104,6 +114,7 @@ fun EditNotificationItem(
                         textStyle = TextStyle(
                             fontSize = AppConstants.titleSize,
                             color = AppConstants.colorText,
+                            textAlign = TextAlign.Center,
                         ),
                         modifier = Modifier
                             .fillMaxWidth(.2f)
@@ -116,7 +127,8 @@ fun EditNotificationItem(
                         fontSize = AppConstants.textSize,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 8.dp)
+                            .align(Alignment.CenterVertically)
+                            .padding(horizontal = 8.dp),
                     )
                 }
                 Row(
@@ -166,67 +178,71 @@ fun EditNotificationItem(
 }
 
 @Composable
-fun NotificationsList(
-    mapper: Mapper
+fun PackageList(
+    map: Map<Char, String>,
+    mapper: Mapper,
+    packageList: List<String>
 ) {
-    val map by Notifications.mapFlow.collectAsState(emptyMap())
     var showEditDialog by remember { mutableStateOf(false) }
     var editLetter by remember { mutableStateOf(' ') }
     var editPackageName by remember { mutableStateOf("") }
 
     if (showEditDialog) {
-        EditNotificationItem(
+        EditPackage(
             mapper,
             editLetter,
             editPackageName,
+            packageList,
             onClose = { showEditDialog = false }
         )
     }
 
-    Section(stringResource(R.string.notifications))
-    for (item in map.toSortedMap()) {
-        NotificationLine(
-            item.key,
-            item.value,
-            onEdit = {
-                editLetter = item.key
-                editPackageName = item.value
-                showEditDialog = true
-            })
-    }
-    if (map.size < 9) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Button(
-                onClick = {
-                    mapper.reset()
-                },
-            ) {
-                Text(
-                    text = stringResource(R.string.reset),
-                    fontSize = AppConstants.textSize
-                )
-            }
-            Button(
-                onClick = {
-                    editLetter = ' '
-                    editPackageName = ""
+    Column {
+        Section(stringResource(R.string.packages))
+        for (item in map.toSortedMap()) {
+            PackageLine(
+                item.key,
+                item.value,
+                onEdit = {
+                    editLetter = item.key
+                    editPackageName = item.value
                     showEditDialog = true
-                },
+                })
+        }
+        if (map.size < 9) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = stringResource(R.string.add),
-                    fontSize = AppConstants.textSize
-                )
+                Button(
+                    onClick = {
+                        mapper.reset()
+                    },
+                ) {
+                    Text(
+                        text = stringResource(R.string.reset),
+                        fontSize = AppConstants.textSize
+                    )
+                }
+                Button(
+                    onClick = {
+                        editLetter = ' '
+                        editPackageName = ""
+                        showEditDialog = true
+                    },
+                ) {
+                    Text(
+                        text = stringResource(R.string.add),
+                        fontSize = AppConstants.textSize
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun NotificationLine(
+fun PackageLine(
     letter: Char,
     packageName: String,
     onEdit: () -> Unit
@@ -262,4 +278,29 @@ fun NotificationLine(
         }
 
     }
+}
+
+@Preview
+@Composable
+fun SelectPackagePreview() {
+    SelectPackage(PreviewPackageList,{}) { }
+}
+
+@Preview
+@Composable
+fun EditPackagePreview() {
+    val mapper = Mapper(LocalContext.current)
+    EditPackage(
+        mapper,
+        'S',
+        "com.android.google.messaging",
+        PreviewPackageList
+    ) { }
+}
+
+@Preview
+@Composable
+fun PackageListPreview() {
+    val mapper = Mapper(LocalContext.current)
+    PackageList(PreviewMap, mapper, PreviewPackageList)
 }
