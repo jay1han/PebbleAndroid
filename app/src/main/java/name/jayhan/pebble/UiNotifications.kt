@@ -8,9 +8,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -39,7 +42,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.graphics.createBitmap
-import kotlin.collections.emptyMap
 
 @Composable
 fun SelectPackage(
@@ -123,6 +125,15 @@ fun getApplicationIcon(
     return bitmap.asImageBitmap()
 }
 
+fun acceptLetter(input: String): Char {
+    if (input.isEmpty()) return ' '
+
+    val letter = input.uppercase()[0]
+    if (letter.isLetterOrDigit()) return letter
+
+    return letter
+}
+
 @Composable
 fun EditPackage(
     map: Map<Char, String>,
@@ -176,7 +187,7 @@ fun EditPackage(
                             )
                             OutlinedTextField(
                                 value = newLetter.toString(),
-                                onValueChange = { newLetter = if (it.isNotEmpty()) it.uppercase().last() else ' ' },
+                                onValueChange = { newLetter = acceptLetter(it) },
                                 singleLine = true,
                                 textStyle = TextStyle(
                                     fontSize = AppConstants.titleSize,
@@ -226,15 +237,24 @@ fun EditPackage(
                         }
                     }
 
+                    Spacer(Modifier.height(8.dp))
+
                     Text(
-                        text = newPackage.ifEmpty { stringResource(R.string.no_package) },
+                        text = "Package name",
                         fontSize = AppConstants.textSize,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    BasicTextField(
+                        value = newPackage.ifEmpty { stringResource(R.string.no_package) },
+                        onValueChange = { newPackage = it },
+                        textStyle = TextStyle(
+                            fontSize = AppConstants.textSize,
+                        ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(
-                                horizontal = 0.dp,
-                                vertical = 10.dp
-                            ),
+                            .padding(10.dp)
+                            .background(color = AppConstants.colorBlank)
                     )
 
                     Row(

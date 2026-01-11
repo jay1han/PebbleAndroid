@@ -1,5 +1,6 @@
 package name.jayhan.pebble
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Context.RECEIVER_EXPORTED
 import android.content.IntentFilter
@@ -90,6 +91,7 @@ class WatchInfo(
     val version: String = ""
 )
 
+@SuppressLint("StaticFieldLeak")
 object Pebble
 {
     private lateinit var context: Context
@@ -138,7 +140,7 @@ object Pebble
     val tzFlow = MutableStateFlow("+0.0")
 
     fun fromString(text: String): String {
-        if (text.isEmpty()) return get()
+        if (text.isEmpty()) return makeString()
         val negative = (text[0] == '-')
         val split = (if (negative) text.substring(1) else text)
             .split('.')
@@ -155,15 +157,15 @@ object Pebble
         if (negative) minutes = -minutes
 
         timezoneToPebble()
-        return get()
+        return makeString()
     }
 
     fun fromMinutes(tzMinutes: Int) {
         minutes = tzMinutes
-        get()
+        makeString()
     }
 
-    fun get(): String {
+    fun makeString(): String {
         val sign = if (minutes < 0) "-" else "+"
         val hours = minutes.absoluteValue / 60
         val frac = 100 * (minutes.absoluteValue - hours * 60) / 60

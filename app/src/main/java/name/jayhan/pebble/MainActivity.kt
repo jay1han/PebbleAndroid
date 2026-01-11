@@ -26,6 +26,7 @@ object AppConstants {
 
     val colorBack = Color(0xFFFF8000)
     val colorText = Color(0xFFFFFFFF)
+    val colorBlank = Color(0xFFFFFFFF)
 
     const val INTENT_SERVICE_STOP = "name.jayhan.pebble.SERVICE_STOP"
     const val INTENT_SBN = "name.jayhan.pebble.STATUS_BAR_NOTIFICATIONS"

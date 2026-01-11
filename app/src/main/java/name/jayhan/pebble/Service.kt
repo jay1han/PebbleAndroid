@@ -53,6 +53,7 @@ class PebbleService():
                 IMPORTANCE_LOW
             ).apply {
                 setShowBadge(false)
+                lockscreenVisibility = Notification.VISIBILITY_PRIVATE
                 description = getString(R.string.channel_description)
             }
             notiMan.createNotificationChannel(channel)
