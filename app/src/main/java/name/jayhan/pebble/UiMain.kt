@@ -101,7 +101,8 @@ fun TopBar(
 fun MainPage(
     modifier: Modifier = Modifier,
 ) {
-    val packageList by Notifications.listFlow.collectAsState(Notifications.activeList)
+    val activeList by Notifications.activeFlow.collectAsState(Notifications.activeList)
+    val allList by Notifications.allFlow.collectAsState(Notifications.allList)
     val scrollState = rememberScrollState()
 
     Column(
@@ -112,7 +113,7 @@ fun MainPage(
             Pebble.fromString(tz)
         }
         Box(Modifier.height(AppConstants.padSize))
-        MainPackageList(packageList)
+        MainPackageList(activeList, allList)
     }
 }
 

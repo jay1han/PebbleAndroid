@@ -35,12 +35,12 @@ object AppConstants {
 
     const val CHANNEL_ID = "PebbleService"
 
-
     const val PREF_NAME = "name.jayhan.pebble.NOTIFICATIONS_LIST"
     const val NOTI_DB = "name.jayhan.pebble.ACTIVE_NOTIFICATIONS"
     const val ACTIVE_COUNT = "count"
 
     val APP_UUID: UUID? = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
+    val MAX_NOTI_INDICATORS = 15
 }
 
 class MainActivity :

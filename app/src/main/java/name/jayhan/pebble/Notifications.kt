@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.getpebble.android.kit.util.PebbleDictionary
@@ -59,12 +60,15 @@ private fun emptyMap(): MutableMap<String, Char> {
 
 object Notifications:
     BroadcastReceiver() {
+    private lateinit var packageManager: PackageManager
     private lateinit var packageList: SharedPreferences
     private lateinit var notificationsList: SharedPreferences
 
-    val mapFlow = MutableStateFlow<MutableMap<String, Char>>(emptyMap())
-    val listFlow = MutableStateFlow<MutableList<String>>(mutableListOf())
-    var activeList = mutableListOf<String>()
+    val mapFlow = MutableStateFlow<Map<String, Char>>(emptyMap())
+    var activeList = listOf<String>()
+    val activeFlow = MutableStateFlow<List<String>>(mutableListOf())
+    var allList = listOf<String>()
+    val allFlow = MutableStateFlow<List<String>>(mutableListOf())
 
     private fun readMap() {
         val newMap = emptyMap()
@@ -89,6 +93,8 @@ object Notifications:
     fun init(
         context: Context
     ) {
+        packageManager = context.packageManager
+
         packageList = context.getSharedPreferences(
             AppConstants.PREF_NAME,
             Context.MODE_PRIVATE
@@ -104,6 +110,15 @@ object Notifications:
                 addAction(AppConstants.INTENT_SBN)
             }
         context.registerReceiver(this, filter, Context.RECEIVER_EXPORTED)
+
+        updateAllList()
+    }
+
+    private fun updateAllList() {
+        allList = packageManager.getInstalledPackages(PackageManager.GET_META_DATA)
+            .map { it.packageName }
+            .filter { !it.startsWith("com.android.") }
+        allFlow.value = allList
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -125,15 +140,18 @@ object Notifications:
                 }
 
                 activeList = newList
-                listFlow.value = activeList
+                activeFlow.value = activeList
 
-                val text = compact.joinToString("").take(10)
+                val text = compact.joinToString("")
+                    .take(AppConstants.MAX_NOTI_INDICATORS)
                 val pebbleDict = PebbleDictionary()
                 pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NOTI.code)
                 pebbleDict.addString(DictKey.NOTI.code, text)
                 Pebble.sendDict(pebbleDict)
             }
         }
+
+        updateAllList()
     }
 
     fun reset() {

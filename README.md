@@ -22,6 +22,8 @@ Limitations:
 
 # Features
 
+![Watch face](app/src/main/res/drawable/help.gif)
+
 ## Time and Date
 
 - Current date and time (hey, it's a timepiece)
@@ -64,9 +66,10 @@ This is useful when you forget there was a notification.
 You can assign a letter to each app you care about, so you know at a glance that 
 there's a pending notification for that app.
 
-There's a limit of 20 apps (Android packages) you can register for this feature.
-Note that if you receive notifications from all 20,
-the indicators would probably overflow the width of the display.
+There's no limit to the number of apps (Android packages) you can register for this feature.
+Note that the watch face does have a limit of 15 simultaneous indicators,
+which would probably overflow the width of the display anyway.
+If there are more than 15 indicators to show, the app selects the most recent.
 
 ## Watch-app features[^4]
 

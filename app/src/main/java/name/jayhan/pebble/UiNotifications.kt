@@ -47,14 +47,21 @@ import androidx.core.graphics.createBitmap
 
 @Composable
 fun SelectPackage(
-    packageList: List<String>,
+    activeList: List<String>,
+    fullList: List<String>,
     onClose: () -> Unit,
     onSelect: (String) -> Unit
 ) {
+    var showAll by remember { mutableStateOf(false) }
+    val listShown = if (showAll) fullList else activeList
+
     val scrollState = rememberScrollState()
 
     Dialog(
-        onDismissRequest = onClose
+        onDismissRequest = {
+            if (showAll) showAll = false
+            onClose()
+        }
     ) {
         Card(
             modifier = Modifier.fillMaxWidth()
@@ -62,6 +69,7 @@ fun SelectPackage(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
+                    .fillMaxWidth()
                     .padding(10.dp)
                     .verticalScroll(scrollState),
             ) {
@@ -70,24 +78,30 @@ fun SelectPackage(
                     fontSize = AppConstants.titleSize,
                     modifier = Modifier.padding(10.dp)
                 )
-                if (packageList.isEmpty()) {
+                if (listShown.isEmpty()) {
                     Text(
                         text = stringResource(R.string.no_active),
                         fontSize = AppConstants.textSize,
-                        modifier = Modifier.padding(10.dp)
+                        modifier = Modifier.fillMaxWidth().padding(10.dp)
                     )
                 } else {
-                    for (packageName in packageList) {
+                    for (packageName in listShown) {
                         ListItem(
-                            modifier = Modifier.padding(0.dp).fillMaxWidth(),
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .fillMaxWidth(),
                             leadingContent = {
                                 val icon = getApplicationIcon(LocalContext.current, packageName)
                                 if (icon != null)
-                                    Image(icon, contentDescription = packageName)
+                                    Image(
+                                        bitmap = icon,
+                                        contentDescription = packageName,
+                                        modifier = Modifier.fillMaxWidth(.15f).padding(0.dp)
+                                    )
                             },
                             headlineContent = {
                                 TextButton(
-                                    modifier = Modifier.padding(0.dp),
+                                    modifier = Modifier.weight(1f).padding(0.dp),
                                     onClick = {
                                         onSelect(packageName)
                                         onClose()
@@ -95,13 +109,22 @@ fun SelectPackage(
                                 ) {
                                     Text(
                                         text = packageName,
-                                        fontSize = AppConstants.textSize,
-                                        modifier = Modifier.padding(0.dp),
+                                        fontSize = AppConstants.smallSize,
+                                        modifier = Modifier.fillMaxWidth().padding(0.dp),
                                     )
                                 }
                             }
                         )
                     }
+                }
+                Button(
+                    modifier = Modifier.padding(10.dp),
+                    onClick = { showAll = true }
+                ) {
+                    Text(
+                        text = stringResource(R.string.list_all),
+                        fontSize = AppConstants.textSize
+                    )
                 }
             }
         }
@@ -110,12 +133,12 @@ fun SelectPackage(
 
 fun getApplicationIcon(
     context: Context,
-    newPackage: String
+    packageName: String
 ): ImageBitmap? {
-    if (newPackage.isEmpty()) return null
+    if (packageName.isEmpty()) return null
 
     val drawable = try {
-        context.packageManager.getApplicationIcon(newPackage)
+        context.packageManager.getApplicationIcon(packageName)
     } catch (e: PackageManager.NameNotFoundException) {
         return null
     }
@@ -141,7 +164,8 @@ fun EditPackage(
     map: Map<String, Char>,
     letter: Char,
     packageName: String,
-    packageList: List<String>,
+    activeList: List<String>,
+    fullList: List<String>,
     onClose: () -> Unit
 ) {
     var newLetter by remember { mutableStateOf(letter) }
@@ -151,7 +175,8 @@ fun EditPackage(
 
     if (showList) {
         SelectPackage(
-            packageList = packageList.distinct().filter { !map.containsKey(it) },
+            activeList = activeList.distinct().filter { !map.containsKey(it) },
+            fullList = fullList.distinct().filter { !map.containsKey(it) },
             onClose = { showList = false }
         ) { name: String -> newPackage = name }
     } else {
@@ -215,7 +240,7 @@ fun EditPackage(
                                     .padding(vertical = 10.dp)
                             )
                             val icon =
-                                if (packageList == PreviewPackageList) null
+                                if (activeList == PreviewPackageList) null
                                 else getApplicationIcon(LocalContext.current, newPackage)
                             if (icon != null) {
                                 Image(
@@ -246,7 +271,9 @@ fun EditPackage(
                         text = "Package name",
                         fontSize = AppConstants.textSize,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().padding(4.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp)
                     )
                     Box(
                         modifier = Modifier
@@ -320,7 +347,8 @@ fun EditPackage(
 
 @Composable
 fun MainPackageList(
-    packageList: List<String>
+    activeList: List<String>,
+    allList: List<String>
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var editLetter by remember { mutableStateOf(' ') }
@@ -332,7 +360,8 @@ fun MainPackageList(
             map = packageMap,
             letter = editLetter,
             packageName = editPackageName,
-            packageList = packageList,
+            activeList = activeList,
+            fullList = allList
         ) {
             showEditDialog = false
         }
@@ -350,33 +379,34 @@ fun MainPackageList(
                     showEditDialog = true
                 })
         }
-        if (packageMap.size < 9) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth()
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+        ) {
+            Button(
+                onClick = {
+                    Notifications.reset()
+                },
             ) {
-                Button(
-                    onClick = {
-                        Notifications.reset()
-                    },
-                ) {
-                    Text(
-                        text = stringResource(R.string.reset),
-                        fontSize = AppConstants.textSize
-                    )
-                }
-                Button(
-                    onClick = {
-                        editLetter = ' '
-                        editPackageName = ""
-                        showEditDialog = true
-                    },
-                ) {
-                    Text(
-                        text = stringResource(R.string.add),
-                        fontSize = AppConstants.textSize
-                    )
-                }
+                Text(
+                    text = stringResource(R.string.reset),
+                    fontSize = AppConstants.textSize
+                )
+            }
+            Button(
+                onClick = {
+                    editLetter = ' '
+                    editPackageName = ""
+                    showEditDialog = true
+                },
+            ) {
+                Text(
+                    text = stringResource(R.string.add),
+                    fontSize = AppConstants.textSize
+                )
             }
         }
     }
@@ -393,7 +423,7 @@ fun PackageLine(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp)
+            .padding(vertical = 6.dp, horizontal = 4.dp)
     ) {
         Text(
             text = letter.toString(),
@@ -405,6 +435,20 @@ fun PackageLine(
                 .padding(horizontal = 16.dp),
             textAlign = TextAlign.Center,
         )
+
+        Box(
+            modifier = Modifier.fillMaxWidth(.1f)
+        ) {
+            val icon = getApplicationIcon(LocalContext.current, packageName)
+            if (icon != null) {
+                Image(
+                    bitmap = icon,
+                    contentDescription = packageName,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
         Text(
             text = packageName,
             fontSize = AppConstants.textSize,
@@ -412,6 +456,7 @@ fun PackageLine(
                 .padding(horizontal = 8.dp)
                 .weight(1f)
         )
+
         FilledIconButton(
             onClick = onEdit,
         ) {
@@ -438,7 +483,7 @@ val PreviewMap = mapOf(
 @Preview
 @Composable
 fun SelectPackagePreview() {
-    SelectPackage(PreviewPackageList, {}) { }
+    SelectPackage(PreviewPackageList, listOf(), {}) { }
 }
 
 @Preview
@@ -448,7 +493,8 @@ fun EditPackagePreview() {
         map = mapOf(),
         letter = 'S',
         packageName = "com.android.google.apps.messaging",
-        packageList = PreviewPackageList
+        activeList = PreviewPackageList,
+        fullList = listOf()
     ) { }
 }
 
@@ -459,20 +505,21 @@ fun EditPackageEmpty() {
         map = mapOf(),
         letter = ' ',
         packageName = "",
-        packageList = PreviewPackageList
+        activeList = PreviewPackageList,
+        fullList = listOf()
     ) { }
 }
 
 @Preview
 @Composable
 fun MainPackageListPreview() {
-    MainPackageList(PreviewPackageList)
+    MainPackageList(PreviewPackageList, listOf())
 }
 
 @Preview
 @Composable
 fun SelectPackageEmpty() {
-    SelectPackage(listOf(), {}) { }
+    SelectPackage(listOf(), listOf(), {}) { }
 }
 
 @Preview
