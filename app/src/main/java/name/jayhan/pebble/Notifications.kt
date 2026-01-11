@@ -53,8 +53,7 @@ class NotificationListener:
     }
 }
 
-typealias CharToString = MutableMap<Char, String>
-private fun emptyMap(): CharToString {
+private fun emptyMap(): MutableMap<String, Char> {
     return mutableMapOf()
 }
 
@@ -63,27 +62,26 @@ object Notifications:
     private lateinit var packageList: SharedPreferences
     private lateinit var notificationsList: SharedPreferences
 
-    val mapFlow = MutableStateFlow<CharToString>(emptyMap())
+    val mapFlow = MutableStateFlow<MutableMap<String, Char>>(emptyMap())
     val listFlow = MutableStateFlow<MutableList<String>>(mutableListOf())
     var activeList = mutableListOf<String>()
 
     private fun readMap() {
         val newMap = emptyMap()
         for (item in packageList.all) {
-            if (item.key.length == 1) {
-                val letter = item.key[0]
-                val packageName = item.value as String
-                newMap[letter] = packageName
-            }
+            val packageName = item.key
+            val letterAsString = item.value as String
+            if (letterAsString.length == 1)
+                newMap[packageName] = letterAsString[0]
         }
         mapFlow.value = newMap
     }
 
-    private fun writeMap(map: CharToString) {
+    private fun writeMap(map: MutableMap<String, Char>) {
         packageList.edit {
             clear()
             for (item in map) {
-                putString(item.key.toString(), item.value)
+                putString(item.key, item.value.toString())
             }
         }
     }
@@ -120,8 +118,8 @@ object Notifications:
                 for (index in 0..<count) {
                     val name = notificationsList.getString(index.toString(), "")
                     if (name != null) {
-                        val letter = find(name)
-                        compact.add(letter)
+                        val letter = mapFlow.value.getOrDefault(name, ' ')
+                        if (letter != ' ') compact.add(letter)
                         newList.add(name)
                     }
                 }
@@ -129,9 +127,7 @@ object Notifications:
                 activeList = newList
                 listFlow.value = activeList
 
-                compact.remove(' ')
                 val text = compact.joinToString("").take(10)
-
                 val pebbleDict = PebbleDictionary()
                 pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NOTI.code)
                 pebbleDict.addString(DictKey.NOTI.code, text)
@@ -147,24 +143,17 @@ object Notifications:
     }
 
     fun register(letter: Char, packageName: String) {
-        val newMap = emptyMap()
-
-        for (item in mapFlow.value) {
-            if (item.key != letter && item.value != packageName) {
-                newMap[item.key] = item.value
-            }
-        }
-        if (letter != ' ')
-            newMap[letter] = packageName
-
+        val newMap = mapFlow.value.toMutableMap()
+        if (letter == ' ') return
+        newMap[packageName] = letter
         writeMap(newMap)
         mapFlow.value = newMap
     }
 
-    private fun find(packageName: String): Char {
-        for (item in mapFlow.value) {
-            if (item.value == packageName) return item.key
-        }
-        return ' '
+    fun remove(packageName: String) {
+        val newMap = mapFlow.value.toMutableMap()
+        newMap.remove(packageName)
+        writeMap(newMap)
+        mapFlow.value = newMap
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -128,15 +130,15 @@ fun getApplicationIcon(
 fun acceptLetter(input: String): Char {
     if (input.isEmpty()) return ' '
 
-    val letter = input.uppercase()[0]
-    if (letter.isLetterOrDigit()) return letter
+    val letter = input.removePrefix(" ").removeSuffix(" ").last()
+    if (letter.code >= '!'.code && letter.code <= '~'.code) return letter
 
-    return letter
+    return ' '
 }
 
 @Composable
 fun EditPackage(
-    map: Map<Char, String>,
+    map: Map<String, Char>,
     letter: Char,
     packageName: String,
     packageList: List<String>,
@@ -145,10 +147,11 @@ fun EditPackage(
     var newLetter by remember { mutableStateOf(letter) }
     var newPackage by remember { mutableStateOf(packageName) }
     var showList by remember { mutableStateOf(false) }
+    var editingPackage by remember { mutableStateOf(false) }
 
     if (showList) {
         SelectPackage(
-            packageList = packageList.distinct().filter { !map.containsValue(it) },
+            packageList = packageList.distinct().filter { !map.containsKey(it) },
             onClose = { showList = false }
         ) { name: String -> newPackage = name }
     } else {
@@ -243,19 +246,41 @@ fun EditPackage(
                         text = "Package name",
                         fontSize = AppConstants.textSize,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().padding(4.dp)
                     )
-                    BasicTextField(
-                        value = newPackage.ifEmpty { stringResource(R.string.no_package) },
-                        onValueChange = { newPackage = it },
-                        textStyle = TextStyle(
-                            fontSize = AppConstants.textSize,
-                        ),
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(10.dp)
                             .background(color = AppConstants.colorBlank)
-                    )
+                    ) {
+                        BasicTextField(
+                            value = newPackage,
+                            onValueChange = { newPackage = it },
+                            textStyle = TextStyle(
+                                fontSize = AppConstants.textSize,
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp)
+                                .onFocusChanged { editingPackage = it.hasFocus }
+                                .background(color = AppConstants.colorBlank),
+                            decorationBox = { inner ->
+                                Box {
+                                    if (newPackage.isEmpty() && !editingPackage)
+                                        Text(
+                                            text = stringResource(R.string.no_package),
+                                            fontSize = AppConstants.textSize,
+                                            color = AppConstants.colorFade,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(10.dp)
+                                                .background(color = AppConstants.colorBlank),
+                                        )
+                                    inner()
+                                }
+                            }
+                        )
+                    }
 
                     Row(
                         modifier = Modifier
@@ -277,7 +302,7 @@ fun EditPackage(
                         }
                         Button(
                             onClick = {
-                                Notifications.register(' ', newPackage)
+                                Notifications.remove(newPackage)
                                 onClose()
                             }
                         ) {
@@ -317,11 +342,11 @@ fun MainPackageList(
         Section(stringResource(R.string.packages))
         for (item in packageMap.toSortedMap()) {
             PackageLine(
-                letter = item.key,
-                packageName = item.value,
+                letter = item.value,
+                packageName = item.key,
                 onEdit = {
-                    editLetter = item.key
-                    editPackageName = item.value
+                    editLetter = item.value
+                    editPackageName = item.key
                     showEditDialog = true
                 })
         }
@@ -429,6 +454,17 @@ fun EditPackagePreview() {
 
 @Preview
 @Composable
+fun EditPackageEmpty() {
+    EditPackage(
+        map = mapOf(),
+        letter = ' ',
+        packageName = "",
+        packageList = PreviewPackageList
+    ) { }
+}
+
+@Preview
+@Composable
 fun MainPackageListPreview() {
     MainPackageList(PreviewPackageList)
 }
@@ -437,4 +473,13 @@ fun MainPackageListPreview() {
 @Composable
 fun SelectPackageEmpty() {
     SelectPackage(listOf(), {}) { }
+}
+
+@Preview
+@Composable
+fun PackageLinePreview() {
+    PackageLine(
+        'S',
+        "com.google.android.apps.messaging"
+    ) { }
 }
