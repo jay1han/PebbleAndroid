@@ -108,6 +108,8 @@ object Notifications:
         val filter = IntentFilter()
             .apply {
                 addAction(AppConstants.INTENT_SBN)
+                addAction(Intent.ACTION_PACKAGE_ADDED)
+                addAction(Intent.ACTION_PACKAGE_FULLY_REMOVED)
             }
         context.registerReceiver(this, filter, Context.RECEIVER_EXPORTED)
 
