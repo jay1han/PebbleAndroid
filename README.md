@@ -7,7 +7,7 @@ that I personally used on the original Pebble (and Pebble Time).
 Compared to the previous combination, this version has much fewer customizability
 (no Takser! no Canvas!) but corresponds to the specific configuration I used[^1].
 
-[^1] I *may* be convinced to add functionality at a later date.
+[^1]: I *may* be convinced to add functionality at a later date.
 
 Features:
 
