@@ -106,7 +106,6 @@ fun MainPage(
     modifier: Modifier = Modifier,
 ) {
     val packageList by Notifications.listFlow.collectAsState(Notifications.activeList)
-    val packageMap by Notifications.mapFlow.collectAsState(emptyMap())
     val scrollState = rememberScrollState()
 
     Column(
@@ -117,7 +116,7 @@ fun MainPage(
             Pebble.fromString(tz)
         }
         Box(Modifier.height(AppConstants.padSize))
-        PackageList(packageMap, mapper, packageList)
+        MainPackageList(mapper, packageList)
     }
 }
 

@@ -1,6 +1,7 @@
 package name.jayhan.pebble
 
-import android.graphics.Bitmap
+import android.content.Context
+import android.content.pm.PackageManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +38,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.graphics.createBitmap
+import kotlin.collections.emptyMap
 
 @Composable
 fun SelectPackage(
@@ -62,10 +66,21 @@ fun SelectPackage(
                     fontSize = AppConstants.titleSize,
                     modifier = Modifier.padding(10.dp)
                 )
-                if (packageList.isNotEmpty()) {
+                if (packageList.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.no_active),
+                        fontSize = AppConstants.textSize,
+                        modifier = Modifier.padding(10.dp)
+                    )
+                } else {
                     for (packageName in packageList) {
                         ListItem(
-                            modifier = Modifier.padding(0.dp),
+                            modifier = Modifier.padding(0.dp).fillMaxWidth(),
+                            leadingContent = {
+                                val icon = getApplicationIcon(LocalContext.current, packageName)
+                                if (icon != null)
+                                    Image(icon, contentDescription = packageName)
+                            },
                             headlineContent = {
                                 TextButton(
                                     modifier = Modifier.padding(0.dp),
@@ -83,20 +98,34 @@ fun SelectPackage(
                             }
                         )
                     }
-                } else {
-                    Text(
-                        text = stringResource(R.string.no_active),
-                        fontSize = AppConstants.textSize,
-                        modifier = Modifier.padding(10.dp)
-                    )
                 }
             }
         }
     }
 }
 
+fun getApplicationIcon(
+    context: Context,
+    newPackage: String
+): ImageBitmap? {
+    if (newPackage.isEmpty()) return null
+
+    val drawable = try {
+        context.packageManager.getApplicationIcon(newPackage)
+    } catch (e: PackageManager.NameNotFoundException) {
+        return null
+    }
+
+    val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
+    val canvas = android.graphics.Canvas(bitmap)
+    drawable.setBounds(0, 0, canvas.width, canvas.height)
+    drawable.draw(canvas)
+    return bitmap.asImageBitmap()
+}
+
 @Composable
 fun EditPackage(
+    map: Map<Char, String>,
     mapper: Mapper,
     letter: Char,
     packageName: String,
@@ -106,27 +135,10 @@ fun EditPackage(
     var newLetter by remember { mutableStateOf(letter) }
     var newPackage by remember { mutableStateOf(packageName) }
     var showList by remember { mutableStateOf(false) }
-    var icon: ImageBitmap? = null
-
-    if (packageList != PreviewPackageList && newPackage.isNotEmpty()) {
-        val drawable = LocalContext.current.packageManager
-            .getApplicationIcon(newPackage)
-        if (drawable != null) {
-            val bitmap = Bitmap.createBitmap(
-                drawable.intrinsicWidth,
-                drawable.intrinsicHeight,
-                Bitmap.Config.ARGB_8888
-            )
-            val canvas = android.graphics.Canvas(bitmap)
-            drawable.setBounds(0, 0, canvas.width, canvas.height)
-            drawable.draw(canvas)
-            icon = bitmap.asImageBitmap()
-        }
-    }
 
     if (showList) {
         SelectPackage(
-            packageList,
+            packageList = packageList.distinct().filter { !map.containsValue(it) },
             onClose = { showList = false }
         ) { name: String -> newPackage = name }
     } else {
@@ -189,6 +201,9 @@ fun EditPackage(
                                     .fillMaxWidth()
                                     .padding(vertical = 10.dp)
                             )
+                            val icon =
+                                if (packageList == PreviewPackageList) null
+                                else getApplicationIcon(LocalContext.current, newPackage)
                             if (icon != null) {
                                 Image(
                                     bitmap = icon,
@@ -260,17 +275,18 @@ fun EditPackage(
 }
 
 @Composable
-fun PackageList(
-    map: Map<Char, String>,
+fun MainPackageList(
     mapper: Mapper,
     packageList: List<String>
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var editLetter by remember { mutableStateOf(' ') }
     var editPackageName by remember { mutableStateOf("") }
+    val packageMap by Notifications.mapFlow.collectAsState(emptyMap())
 
     if (showEditDialog) {
         EditPackage(
+            map = packageMap,
             mapper = mapper,
             letter = editLetter,
             packageName = editPackageName,
@@ -282,17 +298,17 @@ fun PackageList(
 
     Column {
         Section(stringResource(R.string.packages))
-        for (item in map.toSortedMap()) {
+        for (item in packageMap.toSortedMap()) {
             PackageLine(
-                item.key,
-                item.value,
+                letter = item.key,
+                packageName = item.value,
                 onEdit = {
                     editLetter = item.key
                     editPackageName = item.value
                     showEditDialog = true
                 })
         }
-        if (map.size < 9) {
+        if (packageMap.size < 9) {
             Row(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier.fillMaxWidth()
@@ -332,7 +348,10 @@ fun PackageLine(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(4.dp)
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp)
     ) {
         Text(
             text = letter.toString(),
@@ -348,11 +367,11 @@ fun PackageLine(
             text = packageName,
             fontSize = AppConstants.textSize,
             modifier = Modifier
-                .fillMaxWidth(.9f)
                 .padding(horizontal = 8.dp)
+                .weight(1f)
         )
         FilledIconButton(
-            onClick = onEdit
+            onClick = onEdit,
         ) {
             Icon(
                 painter = painterResource(R.drawable.outline_edit_24),
@@ -374,8 +393,9 @@ fun SelectPackagePreview() {
 fun EditPackagePreview() {
     val mapper = Mapper(LocalContext.current)
     EditPackage(
+        map = mapOf(),
         mapper = mapper,
-        letter ='S',
+        letter = 'S',
         packageName = "com.android.google.apps.messaging",
         packageList = PreviewPackageList
     ) { }
@@ -383,9 +403,9 @@ fun EditPackagePreview() {
 
 @Preview
 @Composable
-fun PackageListPreview() {
+fun MainPackageListPreview() {
     val mapper = Mapper(LocalContext.current)
-    PackageList(PreviewMap, mapper, PreviewPackageList)
+    MainPackageList(mapper, PreviewPackageList)
 }
 
 @Preview

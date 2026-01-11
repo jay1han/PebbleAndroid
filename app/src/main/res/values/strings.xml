@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Pebble</string>
     <string name="app_title">OverForm</string>
-    <string name="select_package">Select application</string>
+    <string name="select_package">Choose application</string>
     <string name="save">Save</string>
     <string name="remove">Remove</string>
     <string name="edit">Edit</string>
@@ -24,9 +24,11 @@
     <string name="background_location">Also needed for continuous monitoring of Bluetooth and WiFi</string>
     <string name="coarse_location">Basic access to location information, needed to further access WiFi and Bluetooth states</string>
     <string name="grant">Grant permission</string>
-    <string name="no_package"><![CDATA[<not selected>]]></string>
+    <string name="no_package">(not selected)</string>
     <string name="query_all_packages">Finds application icons</string>
-    <string name="no_active">No application has an active notification, please wait until a notification arrives</string>
+    <string name="no_active">No application has an active notification.
+        Please wait until a notification arrives,
+        or enter the full package name</string>
     <string name="indicator">Indicator</string>
     <string name="application">Application</string>
 </resources>

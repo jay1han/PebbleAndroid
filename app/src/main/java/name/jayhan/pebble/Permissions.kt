@@ -35,7 +35,7 @@ const val FINE_LOCATION = "android.permission.ACCESS_FINE_LOCATION"
 const val BACKGROUND_LOCATION = "android.permission.ACCESS_BACKGROUND_LOCATION"
 const val QUERY_ALL_PACKAGES = "android.permission.QUERY_ALL_PACKAGES"
 
-val permissionsList = mapOf(
+val PermissionsList = mapOf(
     NOTIFICATION_LISTENER to R.string.notification_listener,
     FOREGROUND_SERVICE to R.string.foreground_service,
     POST_NOTIFICATION to R.string.post_notification,
@@ -93,11 +93,11 @@ class PermissionsCallback(
 object Permissions
 {
     private lateinit var mainActivity: ComponentActivity
-    val list = mutableListOf<SinglePermission>()
     var allGranted = false
     val grantFlow = MutableStateFlow(allGranted)
     val missingFlow = MutableStateFlow(listOf<String>())
     private lateinit var permissionsLauncher: ActivityResultLauncher<Array<String>>
+    private lateinit var permissionList: List<SinglePermission>
 
     fun start(
         context: Context,
@@ -105,10 +105,7 @@ object Permissions
         onAllGranted: () -> Unit
     ) {
         this.mainActivity = mainActivity
-
-        for (pair in permissionsList) {
-            list.add(SinglePermission(context, pair.key))
-        }
+        permissionList = PermissionsList.map { SinglePermission(context, it.key) }
 
         val permissionsContract = ActivityResultContracts.RequestMultiplePermissions()
         permissionsLauncher =
@@ -125,21 +122,19 @@ object Permissions
 
     fun request() {
         val request = mutableListOf<String>()
-        for (permission in list) {
-            if (!permission.granted) {
-                when (permission.name) {
-                    NOTIFICATION_LISTENER -> {
-                        val settingsIntent =
-                            Intent(ACTION_LISTENER)
-                        mainActivity.startActivity(settingsIntent)
-                        break
-                    }
+        for (permission in permissionList.filter { !it.granted } ) {
+            when (permission.name) {
+                NOTIFICATION_LISTENER -> {
+                    val settingsIntent =
+                        Intent(ACTION_LISTENER)
+                    mainActivity.startActivity(settingsIntent)
+                    break
+                }
 
-                    else -> {
-                        mainActivity.shouldShowRequestPermissionRationale(permission.name)
-                        request.add(permission.name)
-                        break
-                    }
+                else -> {
+                    mainActivity.shouldShowRequestPermissionRationale(permission.name)
+                    request.add(permission.name)
+                    break
                 }
             }
         }
@@ -150,13 +145,9 @@ object Permissions
     }
 
     fun collect() {
-        val missingList = mutableListOf<String>()
-
-        for (permission in list) {
-            if (!permission.granted) {
-                missingList.add(permission.name)
-            }
-        }
+        val missingList = permissionList
+            .filter { !it.granted }
+            .map { it.name }
 
         allGranted = missingList.isEmpty()
         grantFlow.value = allGranted
@@ -166,13 +157,11 @@ object Permissions
     fun update(
         name: String
     ) {
-        for (permission in list) {
-            if (permission.name == name) {
-                if (!permission.granted) permission.update()
-                break
-            }
+        val permission = permissionList.first { it.name == name }
+        if (!permission.granted) {
+            permission.update()
+            collect()
         }
-        collect()
     }
 }
 
@@ -196,7 +185,7 @@ fun UiPermissions(
                     fontSize = AppConstants.textSize
                 )
                 Text(
-                    text = stringResource(permissionsList[permission]!!),
+                    text = stringResource(PermissionsList[permission]!!),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp),
@@ -225,7 +214,7 @@ fun UiPermissions(
 @Preview
 @Composable
 fun UiPermissionsPreview() {
-    val missingList = permissionsList.map { it.key }
+    val missingList = PermissionsList.map { it.key }
 
     UiPermissions(
         missingList,
