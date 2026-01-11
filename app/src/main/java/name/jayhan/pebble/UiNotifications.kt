@@ -126,7 +126,6 @@ fun getApplicationIcon(
 @Composable
 fun EditPackage(
     map: Map<Char, String>,
-    mapper: Mapper,
     letter: Char,
     packageName: String,
     packageList: List<String>,
@@ -247,7 +246,7 @@ fun EditPackage(
                         Button(
                             onClick = {
                                 if (newLetter != ' ' && newPackage.isNotEmpty())
-                                    mapper.register(newLetter, newPackage)
+                                    Notifications.register(newLetter, newPackage)
                                 onClose()
                             },
                         ) {
@@ -258,7 +257,7 @@ fun EditPackage(
                         }
                         Button(
                             onClick = {
-                                mapper.register(' ', newPackage)
+                                Notifications.register(' ', newPackage)
                                 onClose()
                             }
                         ) {
@@ -276,7 +275,6 @@ fun EditPackage(
 
 @Composable
 fun MainPackageList(
-    mapper: Mapper,
     packageList: List<String>
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
@@ -287,7 +285,6 @@ fun MainPackageList(
     if (showEditDialog) {
         EditPackage(
             map = packageMap,
-            mapper = mapper,
             letter = editLetter,
             packageName = editPackageName,
             packageList = packageList,
@@ -315,7 +312,7 @@ fun MainPackageList(
             ) {
                 Button(
                     onClick = {
-                        mapper.reset()
+                        Notifications.reset()
                     },
                 ) {
                     Text(
@@ -382,6 +379,17 @@ fun PackageLine(
     }
 }
 
+val PreviewPackageList = listOf(
+    "com.android.google.apps.messaging",
+    "com.android.google.apps.messaging",
+    "com.whatsapp"
+)
+
+val PreviewMap = mapOf(
+    'S' to "com.android.google.apps.messaging",
+    'W' to "com.whatsapp"
+)
+
 @Preview
 @Composable
 fun SelectPackagePreview() {
@@ -391,10 +399,8 @@ fun SelectPackagePreview() {
 @Preview
 @Composable
 fun EditPackagePreview() {
-    val mapper = Mapper(LocalContext.current)
     EditPackage(
         map = mapOf(),
-        mapper = mapper,
         letter = 'S',
         packageName = "com.android.google.apps.messaging",
         packageList = PreviewPackageList
@@ -404,8 +410,7 @@ fun EditPackagePreview() {
 @Preview
 @Composable
 fun MainPackageListPreview() {
-    val mapper = Mapper(LocalContext.current)
-    MainPackageList(mapper, PreviewPackageList)
+    MainPackageList(PreviewPackageList)
 }
 
 @Preview

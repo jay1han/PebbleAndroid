@@ -32,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -43,7 +42,6 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun AppScaffold(
-    mapper: Mapper,
     onQuit: () -> Unit
 ) {
     val permissionsGranted by Permissions.grantFlow.collectAsState(Permissions.allGranted)
@@ -57,7 +55,6 @@ fun AppScaffold(
     ) { innerPadding ->
         if (permissionsGranted) {
             MainPage(
-                mapper = mapper,
                 modifier = Modifier.padding(innerPadding)
             )
         } else {
@@ -102,7 +99,6 @@ fun TopBar(
 
 @Composable
 fun MainPage(
-    mapper: Mapper,
     modifier: Modifier = Modifier,
 ) {
     val packageList by Notifications.listFlow.collectAsState(Notifications.activeList)
@@ -116,7 +112,7 @@ fun MainPage(
             Pebble.fromString(tz)
         }
         Box(Modifier.height(AppConstants.padSize))
-        MainPackageList(mapper, packageList)
+        MainPackageList(packageList)
     }
 }
 
@@ -236,9 +232,5 @@ fun AwayTimezone(
 @Preview
 @Composable
 fun MainPagePreview() {
-    val mapper = Mapper(LocalContext.current)
-    MainPage(
-        mapper = mapper,
-        modifier = Modifier
-    )
+    MainPage()
 }

@@ -104,8 +104,6 @@ object Notifications:
         val filter = IntentFilter()
             .apply {
                 addAction(AppConstants.INTENT_SBN)
-                addAction(AppConstants.INTENT_REGISTER_MAP)
-                addAction(AppConstants.INTENT_RESET_MAP)
             }
         context.registerReceiver(this, filter, Context.RECEIVER_EXPORTED)
     }
@@ -139,22 +137,16 @@ object Notifications:
                 pebbleDict.addString(DictKey.NOTI.code, text)
                 Pebble.sendDict(pebbleDict)
             }
-            AppConstants.INTENT_REGISTER_MAP -> {
-                val key = intent.getStringExtra(AppConstants.EXTRA_MAP_KEY)!![0]
-                val value = intent.getStringExtra(AppConstants.EXTRA_MAP_VALUE)!!
-                register(key, value)
-            }
-            AppConstants.INTENT_RESET_MAP -> { resetMap() }
         }
     }
 
-    private fun resetMap() {
+    fun reset() {
         val newMap = emptyMap()
         writeMap(newMap)
         mapFlow.value = newMap
     }
 
-    private fun register(letter: Char, packageName: String) {
+    fun register(letter: Char, packageName: String) {
         val newMap = emptyMap()
 
         for (item in mapFlow.value) {
