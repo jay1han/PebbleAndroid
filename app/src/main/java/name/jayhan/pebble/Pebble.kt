@@ -91,7 +91,6 @@ class WatchInfo(
     val version: String = ""
 )
 
-@SuppressLint("StaticFieldLeak")
 object Pebble
 {
     private lateinit var context: Context

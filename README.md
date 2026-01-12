@@ -122,3 +122,38 @@ some usages of the Android SDK seem a bit clunky.
 
 ### `UiNotifications.getApplicationIcon()` function
 
+# TODO
+
+- Notification UI
+
+    - [ ] Use lazy list in List of all application
+    - [ ] Main list: add app name in list, sort by app name
+    - [ ] App list: same
+    - [x] Change text edit mode to litteral input
+  
+- Service
+    - [ ] Refresh notification list when Service starts
+    - [ ] Heartbeat in Service to feed isConnected
+        - update each interaction
+        - 30 second interval when connected
+        - 5 second interval after disconnection
+        - display "last contact" date/time
+        - remove Reconnect button
+  
+- Pebble object
+    - [ ] Remove context field from Pebble
+    - [ ] Pebble object caches Info
+  
+- Main UI
+    - [ ] Remove Quit button, replace with "?" button
+    - [ ] Remove help screenshot
+    - [ ] Hide Service notification from lock screen
+    - [ ] bug: Refresh main list after edit
+    - [ ] Sort main list by app name
+
+- Future: DND
+
+- Future: Find Phone
+ 
+- Future: Watch-app
+  
