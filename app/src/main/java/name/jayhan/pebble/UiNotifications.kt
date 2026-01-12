@@ -509,11 +509,6 @@ val PreviewPackageList = listOf(
     "com.whatsapp"
 )
 
-val PreviewMap = mapOf(
-    'S' to "com.android.google.apps.messaging",
-    'W' to "com.whatsapp"
-)
-
 @Preview
 @Composable
 fun SelectPackagePreview() {

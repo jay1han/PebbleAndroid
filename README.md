@@ -130,6 +130,7 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Hide Service notification from lock screen
     - [x] bug: Refresh main list after edit
     - [x] Sort main list by app name
+    - [ ] More info on permissions
 
 - Notification UI
 
@@ -142,7 +143,7 @@ some usages of the Android SDK seem a bit clunky.
     - [ ] Sort indicators somehow
   
 - Service
-    - [ ] Refresh notification list when Service starts
+    - [x] Refresh notification list when Service starts
     - [ ] Heartbeat in Service to feed isConnected
         - update each interaction
         - 30 second interval when connected

@@ -189,7 +189,6 @@ fun Watchface(
 
 @Composable
 fun AwayTimezone(
-    modifier: Modifier = Modifier,
     onApply: (String) -> String
 ) {
     val tzWatch: String by Pebble.tzFlow.collectAsState("+0.0")

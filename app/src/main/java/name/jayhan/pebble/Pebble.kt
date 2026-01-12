@@ -1,6 +1,5 @@
 package name.jayhan.pebble
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Context.RECEIVER_EXPORTED
 import android.content.IntentFilter

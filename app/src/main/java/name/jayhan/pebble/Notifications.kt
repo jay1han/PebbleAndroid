@@ -19,35 +19,17 @@ class NotificationListener:
     override fun onListenerConnected() {
         context = applicationContext
         super.onListenerConnected()
-        sendToMain()
+        Notifications.onNotification(activeNotifications)
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         super.onNotificationPosted(sbn)
-        sendToMain()
+        Notifications.onNotification(activeNotifications)
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         super.onNotificationRemoved(sbn)
-        sendToMain()
-    }
-
-// TODO: Add refresh method
-
-    private fun sendToMain() {
-        val active = context.getSharedPreferences(AppConstants.NOTI_DB, MODE_PRIVATE)
-        active.edit {
-            clear()
-            for (notification in activeNotifications) {
-                if (!notification.isOngoing
-                    && notification.isClearable
-                ) {
-                    putBoolean(notification.packageName, true)
-                }
-            }
-        }
-
-        sendBroadcast(Intent(AppConstants.INTENT_SBN))
+        Notifications.onNotification(activeNotifications)
     }
 }
 
@@ -55,20 +37,64 @@ private fun emptyMap(): MutableMap<String, Char> {
     return mutableMapOf()
 }
 
-object Notifications:
-    BroadcastReceiver() {
+object Notifications : BroadcastReceiver()
+{
     private lateinit var packageManager: PackageManager
-    private lateinit var packageList: SharedPreferences
-    private lateinit var notificationsList: SharedPreferences
+    private lateinit var savedSettings: SharedPreferences
 
     val indicatorsFlow = MutableStateFlow<Map<String, Char>>(emptyMap())
     val activeFlow = MutableStateFlow<List<String>>(mutableListOf())
     val allFlow = MutableStateFlow<List<String>>(mutableListOf())
     private var mapPackageToName = mapOf<String, String>()
+    private var savedNotifications: Array<StatusBarNotification>? = null
+
+    fun onNotification(
+        activeNotifications: Array<StatusBarNotification>
+    ) {
+        if (!this::packageManager.isInitialized) {
+            savedNotifications = activeNotifications
+            return
+        }
+
+        savedNotifications = activeNotifications
+        ingest(activeNotifications)
+        updateAllList()
+    }
+
+    fun ingest(
+        activeNotifications: Array<StatusBarNotification>
+    ) {
+        val compact: MutableSet<Char> = mutableSetOf()
+        activeFlow.value = mutableListOf<String>()
+            .apply {
+                for (packageName in activeNotifications
+                    .filter { !it.isOngoing && it.isClearable }
+                    .map { it.packageName }
+                    .filter { it != "" }
+                ) {
+                    add(packageName)
+                    indicatorsFlow.value[packageName].let {
+                        if (it != null) compact.add(it)
+                    }
+                }
+            }
+
+        val text = compact.joinToString("")
+            .take(AppConstants.MAX_NOTI_INDICATORS)
+        val pebbleDict = PebbleDictionary()
+        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NOTI.code)
+        pebbleDict.addString(DictKey.NOTI.code, text)
+        Pebble.sendDict(pebbleDict)
+    }
+
+    override fun onReceive(context: Context?, intent: Intent?) {
+        if (intent == null) return
+        updateAllList()
+    }
 
     private fun readMap() {
         val newMap = emptyMap()
-        for (item in packageList.all) {
+        for (item in savedSettings.all) {
             val letterAsString = item.value as String
             if (letterAsString.length == 1)
                 newMap[item.key] = letterAsString[0]
@@ -77,7 +103,7 @@ object Notifications:
     }
 
     private fun writeMap(map: MutableMap<String, Char>) {
-        packageList.edit {
+        savedSettings.edit {
             clear()
             for (item in map) {
                 putString(item.key, item.value.toString())
@@ -90,52 +116,19 @@ object Notifications:
     ) {
         packageManager = context.packageManager
 
-        packageList = context.getSharedPreferences(
+        savedSettings = context.getSharedPreferences(
             AppConstants.PREF_NAME,
             Context.MODE_PRIVATE
         )
-        notificationsList = context.getSharedPreferences(
-            AppConstants.NOTI_DB,
-            Context.MODE_PRIVATE)
 
         readMap()
 
         val filter = IntentFilter()
             .apply {
-                addAction(AppConstants.INTENT_SBN)
                 addAction(Intent.ACTION_PACKAGE_ADDED)
                 addAction(Intent.ACTION_PACKAGE_FULLY_REMOVED)
             }
         context.registerReceiver(this, filter, Context.RECEIVER_EXPORTED)
-
-        updateAllList()
-    }
-
-    override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent == null) return
-        
-        when (intent.action) {
-            AppConstants.INTENT_SBN -> {
-                val compact: MutableSet<Char> = mutableSetOf()
-
-                activeFlow.value = mutableListOf<String>()
-                    .apply {
-                        for (packageName in notificationsList.all.keys.filter { it != "" }) {
-                            indicatorsFlow.value[packageName].let {
-                                if (it != null) compact.add(it)
-                            }
-                            add(packageName)
-                        }
-                    }
-
-                val text = compact.joinToString("")
-                    .take(AppConstants.MAX_NOTI_INDICATORS)
-                val pebbleDict = PebbleDictionary()
-                pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NOTI.code)
-                pebbleDict.addString(DictKey.NOTI.code, text)
-                Pebble.sendDict(pebbleDict)
-            }
-        }
 
         updateAllList()
     }
@@ -165,6 +158,13 @@ object Notifications:
             }
 
         allFlow.value = newPairs.map { it.first }
+    }
+
+    fun refresh() {
+        if (savedNotifications != null) {
+            val activeNotifications = savedNotifications!!
+            ingest(activeNotifications)
+        }
     }
 
     fun getAppName(packageName: String): String {
