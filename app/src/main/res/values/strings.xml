@@ -12,9 +12,9 @@
     <string name="packages">Applications</string>
     <string name="reset">Reset</string>
     <string name="add">Add</string>
-    <string name="model">Model: </string>
+    <string name="model">Model</string>
     <string name="channel_description">Notification channel</string>
-    <string name="version">"Version: "</string>
+    <string name="version">"Version"</string>
     <string name="notification_listener">Allows to intercept app notifications to display on the watch</string>
     <string name="foreground_service">Must be set to allow uninterrupted service</string>
     <string name="post_notification">Must be set to allow uninterrupted service</string>

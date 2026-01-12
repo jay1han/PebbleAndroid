@@ -124,12 +124,19 @@ some usages of the Android SDK seem a bit clunky.
 
 # TODO
 
+- Main UI
+    - [x] Remove Quit button, replace with "?" button
+    - [x] Remove help screenshot
+    - [ ] Hide Service notification from lock screen
+    - [ ] bug: Refresh main list after edit
+    - [ ] Sort main list by app name
+
 - Notification UI
 
+    - [x] Change text edit mode to litteral input
     - [ ] Use lazy list in List of all application
     - [ ] Main list: add app name in list, sort by app name
     - [ ] App list: same
-    - [x] Change text edit mode to litteral input
   
 - Service
     - [ ] Refresh notification list when Service starts
@@ -144,13 +151,6 @@ some usages of the Android SDK seem a bit clunky.
     - [ ] Remove context field from Pebble
     - [ ] Pebble object caches Info
   
-- Main UI
-    - [ ] Remove Quit button, replace with "?" button
-    - [ ] Remove help screenshot
-    - [ ] Hide Service notification from lock screen
-    - [ ] bug: Refresh main list after edit
-    - [ ] Sort main list by app name
-
 - Future: DND
 
 - Future: Find Phone
