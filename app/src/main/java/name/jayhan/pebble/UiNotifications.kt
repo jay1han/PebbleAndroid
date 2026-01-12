@@ -48,141 +48,157 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.graphics.createBitmap
 
 @Composable
-fun SelectPackage(
+fun MainPackageList(
     activeList: List<String>,
-    fullList: List<String>,
-    onClose: () -> Unit,
-    onSelect: (String) -> Unit
+    allList: List<String>
 ) {
-    var showAll by remember { mutableStateOf(false) }
-    val listShown = if (showAll) fullList else activeList
+    var showEditDialog by remember { mutableStateOf(false) }
+    var editLetter by remember { mutableStateOf(' ') }
+    var editPackageName by remember { mutableStateOf("") }
+    val indicators by Notifications.indicatorsFlow.collectAsState(emptyMap())
 
-    val scrollState = rememberScrollState()
-
-    Dialog(
-        onDismissRequest = {
-            if (showAll) showAll = false
-            onClose()
-        }
-    ) {
-        Card(
-            modifier = Modifier.fillMaxWidth()
+    if (showEditDialog) {
+        EditPackage(
+            indicators = indicators,
+            letter = editLetter,
+            packageName = editPackageName,
+            activeList = activeList,
+            allList = allList
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
-                    .verticalScroll(scrollState),
+            showEditDialog = false
+        }
+    }
+
+    Column {
+        Section(stringResource(R.string.packages))
+
+        val indicatorList = mutableListOf<Pair<String, String>>()
+            .apply {
+                for (item in indicators) {
+                    add(Pair(item.key, Notifications.getAppName(item.key)))
+                }
+            }
+            .apply { sortBy { it.second } }
+        for (item in indicatorList.map { it.first }) {
+            val letter = indicators[item]!!
+            PackageLine(
+                letter = letter,
+                packageName = item,
+                onEdit = {
+                    editLetter = letter
+                    editPackageName = item
+                    showEditDialog = true
+                })
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+        ) {
+            Button(
+                onClick = {
+                    Notifications.reset()
+                },
             ) {
                 Text(
-                    text = stringResource(R.string.select_package),
-                    fontSize = AppConstants.titleSize,
-                    modifier = Modifier.padding(10.dp)
+                    text = stringResource(R.string.reset),
+                    fontSize = AppConstants.textSize
                 )
-                if (listShown.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.no_active),
-                        fontSize = AppConstants.textSize,
-                        modifier = Modifier.fillMaxWidth().padding(10.dp)
-                    )
-                } else {
-                    for (packageName in listShown) {
-                        ListItem(
-                            modifier = Modifier
-                                .padding(0.dp)
-                                .fillMaxWidth(),
-                            leadingContent = {
-                                val icon = getApplicationIcon(LocalContext.current, packageName)
-                                if (icon != null)
-                                    Image(
-                                        bitmap = icon,
-                                        contentDescription = packageName,
-                                        modifier = Modifier.fillMaxWidth(.15f).padding(0.dp)
-                                    )
-                            },
-                            headlineContent = {
-                                TextButton(
-                                    modifier = Modifier.weight(1f).padding(0.dp),
-                                    onClick = {
-                                        onSelect(packageName)
-                                        onClose()
-                                    },
-                                ) {
-                                    Text(
-                                        text = packageName,
-                                        fontSize = AppConstants.smallSize,
-                                        modifier = Modifier.fillMaxWidth().padding(0.dp),
-                                    )
-                                }
-                            }
-                        )
-                    }
-                }
-                Button(
-                    modifier = Modifier.padding(10.dp),
-                    onClick = { showAll = true }
-                ) {
-                    Text(
-                        text = stringResource(R.string.list_all),
-                        fontSize = AppConstants.textSize
-                    )
-                }
+            }
+            Button(
+                onClick = {
+                    editLetter = ' '
+                    editPackageName = ""
+                    showEditDialog = true
+                },
+            ) {
+                Text(
+                    text = stringResource(R.string.add),
+                    fontSize = AppConstants.textSize
+                )
             }
         }
     }
 }
 
-fun getApplicationIcon(
-    context: Context,
-    packageName: String
-): ImageBitmap? {
-    if (packageName.isEmpty()) return null
+@Composable
+fun PackageLine(
+    letter: Char,
+    packageName: String,
+    onEdit: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp, horizontal = 4.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxWidth(.1f).padding(4.dp)
+        ) {
+            val icon = getApplicationIcon(LocalContext.current, packageName)
+            if (icon != null) {
+                Image(
+                    bitmap = icon,
+                    contentDescription = packageName,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
 
-    val drawable = try {
-        context.packageManager.getApplicationIcon(packageName)
-    } catch (e: PackageManager.NameNotFoundException) {
-        return null
+        Column(
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 8.dp)
+                .weight(1f)
+        ) {
+            val appName = Notifications.getAppName(packageName)
+            if (appName != "") {
+                Text(
+                    text = appName,
+                    fontSize = AppConstants.textSize,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            Text(
+                text = packageName,
+                fontSize = AppConstants.subSize,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Text(
+            text = letter.toString(),
+            fontSize = AppConstants.titleSize,
+            color = AppConstants.colorText,
+            modifier = Modifier
+                .fillMaxWidth(.1f)
+                .background(AppConstants.colorNotiBack)
+                .padding(horizontal = 16.dp),
+            textAlign = TextAlign.Center,
+        )
+
+        FilledIconButton(
+            onClick = onEdit,
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.outline_edit_24),
+                contentDescription = stringResource(R.string.edit),
+            )
+        }
     }
-
-    val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
-    val canvas = android.graphics.Canvas(bitmap)
-    drawable.setBounds(0, 0, canvas.width, canvas.height)
-    drawable.draw(canvas)
-    return bitmap.asImageBitmap()
-}
-
-fun getApplicationName(
-    context: Context,
-    packageName: String
-): String {
-    if (packageName.isEmpty()) return ""
-
-    try {
-        val info = context.packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
-        val name = context.packageManager.getApplicationLabel(info)
-        return name.toString()
-    } catch (e: PackageManager.NameNotFoundException) {
-        return ""
-    }
-}
-
-fun acceptLetter(input: String): Char {
-    if (input.isEmpty()) return ' '
-
-    val letter = input.removePrefix(" ").removeSuffix(" ").last()
-    if (letter.code >= '!'.code && letter.code <= '~'.code) return letter
-
-    return ' '
 }
 
 @Composable
 fun EditPackage(
-    map: Map<String, Char>,
+    indicators: Map<String, Char>,
     letter: Char,
     packageName: String,
     activeList: List<String>,
-    fullList: List<String>,
+    allList: List<String>,
     onClose: () -> Unit
 ) {
     var newLetter by remember { mutableStateOf(letter) }
@@ -192,8 +208,8 @@ fun EditPackage(
 
     if (showList) {
         SelectPackage(
-            activeList = activeList.distinct().filter { !map.containsKey(it) },
-            fullList = fullList.distinct().filter { !map.containsKey(it) },
+            activeList = activeList.distinct().filter { !indicators.containsKey(it) },
+            allList = allList.filter { !indicators.containsKey(it) },
             onClose = { showList = false }
         ) { name: String -> newPackage = name }
     } else {
@@ -242,9 +258,10 @@ fun EditPackage(
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Uri,
                                     autoCorrectEnabled = false,
-                                    ),
+                                ),
                                 modifier = Modifier
-                                    .background(AppConstants.colorBack)
+                                    .background(AppConstants.colorNotiBack)
+                                    .padding(horizontal = 8.dp)
                             )
                         }
 
@@ -367,127 +384,123 @@ fun EditPackage(
 }
 
 @Composable
-fun MainPackageList(
+fun SelectPackage(
     activeList: List<String>,
-    allList: List<String>
+    allList: List<String>,
+    onClose: () -> Unit,
+    onSelect: (String) -> Unit
 ) {
-    var showEditDialog by remember { mutableStateOf(false) }
-    var editLetter by remember { mutableStateOf(' ') }
-    var editPackageName by remember { mutableStateOf("") }
-    val packageMap by Notifications.mapFlow.collectAsState(emptyMap())
+    var showAll by remember { mutableStateOf(false) }
+    val listShown = if (showAll) allList else activeList
 
-    if (showEditDialog) {
-        EditPackage(
-            map = packageMap,
-            letter = editLetter,
-            packageName = editPackageName,
-            activeList = activeList,
-            fullList = allList
-        ) {
-            showEditDialog = false
+    val scrollState = rememberScrollState()
+
+    Dialog(
+        onDismissRequest = {
+            if (showAll) showAll = false
+            onClose()
         }
-    }
-
-    Column {
-        Section(stringResource(R.string.packages))
-        for (item in packageMap.toSortedMap()) {
-            PackageLine(
-                letter = item.value,
-                packageName = item.key,
-                onEdit = {
-                    editLetter = item.value
-                    editPackageName = item.key
-                    showEditDialog = true
-                })
-        }
-
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Button(
-                onClick = {
-                    Notifications.reset()
-                },
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
+                    .verticalScroll(scrollState),
             ) {
                 Text(
-                    text = stringResource(R.string.reset),
-                    fontSize = AppConstants.textSize
+                    text = stringResource(R.string.select_package),
+                    fontSize = AppConstants.titleSize,
+                    modifier = Modifier.padding(10.dp)
                 )
-            }
-            Button(
-                onClick = {
-                    editLetter = ' '
-                    editPackageName = ""
-                    showEditDialog = true
-                },
-            ) {
-                Text(
-                    text = stringResource(R.string.add),
-                    fontSize = AppConstants.textSize
-                )
+                if (listShown.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.no_active),
+                        fontSize = AppConstants.textSize,
+                        modifier = Modifier.fillMaxWidth().padding(10.dp)
+                    )
+                } else {
+                    for (packageName in listShown) {
+                        ListItem(
+                            modifier = Modifier
+                                .clickable {
+                                    onSelect(packageName)
+                                    onClose()
+                                }
+                                .padding(0.dp)
+                                .fillMaxWidth(),
+                            leadingContent = {
+                                val appIcon = getApplicationIcon(LocalContext.current, packageName)
+                                if (appIcon != null) {
+                                    Image(
+                                        bitmap = appIcon,
+                                        contentDescription = packageName,
+                                        modifier = Modifier.fillMaxWidth(.15f).padding(0.dp)
+                                    )
+                                }
+                            },
+                            headlineContent = {
+                                val appName = Notifications.getAppName(packageName)
+                                if (appName != "") {
+                                    Text(
+                                        text = appName,
+                                        fontSize = AppConstants.smallSize
+                                    )
+                                }
+                            },
+                            supportingContent = {
+                                Text(
+                                    text = packageName,
+                                    fontSize = AppConstants.subSize,
+                                    modifier = Modifier.fillMaxWidth().padding(0.dp),
+                                )
+                            }
+                        )
+                    }
+                }
+                Button(
+                    modifier = Modifier.padding(10.dp),
+                    onClick = { showAll = true }
+                ) {
+                    Text(
+                        text = stringResource(R.string.list_all),
+                        fontSize = AppConstants.textSize
+                    )
+                }
             }
         }
     }
 }
 
-@Composable
-fun PackageLine(
-    letter: Char,
-    packageName: String,
-    onEdit: () -> Unit
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp, horizontal = 4.dp)
-    ) {
-        Text(
-            text = letter.toString(),
-            fontSize = AppConstants.titleSize,
-            color = AppConstants.colorText,
-            modifier = Modifier
-                .fillMaxWidth(.1f)
-                .background(AppConstants.colorBack)
-                .padding(horizontal = 16.dp),
-            textAlign = TextAlign.Center,
-        )
+fun getApplicationIcon(
+    context: Context,
+    packageName: String
+): ImageBitmap? {
+    if (packageName.isEmpty()) return null
 
-        Box(
-            modifier = Modifier.fillMaxWidth(.1f)
-        ) {
-            val icon = getApplicationIcon(LocalContext.current, packageName)
-            if (icon != null) {
-                Image(
-                    bitmap = icon,
-                    contentDescription = packageName,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-
-        Text(
-            text = packageName,
-            fontSize = AppConstants.textSize,
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
-                .weight(1f)
-        )
-
-        FilledIconButton(
-            onClick = onEdit,
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.outline_edit_24),
-                contentDescription = stringResource(R.string.edit),
-            )
-        }
-
+    val drawable = try {
+        context.packageManager.getApplicationIcon(packageName)
+    } catch (e: PackageManager.NameNotFoundException) {
+        return null
     }
+
+    val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
+    val canvas = android.graphics.Canvas(bitmap)
+    drawable.setBounds(0, 0, canvas.width, canvas.height)
+    drawable.draw(canvas)
+    return bitmap.asImageBitmap()
+}
+
+fun acceptLetter(input: String): Char {
+    if (input.isEmpty()) return ' '
+
+    val letter = input.removePrefix(" ").removeSuffix(" ").last()
+    if (letter.code >= '!'.code && letter.code <= '~'.code) return letter
+
+    return ' '
 }
 
 val PreviewPackageList = listOf(
@@ -511,11 +524,11 @@ fun SelectPackagePreview() {
 @Composable
 fun EditPackagePreview() {
     EditPackage(
-        map = mapOf(),
+        indicators = mapOf(),
         letter = 'S',
         packageName = "com.android.google.apps.messaging",
         activeList = PreviewPackageList,
-        fullList = listOf()
+        allList = listOf()
     ) { }
 }
 
@@ -523,11 +536,11 @@ fun EditPackagePreview() {
 @Composable
 fun EditPackageEmpty() {
     EditPackage(
-        map = mapOf(),
+        indicators = mapOf(),
         letter = ' ',
         packageName = "",
         activeList = PreviewPackageList,
-        fullList = listOf()
+        allList = listOf()
     ) { }
 }
 

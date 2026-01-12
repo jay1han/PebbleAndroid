@@ -69,7 +69,7 @@ there's a pending notification for that app.
 There's no limit to the number of apps (Android packages) you can register for this feature.
 Note that the watch face does have a limit of 15 simultaneous indicators,
 which would probably overflow the width of the display anyway.
-If there are more than 15 indicators to show, the app selects the most recent.
+If there are more than 15 indicators to show, the app clips the list arbitrarily.
 
 ## Watch-app features[^4]
 
@@ -128,15 +128,18 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Remove Quit button, replace with "?" button
     - [x] Remove help screenshot
     - [x] Hide Service notification from lock screen
-    - [ ] bug: Refresh main list after edit
-    - [ ] Sort main list by app name
+    - [x] bug: Refresh main list after edit
+    - [x] Sort main list by app name
 
 - Notification UI
 
     - [x] Change text edit mode to litteral input
+    - [x] Main list: add app name in list, sort by app name
+    - [x] App list: same
+    - [x] Prefetch app icon
     - [ ] Use lazy list in List of all application
-    - [ ] Main list: add app name in list, sort by app name
-    - [ ] App list: same
+    - [ ] Also use full screen
+    - [ ] Sort indicators somehow
   
 - Service
     - [ ] Refresh notification list when Service starts
@@ -150,6 +153,9 @@ some usages of the Android SDK seem a bit clunky.
 - Pebble object
     - [ ] Remove context field from Pebble
     - [ ] Pebble object caches Info
+
+- Clean code
+    - [ ] Rationalize activeList, allList and indicators map
   
 - Future: DND
 

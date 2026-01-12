@@ -36,18 +36,15 @@ class NotificationListener:
 
     private fun sendToMain() {
         val active = context.getSharedPreferences(AppConstants.NOTI_DB, MODE_PRIVATE)
-        var count = 0
         active.edit {
             clear()
             for (notification in activeNotifications) {
                 if (!notification.isOngoing
                     && notification.isClearable
                 ) {
-                    putString(count.toString(), notification.packageName)
-                    count++
+                    putBoolean(notification.packageName, true)
                 }
             }
-            putInt(AppConstants.ACTIVE_COUNT, count)
         }
 
         sendBroadcast(Intent(AppConstants.INTENT_SBN))
@@ -64,21 +61,19 @@ object Notifications:
     private lateinit var packageList: SharedPreferences
     private lateinit var notificationsList: SharedPreferences
 
-    val mapFlow = MutableStateFlow<Map<String, Char>>(emptyMap())
-    var activeList = listOf<String>()
+    val indicatorsFlow = MutableStateFlow<Map<String, Char>>(emptyMap())
     val activeFlow = MutableStateFlow<List<String>>(mutableListOf())
-    var allList = listOf<String>()
     val allFlow = MutableStateFlow<List<String>>(mutableListOf())
+    private var mapPackageToName = mapOf<String, String>()
 
     private fun readMap() {
         val newMap = emptyMap()
         for (item in packageList.all) {
-            val packageName = item.key
             val letterAsString = item.value as String
             if (letterAsString.length == 1)
-                newMap[packageName] = letterAsString[0]
+                newMap[item.key] = letterAsString[0]
         }
-        mapFlow.value = newMap
+        indicatorsFlow.value = newMap
     }
 
     private fun writeMap(map: MutableMap<String, Char>) {
@@ -116,33 +111,22 @@ object Notifications:
         updateAllList()
     }
 
-    private fun updateAllList() {
-        allList = packageManager.getInstalledPackages(PackageManager.GET_META_DATA)
-            .map { it.packageName }
-            .filter { !it.startsWith("com.android.") }
-        allFlow.value = allList
-    }
-
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent == null) return
         
         when (intent.action) {
             AppConstants.INTENT_SBN -> {
-                val newList  = mutableListOf<String>()
                 val compact: MutableSet<Char> = mutableSetOf()
 
-                val count = notificationsList.getInt(AppConstants.ACTIVE_COUNT, 0)
-                for (index in 0..<count) {
-                    val name = notificationsList.getString(index.toString(), "")
-                    if (name != null) {
-                        val letter = mapFlow.value.getOrDefault(name, ' ')
-                        if (letter != ' ') compact.add(letter)
-                        newList.add(name)
+                activeFlow.value = mutableListOf<String>()
+                    .apply {
+                        for (packageName in notificationsList.all.keys.filter { it != "" }) {
+                            indicatorsFlow.value[packageName].let {
+                                if (it != null) compact.add(it)
+                            }
+                            add(packageName)
+                        }
                     }
-                }
-
-                activeList = newList
-                activeFlow.value = activeList
 
                 val text = compact.joinToString("")
                     .take(AppConstants.MAX_NOTI_INDICATORS)
@@ -156,24 +140,55 @@ object Notifications:
         updateAllList()
     }
 
+    private fun updateAllList() {
+        val newList = packageManager
+            .queryIntentActivities(
+                Intent(Intent.ACTION_MAIN)
+                    .apply { addCategory(Intent.CATEGORY_LAUNCHER) },
+                0
+            )
+            .map { it.activityInfo.packageName }
+
+        val newPairs = mutableListOf<Pair<String, String>>()
+            .apply {
+                for (packageName in newList) {
+                    val appInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+                    val appName = packageManager.getApplicationLabel(appInfo).toString()
+                    add(Pair(packageName, appName))
+                }
+            }
+            .apply { sortBy { it.second } }
+
+        mapPackageToName = mutableMapOf<String, String>()
+            .apply {
+                for (pair in newPairs) put(pair.first, pair.second)
+            }
+
+        allFlow.value = newPairs.map { it.first }
+    }
+
+    fun getAppName(packageName: String): String {
+        return mapPackageToName[packageName] ?: ""
+    }
+
     fun reset() {
         val newMap = emptyMap()
         writeMap(newMap)
-        mapFlow.value = newMap
+        indicatorsFlow.value = newMap
     }
 
     fun register(letter: Char, packageName: String) {
-        val newMap = mapFlow.value.toMutableMap()
+        val newMap = indicatorsFlow.value.toMutableMap()
         if (letter == ' ') return
         newMap[packageName] = letter
         writeMap(newMap)
-        mapFlow.value = newMap
+        indicatorsFlow.value = newMap
     }
 
     fun remove(packageName: String) {
-        val newMap = mapFlow.value.toMutableMap()
+        val newMap = indicatorsFlow.value.toMutableMap()
         newMap.remove(packageName)
         writeMap(newMap)
-        mapFlow.value = newMap
+        indicatorsFlow.value = newMap
     }
 }

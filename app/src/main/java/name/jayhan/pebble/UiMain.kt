@@ -96,7 +96,7 @@ fun TopBar(
                 Text(
                     text = "?",
                     fontSize = AppConstants.titleSize,
-                    color = AppConstants.colorBlank
+                    color = AppConstants.colorTop
                 )
             }
         }
@@ -146,8 +146,8 @@ fun ShowHelp(
 fun MainPage(
     modifier: Modifier = Modifier,
 ) {
-    val activeList by Notifications.activeFlow.collectAsState(Notifications.activeList)
-    val allList by Notifications.allFlow.collectAsState(Notifications.allList)
+    val activeList by Notifications.activeFlow.collectAsState(Notifications.activeFlow.value)
+    val allMap by Notifications.allFlow.collectAsState(Notifications.allFlow.value)
     val scrollState = rememberScrollState()
 
     Column(
@@ -158,7 +158,7 @@ fun MainPage(
             Pebble.fromString(tz)
         }
         Box(Modifier.height(AppConstants.padSize))
-        MainPackageList(activeList, allList)
+        MainPackageList(activeList, allMap)
     }
 }
 

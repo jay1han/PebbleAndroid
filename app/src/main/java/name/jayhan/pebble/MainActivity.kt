@@ -22,10 +22,13 @@ object AppConstants {
     val titleSize = 28.sp
     val textSize = 20.sp
     val smallSize = 16.sp
+    val subSize = 12.sp
     val padSize = 8.dp
 
     val colorBack = Color(0xFFFF8000)
+    val colorNotiBack = Color(0xFF000000)
     val colorText = Color(0xFFFFFFFF)
+    val colorTop = Color(0xFFFFFFFF)
     val colorBlank = Color(0xFFFFFFFF)
     val colorFade = Color(0xFF808080)
 
