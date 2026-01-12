@@ -138,8 +138,8 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Main list: add app name in list, sort by app name
     - [x] App list: same
     - [x] Prefetch app icon
-    - [ ] Use lazy list in List of all application
-    - [ ] Also use full screen
+    - [x] Use lazy list in List of all application
+    - [x] Also use full screen
     - [ ] Sort indicators somehow
   
 - Service

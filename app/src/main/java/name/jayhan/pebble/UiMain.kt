@@ -3,9 +3,9 @@
 package name.jayhan.pebble
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -146,8 +146,8 @@ fun ShowHelp(
 fun MainPage(
     modifier: Modifier = Modifier,
 ) {
-    val activeList by Notifications.activeFlow.collectAsState(Notifications.activeFlow.value)
-    val allMap by Notifications.allFlow.collectAsState(Notifications.allFlow.value)
+    val activeList by Notifications.activeFlow.collectAsState(emptyList())
+    val allList by Notifications.allFlow.collectAsState(emptyList())
     val scrollState = rememberScrollState()
 
     Column(
@@ -157,8 +157,8 @@ fun MainPage(
         AwayTimezone { tz ->
             Pebble.fromString(tz)
         }
-        Box(Modifier.height(AppConstants.padSize))
-        MainPackageList(activeList, allMap)
+        Spacer(Modifier.height(AppConstants.padSize))
+        IndicatorList(activeList, allList)
     }
 }
 
