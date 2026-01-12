@@ -130,7 +130,8 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Hide Service notification from lock screen
     - [x] bug: Refresh main list after edit
     - [x] Sort main list by app name
-    - [ ] More info on permissions
+    - [x] Request permissions one by one
+    - [x] Honor "should display rationale"
 
 - Notification UI
 

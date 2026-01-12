@@ -16,34 +16,65 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.flow.MutableStateFlow
 
 const val ENABLED_LISTENERS = "enabled_notification_listeners"
+
 const val ACTION_LISTENER = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"
 const val NOTIFICATION_LISTENER = "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
 const val FOREGROUND_SERVICE = "android.permission.FOREGROUND_SERVICE"
 const val POST_NOTIFICATION = "android.permission.POST_NOTIFICATIONS"
 const val PHONE_STATE = "android.permission.READ_PHONE_STATE"
 const val NEARBY_SERVICES = "android.permission.BLUETOOTH_CONNECT"
+const val BLUETOOTH_CONNECT = "android.permission.BLUETOOTH_CONNECT"
 const val FINE_LOCATION = "android.permission.ACCESS_FINE_LOCATION"
 const val BACKGROUND_LOCATION = "android.permission.ACCESS_BACKGROUND_LOCATION"
 const val QUERY_ALL_PACKAGES = "android.permission.QUERY_ALL_PACKAGES"
 
 val PermissionsList = mapOf(
-    NOTIFICATION_LISTENER to R.string.notification_listener,
-    FOREGROUND_SERVICE to R.string.foreground_service,
-    POST_NOTIFICATION to R.string.post_notification,
-    PHONE_STATE to R.string.phone_state,
-    NEARBY_SERVICES to R.string.nearby_service,
-    FINE_LOCATION to R.string.fine_location,
-    BACKGROUND_LOCATION to R.string.background_location,
-    QUERY_ALL_PACKAGES to R.string.query_all_packages
+    NOTIFICATION_LISTENER to Pair(
+        R.string.notification_listener,
+        R.string.notification_listener_2),
+    FOREGROUND_SERVICE to Pair(
+        R.string.foreground_service,
+        R.string.foreground_services_2),
+    POST_NOTIFICATION to Pair(
+        R.string.post_notification,
+        R.string.post_notification_2),
+    PHONE_STATE to Pair(
+        R.string.phone_state,
+        R.string.phone_state_2),
+    NEARBY_SERVICES to Pair(
+        R.string.nearby_service,
+        R.string.nearby_service_2),
+    BLUETOOTH_CONNECT to Pair(
+        R.string.bluetooth_connect,
+        R.string.bluetooth_connect_2),
+    FINE_LOCATION to Pair(
+        R.string.fine_location,
+        R.string.fine_location_2),
+    BACKGROUND_LOCATION to Pair(
+        R.string.background_location,
+        R.string.background_location_2),
+    QUERY_ALL_PACKAGES to Pair(
+        R.string.query_all_packages,
+        R.string.query_all_packages_2),
 )
 
 class SinglePermission(
@@ -120,28 +151,24 @@ object Permissions
         }
     }
 
-    fun request() {
-        val request = mutableListOf<String>()
-        for (permission in permissionList.filter { !it.granted } ) {
-            when (permission.name) {
-                NOTIFICATION_LISTENER -> {
-                    val settingsIntent =
-                        Intent(ACTION_LISTENER)
-                    mainActivity.startActivity(settingsIntent)
-                    break
-                }
+    fun request(
+        permissionName: String
+    ): Boolean {
+        when (permissionName) {
+            NOTIFICATION_LISTENER -> {
+                val settingsIntent =
+                    Intent(ACTION_LISTENER)
+                mainActivity.startActivity(settingsIntent)
+                return false
+            }
 
-                else -> {
-                    mainActivity.shouldShowRequestPermissionRationale(permission.name)
-                    request.add(permission.name)
-                    break
-                }
+            else -> {
+                if (mainActivity.shouldShowRequestPermissionRationale(permissionName))
+                    return true
             }
         }
-
-        if (request.isNotEmpty()) {
-            permissionsLauncher.launch(request.toTypedArray())
-        }
+        permissionsLauncher.launch(arrayOf(permissionName))
+        return false
     }
 
     fun collect() {
@@ -170,42 +197,108 @@ fun UiPermissions(
     missingList: List<String>,
     modifier: Modifier = Modifier
 ) {
-    val scrollState = rememberScrollState()
+    var showRationale by remember { mutableStateOf("") }
 
-    Column(
-        modifier = modifier
-            .verticalScroll(scrollState),
-        verticalArrangement = Arrangement.Top
-    ) {
-        Column {
+    if (showRationale != "") {
+        Rationale(
+            permission = showRationale,
+            onClick = {
+                Permissions.request(showRationale)
+            }) {
+            showRationale = ""
+        }
+    } else {
+        val scrollState = rememberScrollState()
+        Column(
+            modifier = modifier
+                .verticalScroll(scrollState),
+            verticalArrangement = Arrangement.Top
+        ) {
+            Text(
+                text = "Required permissions"
+            )
+
             for (permission in missingList) {
-                Text(
-                    text = permission.removePrefix("android.permission."),
-                    modifier = Modifier.fillMaxWidth(),
-                    fontSize = AppConstants.textSize
-                )
-                Text(
-                    text = stringResource(PermissionsList[permission]!!),
+                ListItem(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    fontSize = AppConstants.smallSize,
+                        .padding(10.dp),
+                    headlineContent = {
+                        Text(
+                            text = permission.removePrefix("android.permission."),
+                            modifier = Modifier.fillMaxWidth(),
+                            fontSize = AppConstants.textSize
+                        )
+                    },
+                    supportingContent = {
+                        Text(
+                            text = stringResource(PermissionsList[permission]!!.first),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp),
+                            fontSize = AppConstants.smallSize,
+                        )
+                    },
+                    trailingContent = {
+                        IconButton(
+                            onClick = {
+                                if (Permissions.request(permission))
+                                    showRationale = permission
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.outline_chevron_forward_24),
+                                contentDescription = "Go"
+                            )
+                        }
+                    }
                 )
             }
         }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+    }
+}
+
+@Composable
+fun Rationale(
+    permission: String,
+    onClick: () -> Unit,
+    onClose: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = {}
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Button(
-                onClick = {
-                    Permissions.request()
-                },
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
             ) {
                 Text(
-                    stringResource(R.string.grant),
-                    fontSize = AppConstants.textSize,
+                    text = permission
                 )
+                Text(
+                    text = stringResource(PermissionsList[permission]!!.first)
+                )
+                Text(
+                    text = stringResource(PermissionsList[permission]!!.second)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Button(
+                        onClick = {
+                            onClick()
+                            onClose()
+                        }
+                    ) {
+                        Text(
+                            text = "Accept"
+                        )
+                    }
+                }
             }
         }
     }
@@ -220,4 +313,13 @@ fun UiPermissionsPreview() {
         missingList,
         Modifier
     )
+}
+
+@Preview
+@Composable
+fun RationalePreview() {
+    Rationale(
+        permission = POST_NOTIFICATION,
+        onClick = {}
+    ) {}
 }
