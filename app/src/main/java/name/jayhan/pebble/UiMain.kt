@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -35,6 +36,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 
 @Composable
 fun AppScaffold(
@@ -54,12 +56,13 @@ fun AppScaffold(
             if (showHelp) {
                 ShowHelp(
                     modifier = Modifier.padding(innerPadding)
-                )
-            } else {
-                MainPage(
-                    modifier = Modifier.padding(innerPadding)
-                )
+                ) {
+                    showHelp = false
+                }
             }
+            MainPage(
+                modifier = Modifier.padding(innerPadding)
+            )
         } else {
             val missingList by Permissions.missingFlow.collectAsState(listOf())
 
@@ -102,28 +105,40 @@ fun TopBar(
 
 @Composable
 fun ShowHelp(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClose: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val watchInfo: WatchInfo by Pebble.infoFlow.collectAsState(WatchInfo())
     val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
 
-    Column(
-        modifier = modifier.verticalScroll(scrollState).fillMaxWidth(),
+    Dialog(
+        onDismissRequest = onClose
     ) {
-        if (isConnected) {
-            Text(
-                text = stringResource(R.string.model) + ": " +
-                        watchInfo.model + "\n" +
-                        stringResource(R.string.version) + ": " +
-                        watchInfo.version,
-                fontSize = AppConstants.textSize,
-            )
+        Card(
+            modifier = modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(scrollState)
+                    .fillMaxWidth()
+                    .padding(10.dp),
+            ) {
+                if (isConnected) {
+                    Text(
+                        text = stringResource(R.string.model) + ": " +
+                                watchInfo.model + "\n" +
+                                stringResource(R.string.version) + ": " +
+                                watchInfo.version,
+                        fontSize = AppConstants.textSize,
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.built) + AppConstants.buildDateTime,
+                    fontSize = AppConstants.smallSize
+                )
+            }
         }
-        Text(
-            text = stringResource(R.string.built) + AppConstants.buildDateTime,
-            fontSize = AppConstants.smallSize
-        )
     }
 }
 
@@ -246,5 +261,5 @@ fun MainPagePreview() {
 @Preview
 @Composable
 fun HelpPreview() {
-    ShowHelp()
+    ShowHelp {}
 }

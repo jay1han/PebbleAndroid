@@ -127,7 +127,7 @@ some usages of the Android SDK seem a bit clunky.
 - Main UI
     - [x] Remove Quit button, replace with "?" button
     - [x] Remove help screenshot
-    - [ ] Hide Service notification from lock screen
+    - [x] Hide Service notification from lock screen
     - [ ] bug: Refresh main list after edit
     - [ ] Sort main list by app name
 
