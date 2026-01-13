@@ -67,10 +67,12 @@ object Indicators
 
         for (indicator in allMap) {
             if (indicator.packageName() == packageName) {
-                if (indicator.channel() == channel)
-                    return indicator.letter()
                 if (indicator.channel() == "")
                     provision = indicator.letter()
+                else {
+                    if (channel.contains(indicator.channel()))
+                        return indicator.letter()
+                }
             }
         }
         return provision
