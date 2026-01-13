@@ -5,20 +5,37 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
 
-class Indicator(
-    val packageName: String,
-    val channel: String,
-    val letter: Char,
-) {
-    override fun toString(): String {
-        return "$packageName:$letter$channel"
+fun String.packageName(): String { return this.substringBefore(':') }
+fun Map.Entry<String, Char>.packageName(): String { return this.key.packageName() }
+fun String.channel(): String { return this.substringAfter(':') }
+fun Map.Entry<String, Char>.channel(): String { return this.key.channel() }
+fun Map.Entry<String, Char>.letter(): Char { return this.value }
+fun Map<String, Char>.addMutableEntry(
+    packageName: String,
+    channel: String,
+    letter: Char
+): MutableMap<String, Char> {
+    val newMap = this.toMutableMap()
+    newMap["$packageName:$channel"] = letter
+    return newMap
+}
+fun sortMap(
+    map: MutableMap<String, Char>
+): MutableMap<String, Char> {
+    return map.toSortedMap { first, second ->
+        val firstAppName = Notifications.getAppName(first.packageName())
+        val secondAppName = Notifications.getAppName(second.packageName())
+        if (firstAppName == secondAppName)
+            first.channel().compareTo(second.channel())
+        else
+            firstAppName.compareTo(secondAppName)
     }
 }
 
 object Indicators
 {
-    private var allList = listOf<Indicator>()
-    val allFlow = MutableStateFlow(listOf<Indicator>())
+    private var allMap = mapOf<String, Char>()
+    val allFlow = MutableStateFlow(mapOf<String, Char>())
     private lateinit var savedSettings: SharedPreferences
 
     fun init(context: Context) {
@@ -27,33 +44,35 @@ object Indicators
             Context.MODE_PRIVATE
         )
 
-        for (item in savedSettings.all) {
-            val indicatorString = item.key as String
-            if (indicatorString.isNotEmpty())
-                add(indicatorString)
-        }
+        val newMap: MutableMap<String, Char> =
+            try {
+                mutableMapOf<String, Char>().apply {
+                    savedSettings.all.forEach {
+                        put(it.key, (it.value as String)[0])
+                    }
+                }
+            } catch (e: Exception) {
+                mutableMapOf()
+            }
+
+        reflow(newMap)
     }
 
     fun getLetter(
         packageName: String,
         channel: String
     ): Char {
-        for (indicator in allList) {
-            if (indicator.packageName == packageName &&
-                (indicator.channel != "" && channel.contains(indicator.channel)))
-                return indicator.letter
-        }
-        return ' '
-    }
+        var provision = ' '
 
-    fun hasPackage(
-        packageName: String
-    ): Boolean {
-        for (indicator in allList) {
-            if (indicator.packageName == packageName)
-                return true
+        for (indicator in allMap) {
+            if (indicator.packageName() == packageName) {
+                if (indicator.channel() == channel)
+                    return indicator.letter()
+                if (indicator.channel() == "")
+                    provision = indicator.letter()
+            }
         }
-        return false
+        return provision
     }
 
     fun add(
@@ -61,59 +80,41 @@ object Indicators
         channel: String,
         letter: Char
     ) {
-        val newList = allList.toMutableList().apply {
-            add(Indicator(packageName, channel, letter))
-        }
+        val newList = allMap.addMutableEntry(
+            packageName,
+            channel,
+            letter
+            )
         reflow(newList)
     }
 
     private fun reflow(
-        newList: MutableList<Indicator>
+        newMap: MutableMap<String, Char>
     ) {
-        newList.sortWith { first, second ->
-            val firstAppName = Notifications.getAppName(first.packageName)
-            val secondAppName = Notifications.getAppName(second.packageName)
-            if (firstAppName == secondAppName)
-                first.channel.compareTo(second.channel)
-            else
-                firstAppName.compareTo(secondAppName)
-        }
+        allMap = sortMap(newMap)
 
         savedSettings.edit {
             clear()
-            for (item in newList) {
-                putBoolean(item.toString(), true)
+            for (item in allMap) {
+                putString(item.key, item.value.toString())
             }
             commit()
         }
 
-        allList = newList
-        allFlow.value = newList
-    }
-
-    fun add(
-        fromString: String
-    ) {
-        val packageName = fromString.substringBefore(':')
-        val letter = fromString.substringAfter(':')[0]
-        val channel = fromString.substringAfter(':').substring(1)
-        val newList = allList.toMutableList().apply {
-            add(Indicator(packageName, channel, letter))
-        }
-        reflow(newList)
+        allFlow.value = allMap
     }
 
     fun remove(
         packageName: String,
         channel: String,
     ) {
-        val newList = allList.filterNot {
-            it.packageName == packageName && it.channel == channel
-        }.toMutableList()
-        reflow(newList)
+        val newMap = allMap.filterNot {
+            it.packageName() == packageName && it.channel() == channel
+        }.toMutableMap()
+        reflow(newMap)
     }
 
     fun reset() {
-        reflow(mutableListOf())
+        reflow(mutableMapOf())
     }
 }

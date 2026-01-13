@@ -52,7 +52,7 @@ fun EditIndicators(
 
     if (showPackageList) {
         SelectPackage(
-            activeList = activeList.distinct().filter { !Indicators.hasPackage(it) },
+            activeList = activeList,
             allList = allList,
             onClose = { showPackageList = false }
         ) { name: String -> newPackage = name }

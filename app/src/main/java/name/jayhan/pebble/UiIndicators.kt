@@ -42,7 +42,7 @@ fun ShowIndicators(
     var editLetter by remember { mutableStateOf(' ') }
     var editPackageName by remember { mutableStateOf("") }
     var editChannel by remember { mutableStateOf("") }
-    val indicators by Indicators.allFlow.collectAsState(listOf())
+    val indicators by Indicators.allFlow.collectAsState(mapOf())
 
     if (showEditDialog) {
         EditIndicators(
@@ -64,13 +64,13 @@ fun ShowIndicators(
 
         for (indicator in indicators) {
             ShowIndicatorItem(
-                letter = indicator.letter,
-                packageName = indicator.packageName,
-                channel = indicator.channel,
+                letter = indicator.letter(),
+                packageName = indicator.packageName(),
+                channel = indicator.channel(),
                 onEdit = {
-                    editLetter = indicator.letter  // TODO
-                    editPackageName = indicator.packageName
-                    editChannel = indicator.channel
+                    editLetter = indicator.letter()
+                    editPackageName = indicator.packageName()
+                    editChannel = indicator.channel()
                     showEditDialog = true
                 })
         }

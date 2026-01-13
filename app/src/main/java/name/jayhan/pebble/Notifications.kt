@@ -57,7 +57,7 @@ object Notifications : BroadcastReceiver()
         activeNotifications: Array<StatusBarNotification>
     ) {
         val compact: MutableSet<Char> = mutableSetOf()
-        activeFlow.value = mutableListOf<String>()
+        val activeList = mutableListOf<String>()
             .apply {
                 for (notification in activeNotifications
                     .filter { !it.isOngoing && it.isClearable }
@@ -70,6 +70,7 @@ object Notifications : BroadcastReceiver()
                     if (letter != ' ') compact.add(letter)
                 }
             }
+        activeFlow.value = activeList.dedup()
 
         val text = compact.joinToString("")
             .take(AppConstants.MAX_NOTI_INDICATORS)
@@ -137,4 +138,12 @@ object Notifications : BroadcastReceiver()
     fun getAppName(packageName: String): String {
         return mapPackageToName[packageName] ?: ""
     }
+}
+
+fun List<String>.dedup(): List<String> {
+    val newList = mutableListOf<String>()
+    for (item in this) {
+        if (!newList.contains(item)) newList.add(item)
+    }
+    return newList
 }
