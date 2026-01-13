@@ -11,7 +11,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import name.jayhan.pebble.ui.theme.PebbleTheme
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.UUID
@@ -36,7 +35,6 @@ object AppConstants {
     val colorWarning = Color(0xFFFF0000)
     val colorBlack = Color(0xFF000000)
 
-    const val INTENT_SERVICE_STOP = "name.jayhan.pebble.SERVICE_STOP"
     const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE_FOREGROUND"
 
     const val CHANNEL_ID = "CapetaService"
@@ -76,13 +74,6 @@ class MainActivity :
             val intent = Intent(context, PebbleService::class.java)
             context.startForegroundService(intent)
             servicesStarted = true
-        }
-    }
-
-    private fun stopServices() {
-        if (servicesStarted) {
-            val stopForeground = Intent(AppConstants.INTENT_SERVICE_STOP)
-            context.sendBroadcast(stopForeground)
         }
     }
 }

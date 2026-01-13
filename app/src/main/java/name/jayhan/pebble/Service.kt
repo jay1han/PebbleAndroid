@@ -3,7 +3,6 @@ package name.jayhan.pebble
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.NotificationManager.IMPORTANCE_LOW
 import android.app.PendingIntent
 import android.app.PendingIntent.getBroadcast
 import android.app.Service
@@ -11,7 +10,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+import android.content.pm.ServiceInfo
 import android.net.ConnectivityManager
 import android.os.IBinder
 import android.telephony.TelephonyManager
@@ -28,7 +27,6 @@ class PebbleService():
     private lateinit var phoneCallback: PhoneCallback
 
     private val delReceiver = DelReceiver()
-    private val stopReceiver = StopReceiver()
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -37,10 +35,8 @@ class PebbleService():
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         context = applicationContext
 
-        val filter1 = IntentFilter().apply { addAction(AppConstants.INTENT_SERVICE_STOP) }
-        context.registerReceiver(stopReceiver, filter1, RECEIVER_EXPORTED)
-        val filter2 = IntentFilter().apply { addAction(AppConstants.INTENT_REVIVE) }
-        context.registerReceiver(delReceiver, filter2,RECEIVER_EXPORTED)
+        val filter = IntentFilter().apply { addAction(AppConstants.INTENT_REVIVE) }
+        context.registerReceiver(delReceiver, filter,RECEIVER_EXPORTED)
         connMan = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         teleMan = context.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
 
@@ -50,7 +46,7 @@ class PebbleService():
             val channel = NotificationChannel(
                 AppConstants.CHANNEL_ID,
                 getString(R.string.app_title),
-                IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_LOW
             ).apply {
                 setShowBadge(false)
                 lockscreenVisibility = Notification.VISIBILITY_SECRET
@@ -103,7 +99,7 @@ class PebbleService():
         this.startForeground(
             1,
             notification,
-            FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         )
     }
 
@@ -111,17 +107,6 @@ class PebbleService():
         override fun onReceive(context: Context, intent: Intent) {
             setupForeground()
             reInit()
-        }
-    }
-
-    inner class StopReceiver: BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            val action = intent.action
-            if (action == AppConstants.INTENT_SERVICE_STOP) {
-                context.unregisterReceiver(delReceiver)
-                context.unregisterReceiver(stopReceiver)
-                stopSelf()
-            }
         }
     }
 }

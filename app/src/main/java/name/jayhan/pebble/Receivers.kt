@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
@@ -28,7 +27,7 @@ class BatteryReceiver(
             addAction(Intent.ACTION_POWER_CONNECTED)
             addAction(Intent.ACTION_POWER_DISCONNECTED)
         }
-        context.registerReceiver(this, batteryFilter, RECEIVER_EXPORTED)
+        context.registerReceiver(this, batteryFilter, Context.RECEIVER_EXPORTED)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -110,7 +109,7 @@ class BluetoothReceiver(
                 addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
                 addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
             },
-            RECEIVER_EXPORTED
+            Context.RECEIVER_EXPORTED
         )
     }
 
