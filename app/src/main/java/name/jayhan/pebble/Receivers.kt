@@ -93,7 +93,10 @@ class BluetoothReceiver(
             val devices = bluetoothAdapter.bondedDevices
             val connectedDevice = devices.firstOrNull { it.isConnected() }
             if (connectedDevice != null) {
-                sendToPebble(connectedDevice.name, connectedDevice.getBatteryLevel())
+                sendToPebble(
+                    connectedDevice.name.removePrefix("LE-"),
+                    connectedDevice.getBatteryLevel()
+                )
             } else {
                 sendToPebble("", 0)
             }
@@ -120,7 +123,7 @@ class BluetoothReceiver(
         if (state == BluetoothAdapter.STATE_CONNECTED) {
             val device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
             if (device != null) {
-                name = device.name.take(19)
+                name = device.name.removePrefix("LE-").take(19)
                 battery = device.getBatteryLevel()
             }
         }

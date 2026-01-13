@@ -148,7 +148,7 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Hide cursor in letter input field
 
 - Other indicators 
-    - [ ] BT: Remove "LE-"
+    - [x] BT: Remove "LE-"
   
 - Service
     - [x] Refresh notification list when Service starts
@@ -165,7 +165,7 @@ some usages of the Android SDK seem a bit clunky.
     - [ ] Pebble object caches Info
 
 - Clean code
-    - [ ] Rationalize and rename activeList, allList and indicators map
+    - [x] Rationalize and rename activeList, allList and indicators map
   
 - Future: DND
 
