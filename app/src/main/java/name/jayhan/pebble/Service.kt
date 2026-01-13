@@ -98,6 +98,7 @@ class PebbleService():
             setSmallIcon(R.drawable.ic_launcher_foreground)
             setContentTitle("")
             setContentText("")
+            setVisibility(Notification.VISIBILITY_SECRET)
         }.build()
         this.startForeground(
             1,

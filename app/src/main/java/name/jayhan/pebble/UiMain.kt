@@ -2,24 +2,30 @@
 
 package name.jayhan.pebble
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -30,18 +36,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
 @Composable
-fun AppScaffold(
-    onQuit: () -> Unit
-) {
+fun AppScaffold() {
     val permissionsGranted by Permissions.grantFlow.collectAsState(Permissions.allGranted)
     var showHelp by remember { mutableStateOf(false) }
 
@@ -78,6 +88,8 @@ fun AppScaffold(
 fun TopBar(
     onHelp: () -> Unit
 ) {
+    val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
+
     TopAppBar(
         title = {
             Text(
@@ -93,11 +105,20 @@ fun TopBar(
             IconButton(
                 onClick = { onHelp() }
             ) {
-                Text(
-                    text = "?",
-                    fontSize = AppConstants.titleSize,
-                    color = AppConstants.colorTop
-                )
+                if (isConnected) {
+                    Text(
+                        text = "?",
+                        fontSize = AppConstants.titleSize,
+                        color = AppConstants.colorTop
+                    )
+                } else {
+                    Icon(
+                        painterResource(R.drawable.outline_warning_24),
+                        modifier = Modifier.fillMaxSize(),
+                        contentDescription = "Warning",
+                        tint = AppConstants.colorWarning
+                    )
+                }
             }
         }
     )
@@ -126,11 +147,20 @@ fun ShowHelp(
             ) {
                 if (isConnected) {
                     Text(
+                        text = stringResource(R.string.connected),
+                        fontSize = AppConstants.titleSize
+                    )
+                    Text(
                         text = stringResource(R.string.model) + ": " +
                                 watchInfo.model + "\n" +
                                 stringResource(R.string.version) + ": " +
                                 watchInfo.version,
                         fontSize = AppConstants.textSize,
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.disconnected),
+                        fontSize = AppConstants.titleSize
                     )
                 }
                 Text(
@@ -151,13 +181,14 @@ fun MainPage(
     val scrollState = rememberScrollState()
 
     Column(
-        modifier = modifier.verticalScroll(scrollState).fillMaxWidth(),
+        modifier = modifier
+            .verticalScroll(scrollState)
+            .fillMaxWidth(),
     ) {
-        Watchface()
         AwayTimezone { tz ->
             Pebble.fromString(tz)
         }
-        Spacer(Modifier.height(AppConstants.padSize))
+//        Spacer(Modifier.height(AppConstants.padSize))
         ShowIndicators(activeList, allList)
     }
 }
@@ -172,72 +203,66 @@ fun Section(text: String = "") {
 }
 
 @Composable
-fun Watchface(
-    modifier: Modifier = Modifier
-) {
-    val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
-
-    Row(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Section(
-            if (isConnected) stringResource(R.string.connected)
-            else stringResource(R.string.disconnected)
-        )
-    }
-}
-
-@Composable
 fun AwayTimezone(
     onApply: (String) -> String
 ) {
-    val tzWatch: String by Pebble.tzFlow.collectAsState("+0.0")
-    var tz by remember { mutableStateOf("+0.0") }
+    val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
+    val tzWatch: String by Pebble.tzFlow.collectAsState("")
+    var tz by remember { mutableStateOf("") }
     var editing by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
 
     Row (
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(0.dp)
+            .pointerInput(Unit) {
+                detectTapGestures { focusManager.clearFocus() }
+            }
     ) {
         Text(
-            text = "Timezone",
-            fontSize = AppConstants.titleSize
+            text = stringResource(R.string.timezone),
+            fontSize = AppConstants.titleSize,
         )
-        if (editing) {
-            OutlinedTextField(
-                value = tz,
-                onValueChange = { tz = it },
-                modifier = Modifier.width(100.dp),
-                textStyle = TextStyle(fontSize = AppConstants.textSize),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
+
+        OutlinedTextField(
+            readOnly = !editing,
+            value = if (editing) tz else tzWatch,
+            onValueChange = { tz = it },
+            modifier = Modifier
+                .weight(1f)
+                .padding(AppConstants.padSize)
+                .focusProperties { canFocus = editing }
+                .focusRequester(focusRequester)
+                .onFocusChanged { editing = it.hasFocus },
+            textStyle = TextStyle(fontSize = AppConstants.titleSize),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledTextColor = AppConstants.colorBlack
             )
+        )
+
+        if (isConnected) {
             Button(
                 onClick = {
-                    editing = false
-                    tz = onApply(tz)
+                    editing = !editing
+                    if (editing) {
+                        tz = ""
+                        focusRequester.requestFocus()
+                    } else {
+                        tz = onApply(tz)
+                        focusManager.clearFocus()
+                    }
                 },
                 modifier = Modifier.padding(AppConstants.padSize)
             ) {
                 Text(
-                    text = "Apply",
-                    fontSize = AppConstants.textSize,
-                )
-            }
-        } else {
-            tz = tzWatch
-            Text(
-                text = tzWatch,
-                modifier = Modifier.width(100.dp),
-                fontSize = AppConstants.textSize,
-                textAlign = TextAlign.Center
-            )
-            Button(
-                onClick = {editing = true},
-                modifier = Modifier.padding(AppConstants.padSize)
-            ) {
-                Text(
-                    text = "Edit",
+                    text =
+                        if (editing) stringResource(R.string.apply)
+                        else stringResource(R.string.edit),
                     fontSize = AppConstants.textSize,
                 )
             }

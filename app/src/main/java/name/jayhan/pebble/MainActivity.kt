@@ -33,6 +33,8 @@ object AppConstants {
     val colorBlank = Color(0xFFFFFFFF)
     val colorFade = Color(0xFF808080)
     val colorTransparent = Color(0)
+    val colorWarning = Color(0xFFFF0000)
+    val colorBlack = Color(0xFF000000)
 
     const val INTENT_SERVICE_STOP = "name.jayhan.pebble.SERVICE_STOP"
     const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE_FOREGROUND"
@@ -60,10 +62,7 @@ class MainActivity :
         }
 
         setContent {
-            AppScaffold {
-                stopServices()
-                finish()
-            }
+            AppScaffold()
         }
     }
 

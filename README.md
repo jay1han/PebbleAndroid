@@ -132,6 +132,7 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Sort main list by app name and channel name
     - [x] Request permissions one by one
     - [x] Honor "should display rationale"
+    - [ ] Nicer Timezone editor
     - [ ] Group permissions
 
 - Notification UI

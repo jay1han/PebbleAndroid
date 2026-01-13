@@ -135,7 +135,7 @@ object Pebble
     }
 
     private var minutes: Int = 0
-    val tzFlow = MutableStateFlow("+0.0")
+    val tzFlow = MutableStateFlow("")
 
     fun fromString(text: String): String {
         if (text.isEmpty()) return makeString()
@@ -144,14 +144,22 @@ object Pebble
             .split('.')
 
         if (split.isNotEmpty()) {
-            minutes = if (split[0].isNotEmpty()) (split[0].toInt() * 60) else 0
+            try {
+                minutes = if (split[0].isNotEmpty()) (split[0].toInt() * 60) else 0
+            } catch (e: NumberFormatException) {
+                minutes = 0
+            }
         }
         if (split.size >= 2) {
             if (split[1].isNotEmpty()) {
-                val decimal = split[1].toFloat() / 100f
-                minutes += (decimal * 60).toInt()
+                try {
+                    val decimal = split[1].toFloat() / 100f
+                    minutes += (decimal * 60).toInt()
+                } catch (e: java.lang.NumberFormatException) {
+                }
             }
         }
+        if (minutes >= 60 * 24) minutes = 0
         if (negative) minutes = -minutes
 
         timezoneToPebble()

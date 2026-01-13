@@ -46,4 +46,6 @@
     <string name="package_name_empty">Enter package name</string>
     <string name="channel_filter">Channel filter</string>
     <string name="channel_filter_2">(optional)</string>
+    <string name="apply">Apply</string>
+    <string name="timezone">Timezone</string>
 </resources>
