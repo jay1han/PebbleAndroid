@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -103,6 +104,9 @@ fun EditIndicators(
                                     keyboardType = KeyboardType.Uri,
                                     autoCorrectEnabled = false,
                                 ),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    cursorColor = AppConstants.colorTransparent
+                                ),
                                 modifier = Modifier
                                     .background(AppConstants.colorNotiBack)
                                     .padding(horizontal = 8.dp)
@@ -169,6 +173,10 @@ fun EditIndicators(
                             textStyle = TextStyle(
                                 fontSize = AppConstants.textSize,
                             ),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Uri,
+                                autoCorrectEnabled = false,
+                            ),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(10.dp)
@@ -215,26 +223,28 @@ fun EditIndicators(
                                 fontSize = AppConstants.textSize,
                                 fontStyle = FontStyle.Italic,
                             ),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Uri,
+                                autoCorrectEnabled = false,
+                            ),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(10.dp)
                                 .onFocusChanged { editChannel = it.hasFocus }
                                 .background(color = AppConstants.colorBlank),
                             decorationBox = { inner ->
-//                                Box {
-                                    if (newChannel.isEmpty() && !editChannel)
-                                        Text(
-                                            text = stringResource(R.string.channel_filter_2),
-                                            fontSize = AppConstants.textSize,
-                                            fontStyle = FontStyle.Italic,
-                                            color = AppConstants.colorFade,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(10.dp)
-                                                .background(color = AppConstants.colorBlank),
-                                        )
-                                    inner()
-//                                }
+                                if (newChannel.isEmpty() && !editChannel)
+                                    Text(
+                                        text = stringResource(R.string.channel_filter_2),
+                                        fontSize = AppConstants.textSize,
+                                        fontStyle = FontStyle.Italic,
+                                        color = AppConstants.colorFade,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(10.dp)
+                                            .background(color = AppConstants.colorBlank),
+                                    )
+                                inner()
                             }
                         )
                     }

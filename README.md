@@ -145,6 +145,7 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Use channels
     - [x] Show full list if no active
     - [ ] Sort indicators somehow
+    - [x] Hide cursor in letter input field
 
 - Other indicators 
     - [ ] BT: Remove "LE-"

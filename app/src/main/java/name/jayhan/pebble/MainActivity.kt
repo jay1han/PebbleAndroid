@@ -32,6 +32,7 @@ object AppConstants {
     val colorTop = Color(0xFFFFFFFF)
     val colorBlank = Color(0xFFFFFFFF)
     val colorFade = Color(0xFF808080)
+    val colorTransparent = Color(0)
 
     const val INTENT_SERVICE_STOP = "name.jayhan.pebble.SERVICE_STOP"
     const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE_FOREGROUND"
