@@ -43,20 +43,20 @@ object AppConstants {
 
     val APP_UUID: UUID? = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
     const val MAX_NOTI_INDICATORS = 15
+    const val MAX_LEN_SSID = 19
+    const val MAX_LEN_BTID = 19
 }
 
 class MainActivity :
     ComponentActivity() {
-    private lateinit var context: Context
-    private var servicesStarted = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        context = applicationContext
-
+        val context = applicationContext
         Permissions.start(context, this) {
-            startServices()
+            val intent = Intent(context, PebbleService::class.java)
+            context.startForegroundService(intent)
         }
 
         setContent {
@@ -67,13 +67,5 @@ class MainActivity :
     override fun onResume() {
         Permissions.update(NOTIFICATION_LISTENER)
         super.onResume()
-    }
-
-    private fun startServices() {
-        if (!servicesStarted) {
-            val intent = Intent(context, PebbleService::class.java)
-            context.startForegroundService(intent)
-            servicesStarted = true
-        }
     }
 }
