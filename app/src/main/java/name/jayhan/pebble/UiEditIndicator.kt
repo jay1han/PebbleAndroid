@@ -29,6 +29,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,24 +37,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
 @Composable
-fun EditIndicator(
-    indicators: Map<String, Char>,
+fun EditIndicators(
     letter: Char,
     packageName: String,
+    channel: String,
     activeList: List<String>,
     allList: List<String>,
     onClose: () -> Unit
 ) {
     var newLetter by remember { mutableStateOf(letter) }
     var newPackage by remember { mutableStateOf(packageName) }
-    var showList by remember { mutableStateOf(false) }
-    var editingPackage by remember { mutableStateOf(false) }
+    var newChannel by remember { mutableStateOf(channel) }
+    var showPackageList by remember { mutableStateOf(false) }
 
-    if (showList) {
+    if (showPackageList) {
         SelectPackage(
-            activeList = activeList.distinct().filter { !indicators.containsKey(it) },
-            allList = allList.filter { !indicators.containsKey(it) },
-            onClose = { showList = false }
+            activeList = activeList.distinct().filter { !Indicators.hasPackage(it) },
+            allList = allList,
+            onClose = { showPackageList = false }
         ) { name: String -> newPackage = name }
     } else {
         Dialog(
@@ -130,11 +131,11 @@ fun EditIndicator(
                                     alignment = Alignment.Center,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clickable { showList = true }
+                                        .clickable { showPackageList = true }
                                 )
                             } else {
                                 TextButton(
-                                    onClick = { showList = true }
+                                    onClick = { showPackageList = true }
                                 ) {
                                     Text(
                                         text = stringResource(R.string.select_package),
@@ -146,10 +147,10 @@ fun EditIndicator(
                         }
                     }
 
+                    // PackageName
                     Spacer(Modifier.height(8.dp))
-
                     Text(
-                        text = "Package name",
+                        text = stringResource(R.string.package_name),
                         fontSize = AppConstants.textSize,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
@@ -161,6 +162,7 @@ fun EditIndicator(
                             .fillMaxWidth()
                             .background(color = AppConstants.colorBlank)
                     ) {
+                        var editPackageName by remember { mutableStateOf(false) }
                         BasicTextField(
                             value = newPackage,
                             onValueChange = { newPackage = it },
@@ -170,13 +172,13 @@ fun EditIndicator(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(10.dp)
-                                .onFocusChanged { editingPackage = it.hasFocus }
+                                .onFocusChanged { editPackageName = it.hasFocus }
                                 .background(color = AppConstants.colorBlank),
                             decorationBox = { inner ->
                                 Box {
-                                    if (newPackage.isEmpty() && !editingPackage)
+                                    if (newPackage.isEmpty() && !editPackageName)
                                         Text(
-                                            text = stringResource(R.string.no_package),
+                                            text = stringResource(R.string.package_name_empty),
                                             fontSize = AppConstants.textSize,
                                             color = AppConstants.colorFade,
                                             modifier = Modifier
@@ -190,6 +192,53 @@ fun EditIndicator(
                         )
                     }
 
+                    // Channel
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.channel_filter),
+                        fontSize = AppConstants.textSize,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(color = AppConstants.colorBlank)
+                    ) {
+                        var editChannel by remember { mutableStateOf(false) }
+                        BasicTextField(
+                            value = newChannel,
+                            onValueChange = { newChannel = it },
+                            textStyle = TextStyle(
+                                fontSize = AppConstants.textSize,
+                                fontStyle = FontStyle.Italic,
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp)
+                                .onFocusChanged { editChannel = it.hasFocus }
+                                .background(color = AppConstants.colorBlank),
+                            decorationBox = { inner ->
+//                                Box {
+                                    if (newChannel.isEmpty() && !editChannel)
+                                        Text(
+                                            text = stringResource(R.string.channel_filter_2),
+                                            fontSize = AppConstants.textSize,
+                                            fontStyle = FontStyle.Italic,
+                                            color = AppConstants.colorFade,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(10.dp)
+                                                .background(color = AppConstants.colorBlank),
+                                        )
+                                    inner()
+//                                }
+                            }
+                        )
+                    }
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -199,7 +248,11 @@ fun EditIndicator(
                         Button(
                             onClick = {
                                 if (newLetter != ' ' && newPackage.isNotEmpty())
-                                    Notifications.register(newLetter, newPackage)
+                                    Indicators.add(
+                                        packageName = newPackage,
+                                        channel = newChannel,
+                                        letter = newLetter,
+                                        )
                                 onClose()
                             },
                         ) {
@@ -210,7 +263,7 @@ fun EditIndicator(
                         }
                         Button(
                             onClick = {
-                                Notifications.remove(newPackage)
+                                Indicators.remove(newPackage, newChannel)
                                 onClose()
                             }
                         ) {
@@ -237,11 +290,11 @@ fun acceptLetter(input: String): Char {
 
 @Preview
 @Composable
-fun EditIndicatorPreview() {
-    EditIndicator(
-        indicators = mapOf(),
+fun EditIndicatorsPreview() {
+    EditIndicators(
         letter = 'S',
         packageName = "com.android.google.apps.messaging",
+        channel = "jayhan.dev",
         activeList = PreviewPackageList,
         allList = listOf()
     ) { }
@@ -249,11 +302,11 @@ fun EditIndicatorPreview() {
 
 @Preview
 @Composable
-fun EditIndicatorEmpty() {
-    EditIndicator(
-        indicators = mapOf(),
+fun EditIndicatorsEmpty() {
+    EditIndicators(
         letter = ' ',
         packageName = "",
+        channel = "",
         activeList = PreviewPackageList,
         allList = listOf()
     ) { }

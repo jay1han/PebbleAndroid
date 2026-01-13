@@ -27,51 +27,50 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 
 @Composable
-fun IndicatorList(
+fun ShowIndicators(
     activeList: List<String>,
     allList: List<String>
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var editLetter by remember { mutableStateOf(' ') }
     var editPackageName by remember { mutableStateOf("") }
-    val indicators by Notifications.indicatorsFlow.collectAsState(emptyMap())
+    var editChannel by remember { mutableStateOf("") }
+    val indicators by Indicators.allFlow.collectAsState(listOf())
 
     if (showEditDialog) {
-        EditIndicator(
-            indicators = indicators,
+        EditIndicators(
             letter = editLetter,
             packageName = editPackageName,
+            channel = editChannel,
             activeList = activeList,
             allList = allList
         ) {
             showEditDialog = false
+            editLetter = ' '
+            editPackageName = ""
+            editChannel = ""
         }
     }
 
     Column {
         Section(stringResource(R.string.packages))
 
-        val indicatorList = mutableListOf<Pair<String, String>>()
-            .apply {
-                for (item in indicators) {
-                    add(Pair(item.key, Notifications.getAppName(item.key)))
-                }
-            }
-            .apply { sortBy { it.second } }
-        for (item in indicatorList.map { it.first }) {
-            val letter = indicators[item]!!
-            IndicatorLine(
-                letter = letter,
-                packageName = item,
+        for (indicator in indicators) {
+            ShowIndicatorItem(
+                letter = indicator.letter,
+                packageName = indicator.packageName,
+                channel = indicator.channel,
                 onEdit = {
-                    editLetter = letter
-                    editPackageName = item
+                    editLetter = indicator.letter  // TODO
+                    editPackageName = indicator.packageName
+                    editChannel = indicator.channel
                     showEditDialog = true
                 })
         }
@@ -84,7 +83,7 @@ fun IndicatorList(
         ) {
             Button(
                 onClick = {
-                    Notifications.reset()
+                    Indicators.reset()
                 },
             ) {
                 Text(
@@ -109,9 +108,10 @@ fun IndicatorList(
 }
 
 @Composable
-fun IndicatorLine(
+fun ShowIndicatorItem(
     letter: Char,
     packageName: String,
+    channel: String,
     onEdit: () -> Unit
 ) {
     Row(
@@ -153,6 +153,15 @@ fun IndicatorLine(
                 fontSize = AppConstants.subSize,
                 modifier = Modifier.fillMaxWidth()
             )
+            if (channel != "") {
+                Text(
+                    text = channel,
+                    fontSize = AppConstants.subSize,
+                    fontStyle = FontStyle.Italic,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
 
         Text(
@@ -204,15 +213,16 @@ val PreviewPackageList = listOf(
 
 @Preview
 @Composable
-fun IndicatorListPreview() {
-    IndicatorList(PreviewPackageList, listOf())
+fun ShowIndicatorsPreview() {
+    ShowIndicators(PreviewPackageList, listOf())
 }
 
 @Preview
 @Composable
-fun IndicatorLinePreview() {
-    IndicatorLine(
+fun ShowIndicatorItemPreview() {
+    ShowIndicatorItem(
         'S',
-        "com.google.android.apps.messaging"
+        "com.google.android.apps.messaging",
+        "jayhan.dev"
     ) { }
 }

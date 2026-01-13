@@ -35,7 +35,7 @@ object AppConstants {
     const val INTENT_SERVICE_STOP = "name.jayhan.pebble.SERVICE_STOP"
     const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE_FOREGROUND"
 
-    const val CHANNEL_ID = "PebbleService"
+    const val CHANNEL_ID = "CapetaService"
 
     const val PREF_NAME = "name.jayhan.pebble.NOTIFICATIONS_LIST"
 

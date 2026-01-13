@@ -158,7 +158,7 @@ fun MainPage(
             Pebble.fromString(tz)
         }
         Spacer(Modifier.height(AppConstants.padSize))
-        IndicatorList(activeList, allList)
+        ShowIndicators(activeList, allList)
     }
 }
 

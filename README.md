@@ -129,9 +129,10 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Remove help screenshot
     - [x] Hide Service notification from lock screen
     - [x] bug: Refresh main list after edit
-    - [x] Sort main list by app name
+    - [x] Sort main list by app name and channel name
     - [x] Request permissions one by one
     - [x] Honor "should display rationale"
+    - [ ] Group permissions
 
 - Notification UI
 
@@ -141,7 +142,9 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Prefetch app icon
     - [x] Use lazy list in List of all application
     - [x] Also use full screen
+    - [ ] Use channels
     - [ ] Sort indicators somehow
+    - [ ] Remove "LE-"
   
 - Service
     - [x] Refresh notification list when Service starts
@@ -151,13 +154,14 @@ some usages of the Android SDK seem a bit clunky.
         - 5 second interval after disconnection
         - display "last contact" date/time
         - remove Reconnect button
+    - [ ] Auto-start at boot
   
 - Pebble object
     - [ ] Remove context field from Pebble
     - [ ] Pebble object caches Info
 
 - Clean code
-    - [ ] Rationalize activeList, allList and indicators map
+    - [ ] Rationalize and rename activeList, allList and indicators map
   
 - Future: DND
 

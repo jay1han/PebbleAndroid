@@ -4,13 +4,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.getpebble.android.kit.util.PebbleDictionary
 import kotlinx.coroutines.flow.MutableStateFlow
-import androidx.core.content.edit
 
 class NotificationListener:
     NotificationListenerService() {
@@ -33,20 +31,14 @@ class NotificationListener:
     }
 }
 
-private fun emptyMap(): MutableMap<String, Char> {
-    return mutableMapOf()
-}
-
 object Notifications : BroadcastReceiver()
 {
     private lateinit var packageManager: PackageManager
-    private lateinit var savedSettings: SharedPreferences
 
-    val indicatorsFlow = MutableStateFlow<Map<String, Char>>(emptyMap())
     val activeFlow = MutableStateFlow<List<String>>(mutableListOf())
     val allFlow = MutableStateFlow<List<String>>(mutableListOf())
-    private var mapPackageToName = mapOf<String, String>()
     private var savedNotifications: Array<StatusBarNotification>? = null
+    private var mapPackageToName = mapOf<String, String>()
 
     fun onNotification(
         activeNotifications: Array<StatusBarNotification>
@@ -67,15 +59,15 @@ object Notifications : BroadcastReceiver()
         val compact: MutableSet<Char> = mutableSetOf()
         activeFlow.value = mutableListOf<String>()
             .apply {
-                for (packageName in activeNotifications
+                for (notification in activeNotifications
                     .filter { !it.isOngoing && it.isClearable }
-                    .map { it.packageName }
-                    .filter { it != "" }
                 ) {
-                    add(packageName)
-                    indicatorsFlow.value[packageName].let {
-                        if (it != null) compact.add(it)
-                    }
+                    add(notification.packageName)
+                    val letter = Indicators.getLetter(
+                        notification.packageName,
+                        notification.notification.channelId
+                    )
+                    if (letter != ' ') compact.add(letter)
                 }
             }
 
@@ -92,36 +84,11 @@ object Notifications : BroadcastReceiver()
         updateAllList()
     }
 
-    private fun readMap() {
-        val newMap = emptyMap()
-        for (item in savedSettings.all) {
-            val letterAsString = item.value as String
-            if (letterAsString.length == 1)
-                newMap[item.key] = letterAsString[0]
-        }
-        indicatorsFlow.value = newMap
-    }
-
-    private fun writeMap(map: MutableMap<String, Char>) {
-        savedSettings.edit {
-            clear()
-            for (item in map) {
-                putString(item.key, item.value.toString())
-            }
-        }
-    }
-
     fun init(
         context: Context
     ) {
         packageManager = context.packageManager
-
-        savedSettings = context.getSharedPreferences(
-            AppConstants.PREF_NAME,
-            Context.MODE_PRIVATE
-        )
-
-        readMap()
+        Indicators.init(context)
 
         val filter = IntentFilter()
             .apply {
@@ -169,26 +136,5 @@ object Notifications : BroadcastReceiver()
 
     fun getAppName(packageName: String): String {
         return mapPackageToName[packageName] ?: ""
-    }
-
-    fun reset() {
-        val newMap = emptyMap()
-        writeMap(newMap)
-        indicatorsFlow.value = newMap
-    }
-
-    fun register(letter: Char, packageName: String) {
-        val newMap = indicatorsFlow.value.toMutableMap()
-        if (letter == ' ') return
-        newMap[packageName] = letter
-        writeMap(newMap)
-        indicatorsFlow.value = newMap
-    }
-
-    fun remove(packageName: String) {
-        val newMap = indicatorsFlow.value.toMutableMap()
-        newMap.remove(packageName)
-        writeMap(newMap)
-        indicatorsFlow.value = newMap
     }
 }

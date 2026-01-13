@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">Pebble</string>
-    <string name="app_title">OverForm</string>
+    <string name="app_name">Capeta</string>
+    <string name="app_title">Capeta</string>
     <string name="select_package">Choose application</string>
     <string name="save">Save</string>
     <string name="remove">Remove</string>
@@ -29,7 +29,6 @@
     <string name="background_location">Also needed for continuous monitoring of Bluetooth and WiFi</string>
     <string name="coarse_location">Basic access to location information, needed to further access WiFi and Bluetooth states</string>
     <string name="grant">Grant permission</string>
-    <string name="no_package">Enter package name</string>
     <string name="query_all_packages">Finds application icons</string>
     <string name="no_active">No active notification</string>
     <string name="indicator">Indicator</string>
@@ -43,4 +42,8 @@
     <string name="fine_location_2">This is needed to query WiFi state as well as the connected SSID, and be notified when something changes.</string>
     <string name="background_location_2">The background service must receive notice of any changes in WiFi connection, that use case is covered by this permission.</string>
     <string name="query_all_packages_2">Without this permission, the app can\'t retrieve and display an application\'s icon when looking for an app to set an Indicator.</string>
+    <string name="package_name">Package name</string>
+    <string name="package_name_empty">Enter package name</string>
+    <string name="channel_filter">Channel filter</string>
+    <string name="channel_filter_2">(optional)</string>
 </resources>
