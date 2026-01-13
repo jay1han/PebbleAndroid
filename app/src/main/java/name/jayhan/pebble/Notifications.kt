@@ -89,7 +89,6 @@ object Notifications : BroadcastReceiver()
         context: Context
     ) {
         packageManager = context.packageManager
-        Indicators.init(context)
 
         val filter = IntentFilter()
             .apply {
@@ -99,6 +98,7 @@ object Notifications : BroadcastReceiver()
         context.registerReceiver(this, filter, Context.RECEIVER_EXPORTED)
 
         updateAllList()
+        Indicators.init(context)
     }
 
     private fun updateAllList() {

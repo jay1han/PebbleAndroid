@@ -142,9 +142,12 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Prefetch app icon
     - [x] Use lazy list in List of all application
     - [x] Also use full screen
-    - [ ] Use channels
+    - [x] Use channels
+    - [x] Show full list if no active
     - [ ] Sort indicators somehow
-    - [ ] Remove "LE-"
+
+- Other indicators 
+    - [ ] BT: Remove "LE-"
   
 - Service
     - [x] Refresh notification list when Service starts

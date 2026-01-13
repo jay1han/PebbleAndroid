@@ -31,8 +31,9 @@ fun SelectPackage(
     onClose: () -> Unit,
     onSelect: (String) -> Unit
 ) {
-    var showAll by remember { mutableStateOf(false) }
-    val listShown = if (showAll) allList else activeList
+    var showAllState by remember { mutableStateOf(false) }
+    val showAllActual = showAllState || activeList.isEmpty()
+    val listShown = if (showAllActual) allList else activeList
 
     Dialog(
         properties = DialogProperties(
@@ -41,7 +42,7 @@ fun SelectPackage(
             usePlatformDefaultWidth = false
         ),
         onDismissRequest = {
-            if (showAll) showAll = false
+            if (showAllState) showAllState = false
             onClose()
         }
     ) {
@@ -54,7 +55,7 @@ fun SelectPackage(
                     .fillMaxWidth()
                     .padding(10.dp)
             ) {
-                if (!showAll) {
+                if (!showAllActual) {
                     item {
                         Text(
                             text = stringResource(R.string.select_package),
@@ -112,11 +113,11 @@ fun SelectPackage(
                         )
                     }
                 }
-                if (!showAll) {
+                if (!showAllActual) {
                     item {
                         Button(
                             modifier = Modifier.padding(10.dp),
-                            onClick = { showAll = true }
+                            onClick = { showAllState = true }
                         ) {
                             Text(
                                 text = stringResource(R.string.list_all),
@@ -138,6 +139,6 @@ fun SelectPackagePreview() {
 
 @Preview
 @Composable
-fun SelectPackageEmpty() {
-    SelectPackage(listOf(), listOf(), {}) { }
+fun SelectPackageNoActive() {
+    SelectPackage(listOf(), PreviewPackageList, {}) { }
 }

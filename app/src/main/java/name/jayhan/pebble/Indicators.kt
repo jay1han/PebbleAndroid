@@ -22,7 +22,7 @@ fun Map<String, Char>.addMutableEntry(
 fun sortMap(
     map: MutableMap<String, Char>
 ): MutableMap<String, Char> {
-    return map.toSortedMap { first, second ->
+    val newMap = map.toSortedMap { first, second ->
         val firstAppName = Notifications.getAppName(first.packageName())
         val secondAppName = Notifications.getAppName(second.packageName())
         if (firstAppName == secondAppName)
@@ -30,6 +30,7 @@ fun sortMap(
         else
             firstAppName.compareTo(secondAppName)
     }
+    return newMap
 }
 
 object Indicators
