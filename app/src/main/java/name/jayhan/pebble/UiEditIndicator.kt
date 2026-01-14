@@ -266,7 +266,7 @@ fun EditIndicators(
                                         channel = newChannel,
                                         letter = newLetter,
                                     )
-                                    Notifications.refresh(context)
+                                    Notifications.reprocess(context)
                                 }
                                 onClose()
                             },
@@ -279,7 +279,7 @@ fun EditIndicators(
                         Button(
                             onClick = {
                                 Indicators.remove(packageName, channel)
-                                Notifications.refresh(context)
+                                Notifications.reprocess(context)
                                 onClose()
                             }
                         ) {

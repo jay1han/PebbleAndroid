@@ -60,8 +60,8 @@ class PebbleService():
 
         reInit()
 
-        Pebble.askInfo(context)
-        Notifications.refresh(context)
+//        Pebble.askInfo(context)
+//        Notifications.refresh(context)
 
         return super.onStartCommand(intent, flags, startId)
     }

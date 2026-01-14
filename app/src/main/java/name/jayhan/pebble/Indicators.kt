@@ -52,7 +52,7 @@ object Indicators
                         put(it.key, (it.value as String)[0])
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: NumberFormatException) {
                 mutableMapOf()
             }
 

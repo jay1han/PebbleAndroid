@@ -49,11 +49,11 @@ object Notifications : BroadcastReceiver()
         }
 
         savedNotifications = activeNotifications
-        ingest(context, activeNotifications)
+        process(context, activeNotifications)
         updateAllList()
     }
 
-    fun ingest(
+    fun process(
         context: Context,
         activeNotifications: Array<StatusBarNotification>
     ) {
@@ -100,6 +100,11 @@ object Notifications : BroadcastReceiver()
 
         updateAllList()
         Indicators.init(context)
+
+        if (savedNotifications != null) {
+            val activeNotifications = savedNotifications!!
+            process(context, activeNotifications)
+        }
     }
 
     private fun updateAllList() {
@@ -129,12 +134,12 @@ object Notifications : BroadcastReceiver()
         allFlow.value = newPairs.map { it.first }
     }
 
-    fun refresh(
+    fun reprocess(
         context: Context
     ) {
         if (savedNotifications != null) {
             val activeNotifications = savedNotifications!!
-            ingest(context, activeNotifications)
+            process(context, activeNotifications)
         }
     }
 

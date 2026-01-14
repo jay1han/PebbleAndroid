@@ -1,7 +1,6 @@
 package name.jayhan.pebble
 
 import android.content.Context
-import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import com.getpebble.android.kit.PebbleKit
@@ -56,8 +55,25 @@ enum class ActionType(val code: Int) {
     DND_TOGGLE(2)
 }
 
-object PebbleReceiver:
-    PebbleKit.PebbleDataReceiver(AppConstants.APP_UUID) {
+data class WatchInfo(
+    val model: String = "",
+    val version: String = ""
+)
+
+object Pebble:
+    PebbleKit.PebbleDataReceiver(AppConstants.APP_UUID)
+{
+    val infoFlow = MutableStateFlow(WatchInfo())
+    val isConnected = MutableStateFlow(false)
+
+    fun init(
+        context: Context
+    ) {
+        val dataFilter = IntentFilter(com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE)
+        context.registerReceiver(this, dataFilter, Context.RECEIVER_EXPORTED)
+
+        sendIntent(context, MsgType.INFO) {}
+    }
 
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
         PebbleKit.sendAckToPebble(context, transactionId)
@@ -68,9 +84,9 @@ object PebbleReceiver:
                 MsgType.INFO.code -> {
                     val watchModel = data.getInteger(DictKey.MODEL.code).toInt()
                     val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.code).toInt()
-                    Pebble.setWatchInfo(watchModel, watchFwVersion)
+                    setWatchInfo(watchModel, watchFwVersion)
                     val tzMinutes = data.getInteger(DictKey.TZ_MIN.code).toInt()
-                    Pebble.fromMinutes(tzMinutes)
+                    fromMinutes(tzMinutes)
                 }
 
                 MsgType.ACTION.code -> {
@@ -83,30 +99,6 @@ object PebbleReceiver:
                 }
             }
         }
-    }
-}
-
-class WatchInfo(
-    val model: String = "",
-    val version: String = ""
-)
-
-object Pebble
-{
-    val infoFlow = MutableStateFlow(WatchInfo())
-    val isConnected = MutableStateFlow(false)
-
-    fun init(
-        context: Context
-    ) {
-        val dataFilter = IntentFilter(com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE)
-        context.registerReceiver(PebbleReceiver, dataFilter, RECEIVER_EXPORTED)
-    }
-
-    fun askInfo(
-        context: Context
-    ) {
-        sendIntent(context, MsgType.INFO) {}
     }
 
     fun sendIntent(
@@ -148,19 +140,17 @@ object Pebble
             .split('.')
 
         if (split.isNotEmpty()) {
-            try {
-                minutes = if (split[0].isNotEmpty()) (split[0].toInt() * 60) else 0
-            } catch (e: NumberFormatException) {
-                minutes = 0
-            }
+            minutes =
+                try {
+                    if (split[0].isNotEmpty()) (split[0].toInt() * 60) else 0
+                } catch (_: NumberFormatException) { 0 }
         }
         if (split.size >= 2) {
             if (split[1].isNotEmpty()) {
                 try {
                     val decimal = split[1].toFloat() / 100f
                     minutes += (decimal * 60).toInt()
-                } catch (e: java.lang.NumberFormatException) {
-                }
+                } catch (_: NumberFormatException) {}
             }
         }
         if (minutes >= 60 * 24) minutes = 0

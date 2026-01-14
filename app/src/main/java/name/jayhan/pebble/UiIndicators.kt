@@ -86,7 +86,7 @@ fun ShowIndicators(
             Button(
                 onClick = {
                     Indicators.reset()
-                    Notifications.refresh(context)
+                    Notifications.reprocess(context)
                 },
             ) {
                 Text(
