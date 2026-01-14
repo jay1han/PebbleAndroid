@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
@@ -44,6 +46,7 @@ fun ShowIndicators(
     var editPackageName by remember { mutableStateOf("") }
     var editChannel by remember { mutableStateOf("") }
     val indicators by Indicators.allFlow.collectAsState(mapOf())
+    val scrollState = rememberScrollState()
 
     if (showEditDialog) {
         EditIndicators(
@@ -61,9 +64,11 @@ fun ShowIndicators(
         }
     }
 
-    Column {
-        Section(stringResource(R.string.packages))
-
+    Column(
+        modifier = Modifier
+            .verticalScroll(scrollState)
+            .fillMaxWidth()
+    ) {
         for (indicator in indicators) {
             ShowIndicatorItem(
                 letter = indicator.letter(),
@@ -76,36 +81,36 @@ fun ShowIndicators(
                     showEditDialog = true
                 })
         }
+    }
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
+    Row(
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Button(
+            onClick = {
+                Indicators.reset()
+                Notifications.reprocess(context)
+            },
         ) {
-            Button(
-                onClick = {
-                    Indicators.reset()
-                    Notifications.reprocess(context)
-                },
-            ) {
-                Text(
-                    text = stringResource(R.string.reset),
-                    fontSize = AppConstants.textSize
-                )
-            }
-            Button(
-                onClick = {
-                    editLetter = ' '
-                    editPackageName = ""
-                    showEditDialog = true
-                },
-            ) {
-                Text(
-                    text = stringResource(R.string.add),
-                    fontSize = AppConstants.textSize
-                )
-            }
+            Text(
+                text = stringResource(R.string.reset),
+                fontSize = AppConstants.textSize
+            )
+        }
+        Button(
+            onClick = {
+                editLetter = ' '
+                editPackageName = ""
+                showEditDialog = true
+            },
+        ) {
+            Text(
+                text = stringResource(R.string.add),
+                fontSize = AppConstants.textSize
+            )
         }
     }
 }

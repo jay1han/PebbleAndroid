@@ -46,7 +46,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import kotlin.time.Clock
 import kotlin.time.Instant
 
 @Composable
@@ -65,7 +64,7 @@ fun AppScaffold(
     ) { innerPadding ->
         if (permissionsGranted) {
             if (showHelp) {
-                ShowHelp(
+                HelpDialog(
                     modifier = Modifier.padding(innerPadding)
                 ) {
                     showHelp = false
@@ -127,7 +126,7 @@ fun TopBar(
 }
 
 @Composable
-fun ShowHelp(
+fun HelpDialog(
     modifier: Modifier = Modifier,
     onClose: () -> Unit
 ) {
@@ -180,27 +179,21 @@ fun MainPage(
 ) {
     val activeList by Notifications.activeFlow.collectAsState(emptyList())
     val allList by Notifications.allFlow.collectAsState(emptyList())
-    val scrollState = rememberScrollState()
 
     Column(
         modifier = modifier
-            .verticalScroll(scrollState)
             .fillMaxWidth(),
     ) {
         AwayTimezone { tz ->
             Pebble.fromString(context, tz)
         }
+        Text(
+            text = stringResource(R.string.indicators),
+            fontSize = AppConstants.titleSize,
+            modifier = Modifier.fillMaxWidth()
+        )
         ShowIndicators(context, activeList, allList)
     }
-}
-
-@Composable
-fun Section(text: String = "") {
-    Text(
-        text = text,
-        fontSize = AppConstants.titleSize,
-        modifier = Modifier.fillMaxWidth()
-    )
 }
 
 @Composable
@@ -285,6 +278,6 @@ fun MainPagePreview() {
 
 @Preview
 @Composable
-fun HelpPreview() {
-    ShowHelp {}
+fun HelpDialogPreview() {
+    HelpDialog {}
 }

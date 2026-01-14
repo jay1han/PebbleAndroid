@@ -8,7 +8,7 @@
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>
     <string name="built">"App built at "</string>
-    <string name="packages">Applications</string>
+    <string name="indicators">Indicators</string>
     <string name="reset">Reset</string>
     <string name="add">Add</string>
     <string name="model">Model</string>

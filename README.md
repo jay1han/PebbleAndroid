@@ -134,6 +134,7 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Honor "should display rationale"
     - [x] Nicer Timezone editor
     - [ ] Group permissions
+    - [ ] Beautify permission UI
 
 - Notification UI
 
@@ -154,9 +155,10 @@ some usages of the Android SDK seem a bit clunky.
 - Service
     - [x] Refresh notification list when Service starts
     - [x] Remove Reconnect button
-    - [ ] Refresh after disconnection
+    - [x] Refresh after disconnection
     - [ ] Auto-start at boot
-    - [ ] Manage connection
+    - [ ] Manage connection?
+    - [ ] Beautify help screen
   
 - Pebble object
     - [x] Remove context field from Pebble
