@@ -56,7 +56,7 @@ object Indicators
                 mutableMapOf()
             }
 
-        reflow(newMap)
+        saveMap(newMap)
     }
 
     fun getLetter(
@@ -88,10 +88,10 @@ object Indicators
             channel,
             letter
             )
-        reflow(newList)
+        saveMap(newList)
     }
 
-    private fun reflow(
+    private fun saveMap(
         newMap: MutableMap<String, Char>
     ) {
         allMap = sortMap(newMap)
@@ -114,10 +114,10 @@ object Indicators
         val newMap = allMap.filterNot {
             it.packageName() == packageName && it.channel() == channel
         }.toMutableMap()
-        reflow(newMap)
+        saveMap(newMap)
     }
 
     fun reset() {
-        reflow(mutableMapOf())
+        saveMap(mutableMapOf())
     }
 }

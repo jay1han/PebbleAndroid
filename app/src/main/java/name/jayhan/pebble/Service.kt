@@ -12,7 +12,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.IBinder
-import com.getpebble.android.kit.PebbleKit
 import com.getpebble.android.kit.util.PebbleDictionary
 
 class PebbleService():
@@ -155,6 +154,12 @@ class PebbleService():
 
                     Pebble.sendData(context, pebbleDict)
                 }
+            }
+
+            if (Pebble.doRefresh) {
+                // TODO: Do refresh
+                Notifications.reprocess(context)
+                Pebble.doRefresh = false
             }
         }
     }

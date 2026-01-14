@@ -5,7 +5,6 @@
     <string name="save">Save</string>
     <string name="remove">Remove</string>
     <string name="edit">Edit</string>
-    <string name="reconnect">Reconnect</string>
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>
     <string name="built">"App built at "</string>
@@ -27,8 +26,6 @@
     <string name="nearby_service">Needed to check Bluetooth adapter state</string>
     <string name="fine_location">Needed to check WiFi state</string>
     <string name="background_location">Also needed for continuous monitoring of Bluetooth and WiFi</string>
-    <string name="coarse_location">Basic access to location information, needed to further access WiFi and Bluetooth states</string>
-    <string name="grant">Grant permission</string>
     <string name="query_all_packages">Finds application icons</string>
     <string name="no_active">No active notification</string>
     <string name="indicator">Indicator</string>

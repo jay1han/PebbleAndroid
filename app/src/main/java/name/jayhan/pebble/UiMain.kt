@@ -46,6 +46,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @Composable
 fun AppScaffold(
@@ -132,6 +134,7 @@ fun ShowHelp(
     val scrollState = rememberScrollState()
     val watchInfo: WatchInfo by Pebble.infoFlow.collectAsState(WatchInfo())
     val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
+    val lastReceived: Instant by Pebble.lastReceived.collectAsState(Instant.DISTANT_PAST)
 
     Dialog(
         onDismissRequest = onClose
@@ -145,22 +148,20 @@ fun ShowHelp(
                     .fillMaxWidth()
                     .padding(10.dp),
             ) {
+                Text(
+                    text = stringResource(R.string.connected),
+                    fontSize = AppConstants.titleSize
+                )
                 if (isConnected) {
-                    Text(
-                        text = stringResource(R.string.connected),
-                        fontSize = AppConstants.titleSize
-                    )
                     Text(
                         text = stringResource(R.string.model) + ": " +
                                 watchInfo.model + "\n" +
                                 stringResource(R.string.version) + ": " +
-                                watchInfo.version,
+                                watchInfo.version + "\n" +
+                                "Last message: " +
+                                lastReceived.formatDate() + "\n"
+                        ,
                         fontSize = AppConstants.textSize,
-                    )
-                } else {
-                    Text(
-                        text = stringResource(R.string.disconnected),
-                        fontSize = AppConstants.titleSize
                     )
                 }
                 Text(

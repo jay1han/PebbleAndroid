@@ -153,13 +153,10 @@ some usages of the Android SDK seem a bit clunky.
   
 - Service
     - [x] Refresh notification list when Service starts
-    - [ ] Heartbeat in Service to feed isConnected
-        - update each interaction
-        - 30 second interval when connected
-        - 5 second interval after disconnection
-        - display "last contact" date/time
-        - remove Reconnect button
+    - [x] Remove Reconnect button
+    - [ ] Refresh after disconnection
     - [ ] Auto-start at boot
+    - [ ] Manage connection
   
 - Pebble object
     - [x] Remove context field from Pebble

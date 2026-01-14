@@ -10,13 +10,18 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.UUID
+import kotlin.time.Instant
+
+// TODO: Prettify this
+fun Instant.formatDate(): String {
+    return this.toString()
+}
 
 object AppConstants {
-    val buildDateTime: String = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-        .format(Date(BuildConfig.BUILDTIME))
+    val buildDateTime = Instant
+        .fromEpochMilliseconds(BuildConfig.BUILDTIME)
+        .formatDate()
 
     val titleSize = 28.sp
     val textSize = 20.sp

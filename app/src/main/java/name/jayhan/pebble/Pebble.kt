@@ -1,6 +1,5 @@
 package name.jayhan.pebble
 
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -62,15 +61,11 @@ data class WatchInfo(
     val version: String = ""
 )
 
-private val clock = Clock.System
-private var lastReceived = clock.now()
-private var lastSent = clock.now()
-
 private object DataReceiver:
     PebbleKit.PebbleDataReceiver(AppConstants.APP_UUID)
 {
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
-        lastReceived = clock.now()
+        Pebble.received(true)
         PebbleKit.sendAckToPebble(context, transactionId)
 
         if (data != null) {
@@ -101,8 +96,7 @@ private object AckReceiver:
     PebbleKit.PebbleAckReceiver(AppConstants.APP_UUID)
 {
     override fun receiveAck(context: Context?, transactionId: Int) {
-        lastReceived = clock.now()
-        Pebble.ackReceived(true)
+        Pebble.received(true)
     }
 }
 
@@ -110,7 +104,7 @@ private object NackReceiver:
     PebbleKit.PebbleNackReceiver(AppConstants.APP_UUID)
 {
     override fun receiveNack(context: Context?, transactionId: Int) {
-        Pebble.ackReceived(false)
+        Pebble.received(false)
     }
 }
 
@@ -118,6 +112,9 @@ object Pebble
 {
     val infoFlow = MutableStateFlow(WatchInfo())
     val isConnected = MutableStateFlow(false)
+    private val clock = Clock.System
+    val lastReceived = MutableStateFlow(clock.now())
+    private var lastSent = clock.now()
 
     fun init(
         context: Context
@@ -218,7 +215,11 @@ object Pebble
         return string
     }
 
-    fun ackReceived(isAcked: Boolean) {
+    fun received(isAcked: Boolean) {
+        lastReceived.value = clock.now()
+        doRefresh = isAcked && !isConnected.value
         isConnected.value = isAcked
     }
+
+    var doRefresh = false
 }
