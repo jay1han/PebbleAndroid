@@ -162,8 +162,8 @@ some usages of the Android SDK seem a bit clunky.
     - [ ] Auto-start at boot
   
 - Pebble object
-    - [ ] Remove context field from Pebble
-    - [ ] Pebble object caches Info
+    - [x] Remove context field from Pebble
+    - [x] Pebble object caches Info
 
 - Clean code
     - [x] Rationalize and rename activeList, allList and indicators map

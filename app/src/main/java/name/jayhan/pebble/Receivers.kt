@@ -10,10 +10,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import androidx.annotation.RequiresPermission
-import com.getpebble.android.kit.util.PebbleDictionary
 
 class BatteryReceiver(
-    context: Context
+    private val context: Context
 ):
     BroadcastReceiver() {
     private var isPlugged = false
@@ -49,11 +48,13 @@ class BatteryReceiver(
     }
 
     private fun sendToPebble() {
-        val pebbleDict = PebbleDictionary()
-        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.PHONE_CHG.code)
-        pebbleDict.addInt8(DictKey.PHONE_CHG.code, if (isPlugged) 1.toByte() else 0.toByte())
-        pebbleDict.addInt8(DictKey.PHONE_BATT.code, percent.toByte())
-        Pebble.sendDict(pebbleDict)
+        Pebble.sendIntent(
+            context,
+            MsgType.PHONE_CHG
+        ) {
+            putExtra(AppConstants.EXTRA_PHONE_CHG, if (isPlugged) 1 else 0)
+            putExtra(AppConstants.EXTRA_PHONE_BATT, percent)
+        }
     }
 }
 
@@ -81,7 +82,7 @@ private fun BluetoothDevice.getBatteryLevel(): Int {
 }
 
 class BluetoothReceiver(
-    context: Context
+    private val context: Context
 ):
     BroadcastReceiver() {
 
@@ -133,10 +134,9 @@ class BluetoothReceiver(
         name: String,
         battery: Int
     ) {
-        val pebbleDict = PebbleDictionary()
-        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.BT.code)
-        pebbleDict.addString(DictKey.BTID.code, name.take(19))
-        pebbleDict.addInt8(DictKey.BTC.code, battery.toByte())
-        Pebble.sendDict(pebbleDict)
+        Pebble.sendIntent(context, MsgType.BT) {
+            putExtra(AppConstants.EXTRA_BTID, name.take(AppConstants.MAX_LEN_BTID))
+            putExtra(AppConstants.EXTRA_BTC, battery)
+        }
     }
 }

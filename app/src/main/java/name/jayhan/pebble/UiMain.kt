@@ -2,6 +2,7 @@
 
 package name.jayhan.pebble
 
+import android.content.Context
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,7 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -46,7 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
 @Composable
-fun AppScaffold() {
+fun AppScaffold(
+    context: Context
+) {
     val permissionsGranted by Permissions.grantFlow.collectAsState(Permissions.allGranted)
     var showHelp by remember { mutableStateOf(false) }
 
@@ -66,6 +70,7 @@ fun AppScaffold() {
                 }
             }
             MainPage(
+                context,
                 modifier = Modifier.padding(innerPadding)
             )
         } else {
@@ -169,6 +174,7 @@ fun ShowHelp(
 
 @Composable
 fun MainPage(
+    context: Context,
     modifier: Modifier = Modifier,
 ) {
     val activeList by Notifications.activeFlow.collectAsState(emptyList())
@@ -181,10 +187,9 @@ fun MainPage(
             .fillMaxWidth(),
     ) {
         AwayTimezone { tz ->
-            Pebble.fromString(tz)
+            Pebble.fromString(context, tz)
         }
-//        Spacer(Modifier.height(AppConstants.padSize))
-        ShowIndicators(activeList, allList)
+        ShowIndicators(context, activeList, allList)
     }
 }
 
@@ -274,7 +279,7 @@ fun TopBarPreview() {
 @Preview
 @Composable
 fun MainPagePreview() {
-    MainPage()
+    MainPage(LocalContext.current)
 }
 
 @Preview

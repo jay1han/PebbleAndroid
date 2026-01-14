@@ -7,7 +7,6 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import com.getpebble.android.kit.util.PebbleDictionary
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class NotificationListener:
@@ -17,17 +16,17 @@ class NotificationListener:
     override fun onListenerConnected() {
         context = applicationContext
         super.onListenerConnected()
-        Notifications.onNotification(activeNotifications)
+        Notifications.onNotification(context, activeNotifications)
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         super.onNotificationPosted(sbn)
-        Notifications.onNotification(activeNotifications)
+        Notifications.onNotification(context, activeNotifications)
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         super.onNotificationRemoved(sbn)
-        Notifications.onNotification(activeNotifications)
+        Notifications.onNotification(context, activeNotifications)
     }
 }
 
@@ -41,6 +40,7 @@ object Notifications : BroadcastReceiver()
     private var mapPackageToName = mapOf<String, String>()
 
     fun onNotification(
+        context: Context,
         activeNotifications: Array<StatusBarNotification>
     ) {
         if (!this::packageManager.isInitialized) {
@@ -49,11 +49,12 @@ object Notifications : BroadcastReceiver()
         }
 
         savedNotifications = activeNotifications
-        ingest(activeNotifications)
+        ingest(context, activeNotifications)
         updateAllList()
     }
 
     fun ingest(
+        context: Context,
         activeNotifications: Array<StatusBarNotification>
     ) {
         val compact: MutableSet<Char> = mutableSetOf()
@@ -74,14 +75,14 @@ object Notifications : BroadcastReceiver()
 
         val text = compact.joinToString("")
             .take(AppConstants.MAX_NOTI_INDICATORS)
-        val pebbleDict = PebbleDictionary()
-        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NOTI.code)
-        pebbleDict.addString(DictKey.NOTI.code, text)
-        Pebble.sendDict(pebbleDict)
+
+        Pebble.sendIntent(context, MsgType.NOTI) {
+            putExtra(AppConstants.EXTRA_NOTI, text)
+        }
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent == null) return
+        if (context == null || intent == null) return
         updateAllList()
     }
 
@@ -128,10 +129,12 @@ object Notifications : BroadcastReceiver()
         allFlow.value = newPairs.map { it.first }
     }
 
-    fun refresh() {
+    fun refresh(
+        context: Context
+    ) {
         if (savedNotifications != null) {
             val activeNotifications = savedNotifications!!
-            ingest(activeNotifications)
+            ingest(context, activeNotifications)
         }
     }
 

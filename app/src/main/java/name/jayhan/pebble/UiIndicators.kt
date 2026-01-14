@@ -35,6 +35,7 @@ import androidx.core.graphics.createBitmap
 
 @Composable
 fun ShowIndicators(
+    context: Context,
     activeList: List<String>,
     allList: List<String>
 ) {
@@ -46,6 +47,7 @@ fun ShowIndicators(
 
     if (showEditDialog) {
         EditIndicators(
+            context = context,
             letter = editLetter,
             packageName = editPackageName,
             channel = editChannel,
@@ -84,6 +86,7 @@ fun ShowIndicators(
             Button(
                 onClick = {
                     Indicators.reset()
+                    Notifications.refresh(context)
                 },
             ) {
                 Text(
@@ -214,7 +217,10 @@ val PreviewPackageList = listOf(
 @Preview
 @Composable
 fun ShowIndicatorsPreview() {
-    ShowIndicators(PreviewPackageList, listOf())
+    ShowIndicators(
+        LocalContext.current,
+        PreviewPackageList,
+        listOf())
 }
 
 @Preview

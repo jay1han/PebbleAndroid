@@ -11,22 +11,20 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
-import android.net.ConnectivityManager
 import android.os.IBinder
-import android.telephony.TelephonyManager
+import com.getpebble.android.kit.PebbleKit
+import com.getpebble.android.kit.util.PebbleDictionary
 
 class PebbleService():
     Service() {
 
     private lateinit var context: Context
-    private lateinit var connMan: ConnectivityManager
-    private lateinit var teleMan: TelephonyManager
     private lateinit var batteryReceiver: BatteryReceiver
     private lateinit var bluetoothReceiver: BluetoothReceiver
     private lateinit var wifiCallback: WifiCallback
     private lateinit var phoneCallback: PhoneCallback
 
-    private val delReceiver = DelReceiver()
+    private val receiver = Receiver()
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -35,10 +33,11 @@ class PebbleService():
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         context = applicationContext
 
-        val filter = IntentFilter().apply { addAction(AppConstants.INTENT_REVIVE) }
-        context.registerReceiver(delReceiver, filter,RECEIVER_EXPORTED)
-        connMan = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        teleMan = context.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+        val filter = IntentFilter().apply {
+            addAction(AppConstants.INTENT_REVIVE)
+            addAction(AppConstants.INTENT_SEND_PEBBLE)
+        }
+        context.registerReceiver(receiver, filter,RECEIVER_EXPORTED)
 
         try {
             val notiMan = context.getSystemService(NOTIFICATION_SERVICE)
@@ -61,8 +60,8 @@ class PebbleService():
 
         reInit()
 
-        Pebble.askInfo()
-        Notifications.refresh()
+        Pebble.askInfo(context)
+        Notifications.refresh(context)
 
         return super.onStartCommand(intent, flags, startId)
     }
@@ -74,8 +73,8 @@ class PebbleService():
         batteryReceiver = BatteryReceiver(context)
         bluetoothReceiver = BluetoothReceiver(context)
 
-        wifiCallback = WifiCallback(connMan)
-        phoneCallback = PhoneCallback(teleMan, context)
+        wifiCallback = WifiCallback(context)
+        phoneCallback = PhoneCallback(context)
     }
 
     private fun setupForeground() {
@@ -103,10 +102,63 @@ class PebbleService():
         )
     }
 
-    inner class DelReceiver: BroadcastReceiver() {
+    inner class Receiver: BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            setupForeground()
-            reInit()
+            when(intent.action) {
+                AppConstants.INTENT_REVIVE -> {
+                    setupForeground()
+                    reInit()
+                }
+
+                AppConstants.INTENT_SEND_PEBBLE -> {
+                    val msgType = intent.getIntExtra(AppConstants.EXTRA_MSG_TYPE, 0)
+
+                    val pebbleDict = PebbleDictionary()
+                    pebbleDict.addInt8(DictKey.MSG_TYPE.code, msgType.toByte())
+
+                    when(msgType) {
+                        MsgType.INFO.code -> {
+                        }
+
+                        MsgType.TZ.code -> {
+                            val minutes = intent.getIntExtra(AppConstants.EXTRA_TZ_MIN, 0)
+                            pebbleDict.addInt16(DictKey.TZ_MIN.code, minutes.toShort())
+                        }
+
+                        MsgType.PHONE_CHG.code -> {
+                            val isCharging = intent.getIntExtra(AppConstants.EXTRA_PHONE_CHG, 0)
+                            pebbleDict.addInt8(DictKey.PHONE_CHG.code, isCharging.toByte())
+                            val percent = intent.getIntExtra(AppConstants.EXTRA_PHONE_BATT, 0)
+                            pebbleDict.addInt8(DictKey.PHONE_BATT.code, percent.toByte())
+                        }
+
+                        MsgType.WIFI.code -> {
+                            val ssid = intent.getStringExtra(AppConstants.EXTRA_WIFI) ?: ""
+                            pebbleDict.addString(DictKey.WIFI.code, ssid.take(AppConstants.MAX_LEN_SSID))
+                        }
+
+                        MsgType.NET.code -> {
+                            val gen = intent.getIntExtra(AppConstants.EXTRA_NET, 0)
+                            pebbleDict.addInt8(DictKey.NET.code, gen.toByte())
+                        }
+
+                        MsgType.NOTI.code -> {
+                            val noti = intent.getStringExtra(AppConstants.EXTRA_NOTI) ?: ""
+                            pebbleDict.addString(DictKey.NOTI.code, noti.take(AppConstants.MAX_NOTI_INDICATORS))
+                        }
+
+                        MsgType.BT.code -> {
+                            val btid = intent.getStringExtra(AppConstants.EXTRA_BTID) ?: ""
+                            pebbleDict.addString(DictKey.BTID.code, btid.take(AppConstants.MAX_LEN_BTID))
+                            val btc = intent.getIntExtra(AppConstants.EXTRA_BTC, 0)
+                            pebbleDict.addInt8(DictKey.BTC.code, btc.toByte())
+
+                        }
+                    }
+
+                    PebbleKit.sendDataToPebble(context, AppConstants.APP_UUID, pebbleDict)
+                }
+            }
         }
     }
 }

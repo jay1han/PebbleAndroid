@@ -10,12 +10,13 @@ import android.net.wifi.WifiManager
 import android.telephony.ServiceState
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
-import com.getpebble.android.kit.util.PebbleDictionary
 
 class WifiCallback(
-    private val connMan: ConnectivityManager,
+    private val context: Context,
 ) :
     ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
+    private val connMan = context.getSystemService(Context.CONNECTIVITY_SERVICE)
+            as ConnectivityManager
 
     init {
         sendToPebble("")
@@ -59,18 +60,19 @@ class WifiCallback(
     }
 
     private fun sendToPebble(ssid: String) {
-        val pebbleDict = PebbleDictionary()
-        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.WIFI.code)
-        pebbleDict.addString(DictKey.WIFI.code, ssid)
-        Pebble.sendDict(pebbleDict)
+        Pebble.sendIntent(context, MsgType.WIFI) {
+            putExtra(AppConstants.EXTRA_WIFI, ssid)
+        }
     }
 }
 
 class PhoneCallback(
-    teleMan: TelephonyManager,
-    context: Context
+    private val context: Context,
 ):
     TelephonyCallback(), TelephonyCallback.ServiceStateListener {
+
+    private val teleMan = context.getSystemService(Context.TELEPHONY_SERVICE)
+            as TelephonyManager
 
     init {
         try {
@@ -121,9 +123,8 @@ class PhoneCallback(
     }
 
     private fun sendToPebble(gen: Int) {
-        val pebbleDict = PebbleDictionary()
-        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.NET.code)
-        pebbleDict.addInt8(DictKey.NET.code, gen.toByte())
-        Pebble.sendDict(pebbleDict)
+        Pebble.sendIntent(context, MsgType.NET) {
+            putExtra(AppConstants.EXTRA_NET, gen)
+        }
     }
 }

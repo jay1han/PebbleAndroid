@@ -2,6 +2,7 @@ package name.jayhan.pebble
 
 import android.content.Context
 import android.content.Context.RECEIVER_EXPORTED
+import android.content.Intent
 import android.content.IntentFilter
 import com.getpebble.android.kit.PebbleKit
 import com.getpebble.android.kit.util.PebbleDictionary
@@ -25,7 +26,7 @@ val WatchModels = listOf(
 
 enum class DictKey(val code: Int) {
     MSG_TYPE(1),
-    TZ_MINS(2),
+    TZ_MIN(2),
     PHONE_DND(3),
     PHONE_BATT(4),
     PHONE_CHG(5),
@@ -38,7 +39,7 @@ enum class DictKey(val code: Int) {
     MODEL(12),
     FW_VERSION(13),
 }
-enum class MsgType(val code: Byte) {
+enum class MsgType(val code: Int) {
     INFO(1),
     TZ(2),
     PHONE_DND(3),
@@ -50,7 +51,7 @@ enum class MsgType(val code: Byte) {
     ACTION(9)
 }
 
-enum class ActionType(val code: Byte) {
+enum class ActionType(val code: Int) {
     FIND_PHONE(1),
     DND_TOGGLE(2)
 }
@@ -62,20 +63,20 @@ object PebbleReceiver:
         PebbleKit.sendAckToPebble(context, transactionId)
 
         if (data != null) {
-            val msgType = data.getInteger(DictKey.MSG_TYPE.code)
-            when (msgType.toByte()) {
+            val msgType = data.getInteger(DictKey.MSG_TYPE.code).toInt()
+            when (msgType) {
                 MsgType.INFO.code -> {
                     val watchModel = data.getInteger(DictKey.MODEL.code).toInt()
                     val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.code).toInt()
                     Pebble.setWatchInfo(watchModel, watchFwVersion)
-                    val tzMinutes = data.getInteger(DictKey.TZ_MINS.code).toInt()
+                    val tzMinutes = data.getInteger(DictKey.TZ_MIN.code).toInt()
                     Pebble.fromMinutes(tzMinutes)
                 }
 
                 MsgType.ACTION.code -> {
                     // TODO: perform action
                     val action = data.getInteger(DictKey.ACTION.code).toInt()
-                    when (action.toByte()) {
+                    when (action) {
                         ActionType.FIND_PHONE.code -> {}
                         ActionType.DND_TOGGLE.code -> {}
                     }
@@ -92,32 +93,32 @@ class WatchInfo(
 
 object Pebble
 {
-    private lateinit var context: Context
     val infoFlow = MutableStateFlow(WatchInfo())
     val isConnected = MutableStateFlow(false)
 
     fun init(
-        newContext: Context
+        context: Context
     ) {
-        if (this::context.isInitialized && this.context != newContext) {
-            context.unregisterReceiver(PebbleReceiver)
-        }
-        context = newContext
-
         val dataFilter = IntentFilter(com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE)
         context.registerReceiver(PebbleReceiver, dataFilter, RECEIVER_EXPORTED)
     }
 
-    fun askInfo() {
-        val initDict = PebbleDictionary()
-        initDict.addInt8(DictKey.MSG_TYPE.code, MsgType.INFO.code)
-        sendDict(initDict)
+    fun askInfo(
+        context: Context
+    ) {
+        sendIntent(context, MsgType.INFO) {}
     }
 
-    fun sendDict(
-        pebbleDict: PebbleDictionary
+    fun sendIntent(
+        context: Context,
+        msgType: MsgType,
+        extra: Intent.() -> Unit
     ) {
-        PebbleKit.sendDataToPebble(context, AppConstants.APP_UUID, pebbleDict)
+        val intent = Intent(AppConstants.INTENT_SEND_PEBBLE).apply {
+            putExtra(AppConstants.EXTRA_MSG_TYPE, msgType.code)
+            extra()
+        }
+        context.sendBroadcast(intent)
     }
 
     fun setWatchInfo(
@@ -137,7 +138,10 @@ object Pebble
     private var minutes: Int = 0
     val tzFlow = MutableStateFlow("")
 
-    fun fromString(text: String): String {
+    fun fromString(
+        context: Context,
+        text: String
+    ): String {
         if (text.isEmpty()) return makeString()
         val negative = (text[0] == '-')
         val split = (if (negative) text.substring(1) else text)
@@ -162,7 +166,10 @@ object Pebble
         if (minutes >= 60 * 24) minutes = 0
         if (negative) minutes = -minutes
 
-        timezoneToPebble()
+        sendIntent(context, MsgType.TZ) {
+            putExtra(AppConstants.EXTRA_TZ_MIN, minutes)
+        }
+
         return makeString()
     }
 
@@ -171,19 +178,12 @@ object Pebble
         makeString()
     }
 
-    fun makeString(): String {
+    private fun makeString(): String {
         val sign = if (minutes < 0) "-" else "+"
         val hours = minutes.absoluteValue / 60
         val frac = 100 * (minutes.absoluteValue - hours * 60) / 60
         val string = "$sign${hours}.$frac"
         tzFlow.value = string
         return string
-    }
-
-    fun timezoneToPebble() {
-        val pebbleDict = PebbleDictionary()
-        pebbleDict.addInt8(DictKey.MSG_TYPE.code, MsgType.TZ.code)
-        pebbleDict.addInt16(DictKey.TZ_MINS.code, minutes.toShort())
-        sendDict(pebbleDict)
     }
 }

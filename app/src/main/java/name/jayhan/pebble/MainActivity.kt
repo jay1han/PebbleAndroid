@@ -2,7 +2,6 @@
 
 package name.jayhan.pebble
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -37,6 +36,17 @@ object AppConstants {
 
     const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE_FOREGROUND"
 
+    const val INTENT_SEND_PEBBLE = "name.jayhan.pebble.SEND_PEBBLE"
+    const val EXTRA_MSG_TYPE = "msg_type"
+    const val EXTRA_PHONE_CHG = "phone_chg"
+    const val EXTRA_PHONE_BATT = "phone_batt"
+    const val EXTRA_TZ_MIN = "tz_min"
+    const val EXTRA_WIFI = "wifi"
+    const val EXTRA_NET = "net"
+    const val EXTRA_NOTI = "noti"
+    const val EXTRA_BTID = "btid"
+    const val EXTRA_BTC = "btc"
+
     const val CHANNEL_ID = "CapetaService"
 
     const val PREF_NAME = "name.jayhan.pebble.NOTIFICATIONS_LIST"
@@ -60,7 +70,7 @@ class MainActivity :
         }
 
         setContent {
-            AppScaffold()
+            AppScaffold(context)
         }
     }
 

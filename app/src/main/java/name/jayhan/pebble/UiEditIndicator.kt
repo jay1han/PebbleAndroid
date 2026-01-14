@@ -1,5 +1,6 @@
 package name.jayhan.pebble
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,6 +40,7 @@ import androidx.compose.ui.window.Dialog
 
 @Composable
 fun EditIndicators(
+    context: Context,
     letter: Char,
     packageName: String,
     channel: String,
@@ -257,12 +259,15 @@ fun EditIndicators(
                     ) {
                         Button(
                             onClick = {
-                                if (newLetter != ' ' && newPackage.isNotEmpty())
+                                if (newLetter != ' ' && newPackage.isNotEmpty()) {
+                                    Indicators.remove(packageName, channel)
                                     Indicators.add(
                                         packageName = newPackage,
                                         channel = newChannel,
                                         letter = newLetter,
-                                        )
+                                    )
+                                    Notifications.refresh(context)
+                                }
                                 onClose()
                             },
                         ) {
@@ -273,7 +278,8 @@ fun EditIndicators(
                         }
                         Button(
                             onClick = {
-                                Indicators.remove(newPackage, newChannel)
+                                Indicators.remove(packageName, channel)
+                                Notifications.refresh(context)
                                 onClose()
                             }
                         ) {
@@ -302,6 +308,7 @@ fun acceptLetter(input: String): Char {
 @Composable
 fun EditIndicatorsPreview() {
     EditIndicators(
+        context = LocalContext.current,
         letter = 'S',
         packageName = "com.android.google.apps.messaging",
         channel = "jayhan.dev",
@@ -314,6 +321,7 @@ fun EditIndicatorsPreview() {
 @Composable
 fun EditIndicatorsEmpty() {
     EditIndicators(
+        context = LocalContext.current,
         letter = ' ',
         packageName = "",
         channel = "",
