@@ -60,9 +60,6 @@ class PebbleService():
 
         reInit()
 
-//        Pebble.askInfo(context)
-//        Notifications.refresh(context)
-
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -156,7 +153,7 @@ class PebbleService():
                         }
                     }
 
-                    PebbleKit.sendDataToPebble(context, AppConstants.APP_UUID, pebbleDict)
+                    Pebble.sendData(context, pebbleDict)
                 }
             }
         }

@@ -1,5 +1,6 @@
 package name.jayhan.pebble
 
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -7,6 +8,7 @@ import com.getpebble.android.kit.PebbleKit
 import com.getpebble.android.kit.util.PebbleDictionary
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.math.absoluteValue
+import kotlin.time.Clock
 
 val WatchModels = listOf(
     "Unknown",
@@ -60,22 +62,15 @@ data class WatchInfo(
     val version: String = ""
 )
 
-object Pebble:
+private val clock = Clock.System
+private var lastReceived = clock.now()
+private var lastSent = clock.now()
+
+private object DataReceiver:
     PebbleKit.PebbleDataReceiver(AppConstants.APP_UUID)
 {
-    val infoFlow = MutableStateFlow(WatchInfo())
-    val isConnected = MutableStateFlow(false)
-
-    fun init(
-        context: Context
-    ) {
-        val dataFilter = IntentFilter(com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE)
-        context.registerReceiver(this, dataFilter, Context.RECEIVER_EXPORTED)
-
-        sendIntent(context, MsgType.INFO) {}
-    }
-
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
+        lastReceived = clock.now()
         PebbleKit.sendAckToPebble(context, transactionId)
 
         if (data != null) {
@@ -84,9 +79,9 @@ object Pebble:
                 MsgType.INFO.code -> {
                     val watchModel = data.getInteger(DictKey.MODEL.code).toInt()
                     val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.code).toInt()
-                    setWatchInfo(watchModel, watchFwVersion)
+                    Pebble.setWatchInfo(watchModel, watchFwVersion)
                     val tzMinutes = data.getInteger(DictKey.TZ_MIN.code).toInt()
-                    fromMinutes(tzMinutes)
+                    Pebble.fromMinutes(tzMinutes)
                 }
 
                 MsgType.ACTION.code -> {
@@ -99,6 +94,45 @@ object Pebble:
                 }
             }
         }
+    }
+}
+
+private object AckReceiver:
+    PebbleKit.PebbleAckReceiver(AppConstants.APP_UUID)
+{
+    override fun receiveAck(context: Context?, transactionId: Int) {
+        lastReceived = clock.now()
+        Pebble.ackReceived(true)
+    }
+}
+
+private object NackReceiver:
+    PebbleKit.PebbleNackReceiver(AppConstants.APP_UUID)
+{
+    override fun receiveNack(context: Context?, transactionId: Int) {
+        Pebble.ackReceived(false)
+    }
+}
+
+object Pebble
+{
+    val infoFlow = MutableStateFlow(WatchInfo())
+    val isConnected = MutableStateFlow(false)
+
+    fun init(
+        context: Context
+    ) {
+        // TODO: unregister at onPause
+        mapOf(
+            com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE to DataReceiver,
+            com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE_ACK to AckReceiver,
+            com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE_NACK to NackReceiver,
+        ).forEach {
+            val filter = IntentFilter(it.key)
+            context.registerReceiver(it.value, filter, Context.RECEIVER_EXPORTED)
+        }
+
+        sendIntent(context, MsgType.INFO) {}
     }
 
     fun sendIntent(
@@ -113,11 +147,18 @@ object Pebble:
         context.sendBroadcast(intent)
     }
 
+    fun sendData(
+        context: Context,
+        data: PebbleDictionary
+    ) {
+        PebbleKit.sendDataToPebble(context, AppConstants.APP_UUID, data)
+        lastSent = clock.now()
+    }
+
     fun setWatchInfo(
         watchModel: Int,
         watchFwVersion: Int
     ) {
-        isConnected.value = true
         val versionString = "%d.%d.%d"
             .format(
                 (watchFwVersion shr 16) and 0xFF,
@@ -175,5 +216,9 @@ object Pebble:
         val string = "$sign${hours}.$frac"
         tzFlow.value = string
         return string
+    }
+
+    fun ackReceived(isAcked: Boolean) {
+        isConnected.value = isAcked
     }
 }
