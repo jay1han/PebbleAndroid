@@ -121,3 +121,13 @@ object Indicators
         saveMap(mutableMapOf())
     }
 }
+
+val PreviewIndicators = mapOf(
+    "com.android.google.apps.dialer:" to 'C',
+    "com.android.google.apps.messaging:" to 'T',
+    "com.android.google.apps.gm:jay" to 'j',
+    "com.android.google.apps.gm:pebble" to 'p',
+    "com.android.google.apps.gm:" to 'G',
+    "com.whatsapp:" to 'W',
+    "com.kakao.talk:" to 'K'
+)

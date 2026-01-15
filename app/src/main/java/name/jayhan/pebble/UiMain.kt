@@ -68,11 +68,12 @@ fun AppScaffold(
     var showHelp by remember { mutableStateOf(false) }
 
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             TopBar(isConnected) {
                 showHelp = true
             }
-        }
+        },
     ) { innerPadding ->
         if (permissionsGranted) {
             if (showHelp) {
@@ -80,26 +81,27 @@ fun AppScaffold(
                     watchInfo = watchInfo,
                     isConnected = isConnected,
                     lastReceived = lastReceived,
-                    modifier = Modifier.padding(innerPadding)
                 ) {
                     showHelp = false
                 }
             }
+
             MainPage(
                 context = context,
                 activeList = activeList,
                 allList = allList,
+                indicators = indicators,
                 isConnected = isConnected,
                 tzWatch = tzWatch,
-                indicators = indicators,
                 modifier = Modifier.padding(innerPadding)
             )
+            
         } else {
             val missingList by Permissions.missingFlow.collectAsState(listOf())
 
             UiPermissions(
                 missingList,
-                Modifier.padding(innerPadding)
+                modifier = Modifier.padding(innerPadding)
             )
         }
     }
@@ -146,7 +148,6 @@ fun TopBar(
 
 @Composable
 fun HelpDialog(
-    modifier: Modifier = Modifier,
     watchInfo: WatchInfo,
     isConnected: Boolean,
     lastReceived: Instant,
@@ -158,7 +159,7 @@ fun HelpDialog(
         onDismissRequest = onClose
     ) {
         Card(
-            modifier = modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier
@@ -240,22 +241,16 @@ fun MainPage(
     tzWatch: String,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth(),
-    ) {
+    Column (
+        modifier = modifier.fillMaxWidth()
+    ){
         AwayTimezone(
             isConnected = isConnected,
             tzWatch = tzWatch
         ) { tz ->
             Pebble.fromString(context, tz)
         }
-        Text(
-            text = stringResource(R.string.indicators),
-            fontSize = AppConstants.titleSize,
-            modifier = Modifier.fillMaxWidth()
-        )
-        ShowIndicators(
+        IndicatorList(
             context = context,
             activeList = activeList,
             allList = allList,

@@ -2,6 +2,7 @@ package name.jayhan.pebble
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -32,22 +34,24 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.core.graphics.createBitmap
 
 @Composable
-fun ShowIndicators(
+fun IndicatorList(
     context: Context,
     activeList: List<String>,
     allList: List<String>,
     indicators: Map<String, Char>
 ) {
-    var showEditDialog by remember { mutableStateOf(false) }
+    var editDialog by remember { mutableStateOf(false) }
     var editLetter by remember { mutableStateOf(' ') }
     var editPackageName by remember { mutableStateOf("") }
     var editChannel by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
+    var resetDialog by remember { mutableStateOf(false) }
 
-    if (showEditDialog) {
+    if (editDialog) {
         EditIndicators(
             context = context,
             letter = editLetter,
@@ -56,66 +60,85 @@ fun ShowIndicators(
             activeList = activeList,
             allList = allList
         ) {
-            showEditDialog = false
+            editDialog = false
             editLetter = ' '
             editPackageName = ""
             editChannel = ""
         }
     }
 
-    Column(
-        modifier = Modifier
-            .verticalScroll(scrollState)
-            .fillMaxWidth()
-    ) {
-        for (indicator in indicators) {
-            ShowIndicatorItem(
-                letter = indicator.letter(),
-                packageName = indicator.packageName(),
-                channel = indicator.channel(),
-                onEdit = {
-                    editLetter = indicator.letter()
-                    editPackageName = indicator.packageName()
-                    editChannel = indicator.channel()
-                    showEditDialog = true
-                })
-        }
-    }
-
-    Row(
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-    ) {
-        Button(
-            onClick = {
+    if (resetDialog) {
+        ResetDialog(
+            onClose = {
+                resetDialog = false
+            },
+            onConfirm = {
                 Indicators.reset()
                 Notifications.reprocess(context)
-            },
+            }
+        )
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
         ) {
+            Button(
+                onClick = { resetDialog = true },
+            ) {
+                Text(
+                    text = stringResource(R.string.reset),
+                    fontSize = AppConstants.textSize
+                )
+            }
             Text(
-                text = stringResource(R.string.reset),
-                fontSize = AppConstants.textSize
+                text = stringResource(R.string.indicators),
+                fontSize = AppConstants.titleSize,
             )
+            Button(
+                onClick = {
+                    editLetter = ' '
+                    editPackageName = ""
+                    editDialog = true
+                },
+            ) {
+                Text(
+                    text = stringResource(R.string.add),
+                    fontSize = AppConstants.textSize
+                )
+            }
         }
-        Button(
-            onClick = {
-                editLetter = ' '
-                editPackageName = ""
-                showEditDialog = true
-            },
+
+        Column(
+            modifier = Modifier
+                .verticalScroll(scrollState)
+                .fillMaxWidth()
         ) {
-            Text(
-                text = stringResource(R.string.add),
-                fontSize = AppConstants.textSize
-            )
+            for (indicator in indicators) {
+                IndicatorItem(
+                    letter = indicator.letter(),
+                    packageName = indicator.packageName(),
+                    channel = indicator.channel(),
+                    onEdit = {
+                        editLetter = indicator.letter()
+                        editPackageName = indicator.packageName()
+                        editChannel = indicator.channel()
+                        editDialog = true
+                    }
+                )
+            }
         }
     }
 }
 
 @Composable
-fun ShowIndicatorItem(
+fun IndicatorItem(
     letter: Char,
     packageName: String,
     channel: String,
@@ -193,6 +216,52 @@ fun ShowIndicatorItem(
     }
 }
 
+@Composable
+fun ResetDialog(
+    onConfirm: () -> Unit,
+    onClose: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onClose
+    ) {
+        Card {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(10.dp)
+            ) {
+                Text(
+                    text = "Do you want to clear all indicators?",
+                    fontSize = AppConstants.titleSize,
+                    modifier = Modifier.padding(10.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(10.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = onClose
+                    ) {
+                        Text(
+                            text = "No",
+                            fontSize = AppConstants.textSize,
+                        )
+                    }
+                    Button(
+                        onClick = {
+                            onConfirm()
+                            onClose
+                        }
+                    ) {
+                        Text(
+                            text = "Reset!",
+                            fontSize = AppConstants.textSize,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 fun getApplicationIcon(
     context: Context,
     packageName: String
@@ -206,7 +275,7 @@ fun getApplicationIcon(
     }
 
     val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
-    val canvas = android.graphics.Canvas(bitmap)
+    val canvas = Canvas(bitmap)
     drawable.setBounds(0, 0, canvas.width, canvas.height)
     drawable.draw(canvas)
     return bitmap.asImageBitmap()
@@ -224,17 +293,32 @@ val PreviewAllList = listOf(
     "com.whatsapp"
 )
 
-val PreviewIndicators = mapOf(
-    "com.android.google.apps.messaging" to 'T',
-    "com.whatsapp" to 'W'
-)
-
 @Preview
 @Composable
-fun ShowIndicatorItemPreview() {
-    ShowIndicatorItem(
+fun IndicatorItemPreview() {
+    IndicatorItem(
         'S',
         "com.google.android.apps.messaging",
         "jayhan.dev"
     ) { }
+}
+
+@Preview
+@Composable
+fun IndicatorListPreview() {
+    IndicatorList(
+        context = LocalContext.current,
+        activeList = PreviewActiveList,
+        allList = PreviewAllList,
+        indicators = PreviewIndicators
+    )
+}
+
+@Preview
+@Composable
+fun ResetDialogPreview() {
+    ResetDialog(
+        onClose = {},
+        onConfirm = {}
+    )
 }

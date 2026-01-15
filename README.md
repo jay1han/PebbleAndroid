@@ -164,6 +164,7 @@ some usages of the Android SDK seem a bit clunky.
 
 - Clean code
     - [x] Rationalize and rename activeList, allList and indicators map
+    - [ ] Remove hard-coded dimensions
   
 - Future: DND
 
