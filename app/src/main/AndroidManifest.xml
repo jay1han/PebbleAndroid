@@ -62,5 +62,14 @@
             android:exported="false">
         </service>
 
+        <service
+            android:name=".AppStart"
+            android:label="Pebble Start"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </service>
+
     </application>
 </manifest>

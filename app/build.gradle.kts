@@ -14,8 +14,8 @@ android {
 
     defaultConfig {
         applicationId = "name.jayhan.pebble"
-        minSdk = 35
-        targetSdk = 36
+        minSdk = 33
+        targetSdk = 35
         versionCode = 2
         versionName = "1.1"
         buildConfigField("Long", "BUILDTIME", System.currentTimeMillis().toString() + "L")

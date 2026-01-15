@@ -5,6 +5,7 @@ package name.jayhan.pebble
 import android.content.Context
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -61,6 +62,7 @@ fun AppScaffold(
     val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
     val lastReceived: Instant by Pebble.lastReceived.collectAsState(Instant.DISTANT_PAST)
     val permissionsGranted by Permissions.grantFlow.collectAsState(Permissions.allGranted)
+    val serverUp by Permissions.initFlow.collectAsState(false)
     val activeList by Notifications.activeFlow.collectAsState(emptyList())
     val allList by Notifications.allFlow.collectAsState(emptyList())
     val tzWatch: String by Pebble.tzFlow.collectAsState("")
@@ -75,32 +77,38 @@ fun AppScaffold(
             }
         },
     ) { innerPadding ->
-        if (permissionsGranted) {
-            if (showHelp) {
-                HelpDialog(
-                    watchInfo = watchInfo,
-                    isConnected = isConnected,
-                    lastReceived = lastReceived,
-                ) {
-                    showHelp = false
+        if (serverUp) {
+            if (permissionsGranted) {
+                if (showHelp) {
+                    HelpDialog(
+                        watchInfo = watchInfo,
+                        isConnected = isConnected,
+                        lastReceived = lastReceived,
+                    ) {
+                        showHelp = false
+                    }
                 }
+
+                MainPage(
+                    context = context,
+                    activeList = activeList,
+                    allList = allList,
+                    indicators = indicators,
+                    isConnected = isConnected,
+                    tzWatch = tzWatch,
+                    modifier = Modifier.padding(innerPadding)
+                )
+
+            } else {
+                val missingList by Permissions.missingFlow.collectAsState(listOf())
+
+                UiPermissions(
+                    missingList,
+                    modifier = Modifier.padding(innerPadding)
+                )
             }
-
-            MainPage(
-                context = context,
-                activeList = activeList,
-                allList = allList,
-                indicators = indicators,
-                isConnected = isConnected,
-                tzWatch = tzWatch,
-                modifier = Modifier.padding(innerPadding)
-            )
-            
         } else {
-            val missingList by Permissions.missingFlow.collectAsState(listOf())
-
-            UiPermissions(
-                missingList,
+            Splash(
                 modifier = Modifier.padding(innerPadding)
             )
         }
@@ -327,6 +335,20 @@ fun AwayTimezone(
     }
 }
 
+@Composable
+fun Splash(
+    modifier : Modifier = Modifier
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier.fillMaxSize()
+    ) {
+        Text(
+            text = "Splash",
+        )
+    }
+}
+
 @Preview
 @Composable
 fun TopBarPreview() {
@@ -356,4 +378,10 @@ fun HelpDialogPreview() {
         isConnected = true,
         lastReceived = Clock.System.now()
     ) {}
+}
+
+@Preview
+@Composable
+fun SplashPreview() {
+    Splash()
 }

@@ -128,9 +128,11 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Hide Service notification from lock screen
     - [x] bug: Refresh main list after edit
     - [x] Sort main list by app name and channel name
+    - [x] Nicer Timezone editor
+
+- Permissions
     - [x] Request permissions one by one
     - [x] Honor "should display rationale"
-    - [x] Nicer Timezone editor
     - [ ] Group permissions
     - [ ] Beautify permission UI
 
@@ -144,8 +146,8 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Also use full screen
     - [x] Use channels
     - [x] Show full list if no active
-    - [ ] Sort indicators somehow
     - [x] Hide cursor in letter input field
+    - [ ] Filter by title?
 
 - Other indicators 
     - [x] BT: Remove "LE-"
@@ -154,9 +156,12 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Refresh notification list when Service starts
     - [x] Remove Reconnect button
     - [x] Refresh after disconnection
-    - [ ] Auto-start at boot
+    - [x] Auto-start at boot
     - [ ] Manage connection?
     - [x] Beautify help screen
+
+- App
+    - [ ] Android version 13 or above, minimal SDK 33
   
 - Pebble object
     - [x] Remove context field from Pebble

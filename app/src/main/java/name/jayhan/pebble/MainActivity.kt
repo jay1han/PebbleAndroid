@@ -2,6 +2,8 @@
 
 package name.jayhan.pebble
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -47,7 +49,8 @@ object AppConstants {
     val colorWarning = Color(0xFFFF0000)
     val colorBlack = Color(0xFF000000)
 
-    const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE_FOREGROUND"
+    const val INTENT_START_FOREGROUND = "name.jayhan.pebble.START_FOREGROUND"
+    const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE"
 
     const val INTENT_SEND_PEBBLE = "name.jayhan.pebble.SEND_PEBBLE"
     const val EXTRA_MSG_TYPE = "msg_type"
@@ -70,6 +73,19 @@ object AppConstants {
     const val MAX_LEN_BTID = 19
 }
 
+class AppStart:
+    BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+        if (context == null || intent == null) return
+        if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
+            if (Permissions.allGranted) {
+                val intent = Intent(context, PebbleService::class.java)
+                context.startForegroundService(intent)
+            }
+        }
+    }
+}
+
 class MainActivity :
     ComponentActivity() {
 
@@ -77,12 +93,13 @@ class MainActivity :
         super.onCreate(savedInstanceState)
 
         val context = applicationContext
-        Permissions.start(context, this) {
-            val intent = Intent(context, PebbleService::class.java)
-            context.startForegroundService(intent)
-        }
+        Permissions.initActivity(mainActivity = this)
+
+        val intent = Intent(context, PebbleService::class.java)
+        context.startForegroundService(intent)
 
         setContent {
+            // TODO: Show splash until background service started
             AppScaffold(context)
         }
     }

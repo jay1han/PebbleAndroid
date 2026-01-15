@@ -33,10 +33,13 @@ class PebbleService():
         context = applicationContext
 
         val filter = IntentFilter().apply {
+            addAction(AppConstants.INTENT_START_FOREGROUND)
             addAction(AppConstants.INTENT_REVIVE)
             addAction(AppConstants.INTENT_SEND_PEBBLE)
         }
         context.registerReceiver(receiver, filter,RECEIVER_EXPORTED)
+
+        Permissions.initService(context)
 
         try {
             val notiMan = context.getSystemService(NOTIFICATION_SERVICE)
@@ -57,23 +60,11 @@ class PebbleService():
             println(e)
         }
 
-        reInit()
-
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun reInit() {
-        Pebble.init(context)
-        Notifications.init(context)
-
-        batteryReceiver = BatteryReceiver(context)
-        bluetoothReceiver = BluetoothReceiver(context)
-
-        wifiCallback = WifiCallback(context)
-        phoneCallback = PhoneCallback(context)
-    }
-
     private fun setupForeground() {
+        // TODO: only if foreground service is allowed
         val delIntent = Intent(AppConstants.INTENT_REVIVE)
         val pendingIntent = getBroadcast(
             context,
@@ -96,6 +87,16 @@ class PebbleService():
             notification,
             ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         )
+
+        // TODO: Only if all permissions granted
+        Pebble.init(context)
+        Notifications.init(context)
+
+        batteryReceiver = BatteryReceiver(context)
+        bluetoothReceiver = BluetoothReceiver(context)
+
+        wifiCallback = WifiCallback(context)
+        phoneCallback = PhoneCallback(context)
     }
 
     inner class Receiver: BroadcastReceiver() {
@@ -103,7 +104,10 @@ class PebbleService():
             when(intent.action) {
                 AppConstants.INTENT_REVIVE -> {
                     setupForeground()
-                    reInit()
+                }
+
+                AppConstants.INTENT_START_FOREGROUND -> {
+                    setupForeground()
                 }
 
                 AppConstants.INTENT_SEND_PEBBLE -> {
@@ -155,9 +159,7 @@ class PebbleService():
                     Pebble.sendData(context, pebbleDict)
                 }
             }
-
             if (Pebble.doRefresh) {
-                // TODO: Do refresh
                 Notifications.reprocess(context)
                 Pebble.doRefresh = false
             }

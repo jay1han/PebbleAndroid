@@ -48,4 +48,12 @@
     <string name="last_seen">Last seen</string>
     <string name="android">Android</string>
     <string name="pebble">Pebble</string>
+    <string name="pg_foreground_service">Foreground service</string>
+    <string name="pg_post_notification">Post notification</string>
+    <string name="pg_read_phone_state">Read phone state</string>
+    <string name="pg_nearby_services">Nearby services</string>
+    <string name="pg_location_services">Location services</string>
+    <string name="pg_fine_location">Fine location</string>
+    <string name="pg_background_location">Background location</string>
+    <string name="pg_query_installed_apps">Query installed apps</string>
 </resources>
