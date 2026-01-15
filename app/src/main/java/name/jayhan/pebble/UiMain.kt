@@ -3,13 +3,16 @@
 package name.jayhan.pebble
 
 import android.content.Context
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,8 +20,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -40,7 +41,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.TextStyle
@@ -72,7 +72,7 @@ fun AppScaffold(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            TopBar(isConnected) {
+            TopBar(isConnected, watchInfo) {
                 showHelp = true
             }
         },
@@ -118,37 +118,30 @@ fun AppScaffold(
 @Composable
 fun TopBar(
     isConnected: Boolean,
+    watchInfo: WatchInfo,
     onHelp: () -> Unit
 ) {
     TopAppBar(
-        title = {
-            Text(
-                text = stringResource(R.string.app_name),
-                color = AppConstants.colorText,
-                fontSize = AppConstants.titleSize
-            )
-        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onHelp() },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = AppConstants.colorBack,
         ),
+        title = {
+            Text(
+                text = watchInfo.model.ifEmpty { "Disconnected" },
+                color = if (isConnected) AppConstants.colorText else AppConstants.colorWarning,
+                fontSize = AppConstants.titleSize
+            )
+        },
         actions = {
-            IconButton(
-                onClick = { onHelp() }
-            ) {
-                if (isConnected) {
-                    Text(
-                        text = "?",
-                        fontSize = AppConstants.titleSize,
-                        color = AppConstants.colorTop
-                    )
-                } else {
-                    Icon(
-                        painterResource(R.drawable.outline_warning_24),
-                        modifier = Modifier.fillMaxSize(),
-                        contentDescription = "Warning",
-                        tint = AppConstants.colorWarning
-                    )
-                }
+            if (isConnected) {
+                Text(
+                    text = "${watchInfo.battery}%",
+                    fontSize = AppConstants.titleSize,
+                    color = AppConstants.colorText
+                )
             }
         }
     )
@@ -188,14 +181,22 @@ fun HelpDialog(
                                 stringResource(R.string.version) + ": " +
                                 watchInfo.version,
                         fontSize = AppConstants.textSize,
+                        modifier = Modifier.padding(bottom = 10.dp)
                     )
                     Text(
                         text = stringResource(R.string.last_seen) + ": " +
                                 lastReceived.formatDate(),
                         fontSize = AppConstants.textSize,
-                        modifier = Modifier.padding(vertical = 10.dp)
+                        modifier = Modifier.padding(bottom = 10.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.battery) + " :" +
+                                watchInfo.battery.toString() + "%",
+                        fontSize = AppConstants.textSize,
                     )
                 }
+
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
                     text = stringResource(R.string.android_github),
@@ -356,7 +357,17 @@ fun Splash(
 @Composable
 fun TopBarPreview() {
     TopBar(
-        isConnected = false
+        isConnected = true,
+        watchInfo = WatchInfo("Model", "version", 100)
+    ) {}
+}
+
+@Preview
+@Composable
+fun TopBarDisconnected() {
+    TopBar(
+        isConnected = false,
+        watchInfo = WatchInfo("", "", 0)
     ) {}
 }
 
@@ -377,7 +388,7 @@ fun MainPagePreview() {
 @Composable
 fun HelpDialogPreview() {
     HelpDialog(
-        watchInfo = WatchInfo("model", "version"),
+        watchInfo = WatchInfo("model", "version", 100),
         isConnected = true,
         lastReceived = Clock.System.now()
     ) {}

@@ -79,5 +79,6 @@
     <string name="pg_zen_rule">DND mode</string>
     <string name="zen_rule">Zen rule</string>
     <string name="zen_rule_2">Zen rule 2</string>
+    <string name="battery">Battery</string>
 
 </resources>

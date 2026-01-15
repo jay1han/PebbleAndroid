@@ -44,11 +44,10 @@ object AppConstants {
     val colorBack = Color(0xFFFF8000)
     val colorNotiBack = Color(0xFF000000)
     val colorText = Color(0xFFFFFFFF)
-    val colorTop = Color(0xFFFFFFFF)
     val colorBlank = Color(0xFFFFFFFF)
     val colorFade = Color(0xFF808080)
     val colorTransparent = Color(0)
-    val colorWarning = Color(0xFFFF0000)
+    val colorWarning = Color(0xFFC00000)
     val colorBlack = Color(0xFF000000)
 
     const val INTENT_START_FOREGROUND = "name.jayhan.pebble.START_FOREGROUND"

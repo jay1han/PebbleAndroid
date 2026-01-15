@@ -38,15 +38,16 @@
     - [x] Remove Reconnect button
     - [x] Refresh after disconnection
     - [x] Auto-start at boot
-    - [ ] Manage connection?
+    - [x] Manage connection?
     - [x] Beautify help screen
 
 - App
     - [x] Android version 13 or above, minimal SDK 33
 
-- Pebble object
+- Pebble
     - [x] Remove context field from Pebble
     - [x] Pebble object caches Info
+    - [ ] Manage Pebble battery
 
 - Clean code
     - [x] Rationalize and rename activeList, allList and indicators map
