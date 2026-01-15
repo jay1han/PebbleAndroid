@@ -12,6 +12,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.IBinder
+import android.util.Log
 import com.getpebble.android.kit.util.PebbleDictionary
 
 class PebbleService():
@@ -30,6 +31,7 @@ class PebbleService():
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.v(AppConstants.TAG, "Service starting")
         context = applicationContext
 
         val filter = IntentFilter().apply {
@@ -65,6 +67,7 @@ class PebbleService():
 
     private fun setupForeground() {
         // TODO: only if foreground service is allowed
+        Log.v(AppConstants.TAG, "Running foreground")
         val delIntent = Intent(AppConstants.INTENT_REVIVE)
         val pendingIntent = getBroadcast(
             context,

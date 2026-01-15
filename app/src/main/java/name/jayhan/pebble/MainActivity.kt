@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,6 +28,7 @@ fun Instant.formatDate(): String {
 }
 
 object AppConstants {
+    const val TAG = "Capeta"
     const val GithubAndroid = "https://github.com/jay1han/PebbleAndroid"
     const val GithubPebble = "https://github.com/jay1han/Pebble"
     val buildDateTime = Instant
@@ -78,10 +80,9 @@ class AppStart:
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null || intent == null) return
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
-            if (Permissions.allGranted) {
-                val intent = Intent(context, PebbleService::class.java)
-                context.startForegroundService(intent)
-            }
+            Log.v(AppConstants.TAG, "Boot completed")
+            val intent = Intent(context, PebbleService::class.java)
+            context.startForegroundService(intent)
         }
     }
 }
@@ -91,6 +92,7 @@ class MainActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.v(AppConstants.TAG, "Start activity")
 
         val context = applicationContext
         Permissions.initActivity(mainActivity = this)

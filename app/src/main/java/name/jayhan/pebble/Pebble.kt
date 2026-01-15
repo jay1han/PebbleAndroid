@@ -3,6 +3,7 @@ package name.jayhan.pebble
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.util.Log
 import com.getpebble.android.kit.PebbleKit
 import com.getpebble.android.kit.util.PebbleDictionary
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -119,6 +120,7 @@ object Pebble
     fun init(
         context: Context
     ) {
+        Log.v(AppConstants.TAG, "Pebble object init")
         // TODO: unregister at onPause
         mapOf(
             com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE to DataReceiver,
