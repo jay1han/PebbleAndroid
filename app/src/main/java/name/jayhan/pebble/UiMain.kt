@@ -51,8 +51,6 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import kotlin.time.Clock
-import kotlin.time.Instant
 
 @Composable
 fun AppScaffold(
@@ -60,7 +58,7 @@ fun AppScaffold(
 ) {
     val watchInfo: WatchInfo by Pebble.infoFlow.collectAsState(WatchInfo())
     val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
-    val lastReceived: Instant by Pebble.lastReceived.collectAsState(Instant.DISTANT_PAST)
+    val lastReceived: String by Pebble.lastReceived.collectAsState("")
     val permissionsGranted by Permissions.grantFlow.collectAsState(Permissions.allGranted)
     val serverUp by Permissions.initFlow.collectAsState(false)
     val activeList by Notifications.activeFlow.collectAsState(emptyList())
@@ -124,7 +122,10 @@ fun TopBar(
     TopAppBar(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onHelp() },
+            .clickable {
+                if (isConnected) onHelp()
+                else Pebble.askInfo()
+            },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = AppConstants.colorBack,
         ),
@@ -140,7 +141,7 @@ fun TopBar(
                 Text(
                     text = "${watchInfo.battery}%",
                     fontSize = AppConstants.titleSize,
-                    color = AppConstants.colorText
+                    color = AppConstants.colorText,
                 )
             }
         }
@@ -151,7 +152,7 @@ fun TopBar(
 fun HelpDialog(
     watchInfo: WatchInfo,
     isConnected: Boolean,
-    lastReceived: Instant,
+    lastReceived: String,
     onClose: () -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -184,16 +185,28 @@ fun HelpDialog(
                         modifier = Modifier.padding(bottom = 10.dp)
                     )
                     Text(
-                        text = stringResource(R.string.last_seen) + ": " +
-                                lastReceived.formatDate(),
+                        text = stringResource(R.string.last_seen) + ": " + lastReceived,
                         fontSize = AppConstants.textSize,
                         modifier = Modifier.padding(bottom = 10.dp)
                     )
                     Text(
-                        text = stringResource(R.string.battery) + " :" +
-                                watchInfo.battery.toString() + "%",
+                        text = stringResource(R.string.battery) + ": " +
+                                watchInfo.battery.toString() + "%" +
+                                (if (watchInfo.plugged) {
+                                    " Plugged" +
+                                    (if (watchInfo.charging) " & Charging" else "")
+                                } else "")
+                        ,
                         fontSize = AppConstants.textSize,
                     )
+                    Button(
+                        onClick = { Pebble.askInfo() },
+                    ) {
+                        Text(
+                            text = "Refresh",
+                            fontSize = AppConstants.smallSize
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -353,12 +366,17 @@ fun Splash(
     }
 }
 
+val PreviewWatchInfo = WatchInfo(
+    "model", "version",
+    100, true, true
+)
+
 @Preview
 @Composable
 fun TopBarPreview() {
     TopBar(
         isConnected = true,
-        watchInfo = WatchInfo("Model", "version", 100)
+        watchInfo = PreviewWatchInfo
     ) {}
 }
 
@@ -367,7 +385,7 @@ fun TopBarPreview() {
 fun TopBarDisconnected() {
     TopBar(
         isConnected = false,
-        watchInfo = WatchInfo("", "", 0)
+        watchInfo = WatchInfo()
     ) {}
 }
 
@@ -388,9 +406,9 @@ fun MainPagePreview() {
 @Composable
 fun HelpDialogPreview() {
     HelpDialog(
-        watchInfo = WatchInfo("model", "version", 100),
+        watchInfo = PreviewWatchInfo,
         isConnected = true,
-        lastReceived = Clock.System.now()
+        lastReceived = "Now"
     ) {}
 }
 

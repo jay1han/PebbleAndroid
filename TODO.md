@@ -40,6 +40,7 @@
     - [x] Auto-start at boot
     - [x] Manage connection?
     - [x] Beautify help screen
+    - [ ] Show connection state and watch battery in notification
 
 - App
     - [x] Android version 13 or above, minimal SDK 33
@@ -47,7 +48,8 @@
 - Pebble
     - [x] Remove context field from Pebble
     - [x] Pebble object caches Info
-    - [ ] Manage Pebble battery
+    - [x] Pebble battery
+    - [ ] Manage Pebble battery (history)
 
 - Clean code
     - [x] Rationalize and rename activeList, allList and indicators map

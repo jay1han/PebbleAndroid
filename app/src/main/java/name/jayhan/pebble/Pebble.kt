@@ -40,6 +40,8 @@ enum class DictKey(val code: Int) {
     MODEL(12),
     FW_VERSION(13),
     WATCH_BATT(14),
+    WATCH_PLUG(15),
+    WATCH_CHG(16)
 }
 enum class MsgType(val code: Int) {
     INFO(1),
@@ -50,7 +52,8 @@ enum class MsgType(val code: Int) {
     WIFI(6),
     BT(7),
     NOTI(8),
-    ACTION(9)
+    WBATT(9),
+    ACTION(10),
 }
 
 enum class ActionType(val code: Int) {
@@ -62,18 +65,22 @@ class WatchInfo(
     var model: String = "",
     var version: String = "",
     var battery: Int = 0,
+    var plugged: Boolean = false,
+    var charging: Boolean = false,
 ) {
     fun setInfo(
-        model: String = "",
-        version: String = "",
+        model: String,
+        version: String,
     ): WatchInfo {
-        return WatchInfo(model, version, battery)
+        return WatchInfo(model, version, battery, plugged, charging)
     }
 
     fun setBattery(
-        battery: Int = 0
+        battery: Int,
+        plugged: Boolean,
+        charging: Boolean,
     ): WatchInfo {
-        return WatchInfo(model, version, battery)
+        return WatchInfo(model, version, battery, plugged, charging)
     }
 }
 
@@ -96,11 +103,18 @@ private object DataReceiver:
                 MsgType.INFO.code -> {
                     val watchModel = data.getInteger(DictKey.MODEL.code)?.toInt() ?: 0
                     val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.code)?.toInt() ?: 0
-                    Pebble.setWatchInfo(watchModel, watchFwVersion)
+                    if (watchModel != 0 && watchFwVersion != 0)
+                        Pebble.setWatchInfo(watchModel, watchFwVersion)
+                    val tzMinutes = data.getInteger(DictKey.TZ_MIN.code)
+                    if (tzMinutes != null)
+                        Pebble.fromMinutes(tzMinutes.toInt())
+                }
+
+                MsgType.WBATT.code -> {
                     val watchBattery = data.getInteger(DictKey.WATCH_BATT.code)?.toInt() ?: 0
-                    Pebble.setBattery(watchBattery)
-                    val tzMinutes = data.getInteger(DictKey.TZ_MIN.code)?.toInt() ?: 0
-                    Pebble.fromMinutes(tzMinutes)
+                    val watchPlugged = data.getInteger(DictKey.WATCH_PLUG.code)?.toInt() ?: 0
+                    val watchCharging = data.getInteger(DictKey.WATCH_CHG.code)?.toInt() ?: 0
+                    Pebble.setBattery(watchBattery, watchPlugged != 0, watchCharging != 0)
                 }
 
                 MsgType.ACTION.code -> {
@@ -138,7 +152,7 @@ object Pebble
     val infoFlow = MutableStateFlow(WatchInfo())
     val isConnected = MutableStateFlow(false)
     private val clock = Clock.System
-    val lastReceived = MutableStateFlow(clock.now())
+    val lastReceived = MutableStateFlow("")
     private var lastSent = clock.now()
 
     fun init(
@@ -197,9 +211,11 @@ object Pebble
     }
 
     fun setBattery(
-        battery: Int
+        battery: Int,
+        plugged: Boolean,
+        charging: Boolean
     ) {
-        watchInfo = watchInfo.setBattery(battery)
+        watchInfo = watchInfo.setBattery(battery, plugged, charging)
         infoFlow.value = watchInfo
     }
 
@@ -254,10 +270,14 @@ object Pebble
     }
 
     fun received(isAcked: Boolean) {
-        lastReceived.value = clock.now()
+        lastReceived.value = clock.now().formatDate()
         doRefresh = isAcked && !isConnected.value
         isConnected.value = isAcked
     }
 
     var doRefresh = false
+
+    fun askInfo() {
+        // TODO: Re-ask WatchInfo
+    }
 }
