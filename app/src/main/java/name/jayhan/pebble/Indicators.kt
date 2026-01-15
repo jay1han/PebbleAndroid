@@ -61,7 +61,8 @@ object Indicators
 
     fun getLetter(
         packageName: String,
-        channel: String
+        channel: String,
+        ticker: String
     ): Char {
         var provision = ' '
 
