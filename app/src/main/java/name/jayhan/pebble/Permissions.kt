@@ -18,7 +18,6 @@ const val NOTIFICATION_LISTENER = "android.permission.BIND_NOTIFICATION_LISTENER
 const val RECEIVE_BOOT_COMPLETED = "android.permission.RECEIVE_BOOT_COMPLETED"
 const val NETWORK_STATE = "android.permission.ACCESS_NETWORK_STATE"
 const val WIFI_STATE = "android.permission.ACCESS_WIFI_STATE"
-const val COARSE_LOCATION = "android.permission.ACCESS_COARSE_LOCATION"
 const val NOTIFICATION_POLICY = "android.permission.ACCESS_NOTIFICATION_POLICY"
 const val FOREGROUND_SERVICE = "android.permission.FOREGROUND_SERVICE"
 const val CONNECTED_DEVICE = "android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"
@@ -60,13 +59,6 @@ val AllPermissionGroups = listOf(
         listOf(BLUETOOTH_CONNECT),
         R.string.nearby_service,
         R.string.nearby_service_2),
-/*
-   PermissionGroup(
-        R.string.pg_coarse_location,
-        listOf(COARSE_LOCATION),
-        R.string.coarse_location,
-        R.string.coarse_location_2),
- */
     PermissionGroup(
         R.string.pg_fine_location,
         listOf(FINE_LOCATION),
@@ -215,7 +207,7 @@ object Permissions
             initFlow.value = true
         }
         updateAll()
-        Log.v(AppConstants.TAG, "Permissions allGranted=" + allGranted.toString())
+        Log.v(AppConstants.TAG, "Permissions allGranted=$allGranted")
     }
 
     fun initActivity(

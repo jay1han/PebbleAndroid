@@ -237,7 +237,7 @@ fun EditIndicators(
                             decorationBox = { inner ->
                                 if (newChannel.isEmpty() && !editChannel)
                                     Text(
-                                        text = stringResource(R.string.channel_filter_2),
+                                        text = stringResource(R.string.channel_filter_empty),
                                         fontSize = AppConstants.textSize,
                                         fontStyle = FontStyle.Italic,
                                         color = AppConstants.colorFade,

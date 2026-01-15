@@ -1,5 +1,6 @@
 package name.jayhan.pebble
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,12 +49,16 @@ fun UiPermissions(
             verticalArrangement = Arrangement.Top
         ) {
             Text(
-                text = "Required permissions"
+                text = stringResource(R.string.pg_title),
+                fontSize = AppConstants.titleSize
             )
 
             for (permissionGroup in missingList) {
                 ListItem(
                     modifier = Modifier
+                        .clickable {
+                            showDetails = permissionGroup
+                        }
                         .fillMaxWidth()
                         .padding(10.dp),
                     headlineContent = {
@@ -73,16 +78,10 @@ fun UiPermissions(
                         )
                     },
                     trailingContent = {
-                        IconButton(
-                            onClick = {
-                                showDetails = permissionGroup
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.outline_chevron_forward_24),
-                                contentDescription = "Go"
-                            )
-                        }
+                        Icon(
+                            painter = painterResource(R.drawable.outline_chevron_forward_24),
+                            contentDescription = "Go"
+                        )
                     }
                 )
             }
@@ -108,16 +107,22 @@ fun Rationale(
                     .padding(10.dp)
             ) {
                 Text(
-                    text = stringResource(permissionGroup.title)
+                    text = stringResource(permissionGroup.title),
+                    fontSize = AppConstants.titleSize,
+                    modifier = Modifier.padding(10.dp)
                 )
                 Text(
-                    text = stringResource(permissionGroup.description)
+                    text = stringResource(permissionGroup.description),
+                    fontSize = AppConstants.textSize,
+                    modifier = Modifier.padding(8.dp)
                 )
                 Text(
-                    text = stringResource(permissionGroup.rationale)
+                    text = stringResource(permissionGroup.rationale),
+                    fontSize = AppConstants.smallSize,
+                    modifier = Modifier.padding(4.dp)
                 )
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(10.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Button(
@@ -127,7 +132,8 @@ fun Rationale(
                         }
                     ) {
                         Text(
-                            text = "Accept"
+                            text = stringResource(R.string.accept),
+                            fontSize = AppConstants.textSize
                         )
                     }
                 }
@@ -151,7 +157,7 @@ fun UiPermissionsPreview() {
 @Composable
 fun RationalePreview() {
     Rationale(
-        AllPermissionGroups[0],
+        AllPermissionGroups[3],
         onClick = {}
     ) {}
 }

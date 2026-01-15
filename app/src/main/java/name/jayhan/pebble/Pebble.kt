@@ -62,6 +62,12 @@ data class WatchInfo(
     val version: String = ""
 )
 
+private val Receivers = mapOf(
+    com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE to DataReceiver,
+    com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE_ACK to AckReceiver,
+    com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE_NACK to NackReceiver,
+)
+
 private object DataReceiver:
     PebbleKit.PebbleDataReceiver(AppConstants.APP_UUID)
 {
@@ -121,17 +127,21 @@ object Pebble
         context: Context
     ) {
         Log.v(AppConstants.TAG, "Pebble object init")
-        // TODO: unregister at onPause
-        mapOf(
-            com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE to DataReceiver,
-            com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE_ACK to AckReceiver,
-            com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE_NACK to NackReceiver,
-        ).forEach {
+        Receivers.forEach {
             val filter = IntentFilter(it.key)
             context.registerReceiver(it.value, filter, Context.RECEIVER_EXPORTED)
         }
 
         sendIntent(context, MsgType.INFO) {}
+    }
+
+    // TODO: unregister at onPause
+    fun deinit(
+        context: Context
+    ) {
+        Receivers.forEach {
+            context.unregisterReceiver(it.value)
+        }
     }
 
     fun sendIntent(

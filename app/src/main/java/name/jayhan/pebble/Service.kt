@@ -66,7 +66,6 @@ class PebbleService():
     }
 
     private fun setupForeground() {
-        // TODO: only if foreground service is allowed
         Log.v(AppConstants.TAG, "Running foreground")
         val delIntent = Intent(AppConstants.INTENT_REVIVE)
         val pendingIntent = getBroadcast(
@@ -91,15 +90,19 @@ class PebbleService():
             ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         )
 
-        // TODO: Only if all permissions granted
-        Pebble.init(context)
-        Notifications.init(context)
+        if (Permissions.allGranted) {
+            // TODO: Only if all permissions granted
+            Pebble.init(context)
+            Notifications.init(context)
 
-        batteryReceiver = BatteryReceiver(context)
-        bluetoothReceiver = BluetoothReceiver(context)
+            batteryReceiver = BatteryReceiver(context)
+            bluetoothReceiver = BluetoothReceiver(context)
 
-        wifiCallback = WifiCallback(context)
-        phoneCallback = PhoneCallback(context)
+            wifiCallback = WifiCallback(context)
+            phoneCallback = PhoneCallback(context)
+        } else {
+            Log.v(AppConstants.TAG, "Permissions missing")
+        }
     }
 
     inner class Receiver: BroadcastReceiver() {

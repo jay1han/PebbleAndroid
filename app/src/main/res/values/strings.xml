@@ -1,70 +1,83 @@
 <resources>
-    <string name="app_name">Capeta</string>
-    <string name="app_title">Capeta</string>
-    <string name="select_package">Choose application</string>
-    <string name="save">Save</string>
-    <string name="remove">Remove</string>
+    <string name="app_name">Dolbom</string>
+    <string name="app_title">Dolbom</string>
+    <string name="channel_description">Notification channel</string>
+
+    <string name="timezone">Timezone</string>
     <string name="edit">Edit</string>
-    <string name="connected">Connected</string>
-    <string name="disconnected">Disconnected</string>
-    <string name="built">"App build"</string>
+    <string name="apply">Apply</string>
+
     <string name="indicators">Indicators</string>
     <string name="reset">Reset</string>
     <string name="add">Add</string>
-    <string name="model">Model</string>
-    <string name="channel_description">Notification channel</string>
-    <string name="version">"Version"</string>
 
-    <string name="notification_listener">Allows to intercept app notifications to display on the watch</string>
-    <string name="notification_listener_2">This permission, while dangerous, is necessary for the Indicator feature.
-        The background service intercepts all notifications, then convert them to indicators to display on the watch.</string>
-    <string name="foreground_service">Must be set to allow uninterrupted service</string>
-    <string name="foreground_services_2">A background service needs to be running at all time.
-        Please also consider marking it as \"not optimized for battery\".</string>
-    <string name="post_notification">Must be set to allow uninterrupted service</string>
-    <string name="modem_state">Read the telephony service state: cell coverage, 4G/5G</string>
-    <string name="nearby_service">Needed to check Bluetooth adapter state</string>
-    <string name="coarse_location">Needed to check WiFi state</string>
-    <string name="fine_location">Needed to check WiFi state</string>
-    <string name="background_location">Also needed for continuous monitoring of Bluetooth and WiFi</string>
-    <string name="query_apps">Finds application icons</string>
-    <string name="no_active">No active notification</string>
     <string name="indicator">Indicator</string>
     <string name="application">Application</string>
-    <string name="list_all">List all</string>
-    <string name="bluetooth_connect">Needed to retrieve Bluetooth device\'s battery level</string>
-    <string name="post_notification_2">In order for the background service not to be killed, a permanent (silent) notification must be registered.</string>
-    <string name="modem_state_2">This is needed to access the telephony service state, and receive real-time information when the coverage changes.</string>
-    <string name="nearby_service_2">This allows the app to be notified when a Bluetooth device is connected or disconnected.</string>
-    <string name="bluetooth_connect_2">The app doesn\'t actually connect to Bluetooth devices.</string>
-    <string name="coarse_location_2">This is needed to query WiFi state as well as the connected SSID, and be notified when something changes.</string>
-    <string name="fine_location_2">This is needed to query WiFi state as well as the connected SSID, and be notified when something changes.</string>
-    <string name="background_location_2">The background service must receive notice of any changes in WiFi connection, that use case is covered by this permission.</string>
-    <string name="query_apps_2">Without this permission, the app can\'t retrieve and display an application\'s icon when looking for an app to set an Indicator.</string>
+    <string name="select_package">Choose application</string>
     <string name="package_name">Package name</string>
     <string name="package_name_empty">Enter package name</string>
     <string name="channel_filter">Channel filter</string>
-    <string name="channel_filter_2">(optional)</string>
-    <string name="apply">Apply</string>
-    <string name="timezone">Timezone</string>
+    <string name="channel_filter_empty">(optional)</string>
+    <string name="save">Save</string>
+    <string name="remove">Remove</string>
+
+    <string name="no_active">No active notification</string>
+    <string name="list_all">List all</string>
+
+    <string name="connected">Connected</string>
+    <string name="model">Model</string>
+    <string name="version">"Version"</string>
     <string name="last_seen">Last seen</string>
-    <string name="android">Android</string>
-    <string name="pebble">Pebble</string>
+    <string name="android_github">Android</string>
+    <string name="pebble_github">Pebble</string>
+    <string name="built">"App build"</string>
+
+    <string name="pg_title">Required permissions</string>
+    <string name="accept">Accept</string>
+
     <string name="pg_foreground_service">Foreground service</string>
+    <string name="foreground_service">Must be set to allow uninterrupted service</string>
+    <string name="foreground_services_2">A background service needs to be running at all time.
+        Please also consider marking it as \"not optimized for battery\".</string>
+
     <string name="pg_post_notification">Post notification</string>
+    <string name="post_notification">Must be set to allow uninterrupted service</string>
+    <string name="post_notification_2">In order for the background service not to be killed, a permanent (silent) notification must be registered.</string>
+
     <string name="pg_modem_state">Read phone state</string>
+    <string name="modem_state">Read the telephony service state: cell coverage, 4G/5G</string>
+    <string name="modem_state_2">This is needed to access the telephony service state, and receive real-time information when the coverage changes.</string>
+
     <string name="pg_nearby_services">Nearby services</string>
-    <string name="pg_coarse_location">Location services</string>
+    <string name="nearby_service">Needed to check Bluetooth adapter state</string>
+    <string name="nearby_service_2">This allows the app to be notified when a Bluetooth device is connected or disconnected.</string>
+
     <string name="pg_fine_location">Fine location</string>
+    <string name="fine_location">Needed to check WiFi state</string>
+    <string name="fine_location_2">This is needed to query WiFi state as well as the connected SSID, and be notified when something changes.</string>
+
     <string name="pg_background_location">Background location</string>
+    <string name="background_location">Also needed for continuous monitoring of Bluetooth and WiFi</string>
+    <string name="background_location_2">The background service must receive notice of any changes in WiFi connection, that use case is covered by this permission.</string>
+
     <string name="pg_query_apps">Query installed apps</string>
+    <string name="query_apps">Finds application icons</string>
+    <string name="query_apps_2">Without this permission, the app can\'t retrieve and display an application\'s icon when looking for an app to set an Indicator.</string>
+
     <string name="pg_read_notifications">Read notifications</string>
     <string name="read_notifications">Read notifications</string>
     <string name="read_notifications_2">Read notifications 2</string>
+
     <string name="pg_boot_completed">Receive BOOT_COMPLETED</string>
     <string name="boot_completed">BOOT_COMPLETED</string>
     <string name="boot_completed_2">BOOT_COMPLETED 2</string>
+
+    <string name="reset_no">No</string>
+    <string name="reset_yes">Reset!</string>
+    <string name="reset_question">Do you want to clear all indicators?</string>
+
     <string name="pg_zen_rule">DND mode</string>
     <string name="zen_rule">Zen rule</string>
     <string name="zen_rule_2">Zen rule 2</string>
+
 </resources>

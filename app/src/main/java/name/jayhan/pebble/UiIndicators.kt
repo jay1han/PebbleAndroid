@@ -152,7 +152,9 @@ fun IndicatorItem(
             .padding(vertical = 6.dp, horizontal = 4.dp)
     ) {
         Box(
-            modifier = Modifier.fillMaxWidth(.1f).padding(4.dp)
+            modifier = Modifier
+                .fillMaxWidth(.1f)
+                .padding(4.dp)
         ) {
             val icon = getApplicationIcon(LocalContext.current, packageName)
             if (icon != null) {
@@ -166,7 +168,8 @@ fun IndicatorItem(
 
         Column(
             horizontalAlignment = Alignment.Start,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(horizontal = 8.dp)
                 .weight(1f)
         ) {
@@ -226,33 +229,37 @@ fun ResetDialog(
     ) {
         Card {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(10.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
             ) {
                 Text(
-                    text = "Do you want to clear all indicators?",
+                    text = stringResource(R.string.reset_question),
                     fontSize = AppConstants.titleSize,
                     modifier = Modifier.padding(10.dp)
                 )
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
                         onClick = onClose
                     ) {
                         Text(
-                            text = "No",
+                            text = stringResource(R.string.reset_no),
                             fontSize = AppConstants.textSize,
                         )
                     }
                     Button(
                         onClick = {
                             onConfirm()
-                            onClose
+                            onClose()
                         }
                     ) {
                         Text(
-                            text = "Reset!",
+                            text = stringResource(R.string.reset_yes),
                             fontSize = AppConstants.textSize,
                         )
                     }

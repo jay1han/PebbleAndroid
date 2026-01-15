@@ -107,7 +107,14 @@ class MainActivity :
     }
 
     override fun onResume() {
+        val context = applicationContext
+
         Permissions.update(NOTIFICATION_LISTENER)
+        if (Permissions.allGranted) {
+            val intent = Intent(context, PebbleService::class.java)
+            context.startForegroundService(intent)
+        }
+
         super.onResume()
     }
 }

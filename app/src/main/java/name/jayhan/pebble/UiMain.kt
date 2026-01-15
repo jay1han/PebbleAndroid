@@ -198,11 +198,12 @@ fun HelpDialog(
                 }
 
                 Text(
-                    text = stringResource(R.string.android),
+                    text = stringResource(R.string.android_github),
                     fontSize = AppConstants.smallSize,
                 )
                 Text(
                     textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxSize(),
                     fontSize = AppConstants.smallSize,
                     text = buildAnnotatedString {
                         withLink(
@@ -213,11 +214,12 @@ fun HelpDialog(
                     }
                 )
                 Text(
-                    text = stringResource(R.string.pebble),
+                    text = stringResource(R.string.pebble_github),
                     fontSize = AppConstants.smallSize,
                 )
                 Text(
                     textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxSize(),
                     fontSize = AppConstants.smallSize,
                     text = buildAnnotatedString {
                         withLink(
@@ -343,6 +345,7 @@ fun Splash(
         contentAlignment = Alignment.Center,
         modifier = modifier.fillMaxSize()
     ) {
+        // TODO: Nice image
         Text(
             text = "Splash",
         )

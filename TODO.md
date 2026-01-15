@@ -13,8 +13,9 @@
     - [x] Request permissions one by one
     - [x] Honor "should display rationale"
     - [x] Group permissions
-    - [ ] Beautify permission UI
-    - [ ] Detect permission revocation: server dies
+    - [x] Beautify permission UI
+    - [x] Detect permission revocation: server dies
+    - [ ] Permission description text
 
 - Notification UI
 
