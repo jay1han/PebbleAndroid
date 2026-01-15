@@ -128,7 +128,7 @@ fun EditIndicators(
                                     .padding(vertical = 10.dp)
                             )
                             val icon =
-                                if (activeList == PreviewPackageList) null
+                                if (activeList == PreviewActiveList) null
                                 else getApplicationIcon(LocalContext.current, newPackage)
                             if (icon != null) {
                                 Image(
@@ -312,7 +312,7 @@ fun EditIndicatorsPreview() {
         letter = 'S',
         packageName = "com.android.google.apps.messaging",
         channel = "jayhan.dev",
-        activeList = PreviewPackageList,
+        activeList = PreviewActiveList,
         allList = listOf()
     ) { }
 }
@@ -325,7 +325,7 @@ fun EditIndicatorsEmpty() {
         letter = ' ',
         packageName = "",
         channel = "",
-        activeList = PreviewPackageList,
+        activeList = PreviewActiveList,
         allList = listOf()
     ) { }
 }

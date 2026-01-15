@@ -10,15 +10,23 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.UUID
 import kotlin.time.Instant
+import kotlin.time.toJavaInstant
 
 // TODO: Prettify this
 fun Instant.formatDate(): String {
-    return this.toString()
+    val jInstant = this.toJavaInstant()
+    val jdate = Date.from(jInstant)
+    val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
+    return dateFormat.format(jdate)
 }
 
 object AppConstants {
+    const val GithubAndroid = "https://github.com/jay1han/PebbleAndroid"
+    const val GithubPebble = "https://github.com/jay1han/Pebble"
     val buildDateTime = Instant
         .fromEpochMilliseconds(BuildConfig.BUILDTIME)
         .formatDate()

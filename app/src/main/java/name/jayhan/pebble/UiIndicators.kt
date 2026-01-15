@@ -17,7 +17,6 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,13 +38,13 @@ import androidx.core.graphics.createBitmap
 fun ShowIndicators(
     context: Context,
     activeList: List<String>,
-    allList: List<String>
+    allList: List<String>,
+    indicators: Map<String, Char>
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var editLetter by remember { mutableStateOf(' ') }
     var editPackageName by remember { mutableStateOf("") }
     var editChannel by remember { mutableStateOf("") }
-    val indicators by Indicators.allFlow.collectAsState(mapOf())
     val scrollState = rememberScrollState()
 
     if (showEditDialog) {
@@ -213,20 +212,22 @@ fun getApplicationIcon(
     return bitmap.asImageBitmap()
 }
 
-val PreviewPackageList = listOf(
+val PreviewActiveList = listOf(
     "com.android.google.apps.messaging",
     "com.android.google.apps.messaging",
     "com.whatsapp"
 )
 
-@Preview
-@Composable
-fun ShowIndicatorsPreview() {
-    ShowIndicators(
-        LocalContext.current,
-        PreviewPackageList,
-        listOf())
-}
+val PreviewAllList = listOf(
+    "com.android.google.apps.messaging",
+    "com.android.google.apps.gm",
+    "com.whatsapp"
+)
+
+val PreviewIndicators = mapOf(
+    "com.android.google.apps.messaging" to 'T',
+    "com.whatsapp" to 'W'
+)
 
 @Preview
 @Composable

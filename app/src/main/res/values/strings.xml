@@ -7,7 +7,7 @@
     <string name="edit">Edit</string>
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>
-    <string name="built">"App built at "</string>
+    <string name="built">"App build"</string>
     <string name="indicators">Indicators</string>
     <string name="reset">Reset</string>
     <string name="add">Add</string>
@@ -45,4 +45,7 @@
     <string name="channel_filter_2">(optional)</string>
     <string name="apply">Apply</string>
     <string name="timezone">Timezone</string>
+    <string name="last_seen">Last seen</string>
+    <string name="android">Android</string>
+    <string name="pebble">Pebble</string>
 </resources>

@@ -41,23 +41,35 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import kotlin.time.Clock
 import kotlin.time.Instant
 
 @Composable
 fun AppScaffold(
     context: Context
 ) {
+    val watchInfo: WatchInfo by Pebble.infoFlow.collectAsState(WatchInfo())
+    val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
+    val lastReceived: Instant by Pebble.lastReceived.collectAsState(Instant.DISTANT_PAST)
     val permissionsGranted by Permissions.grantFlow.collectAsState(Permissions.allGranted)
+    val activeList by Notifications.activeFlow.collectAsState(emptyList())
+    val allList by Notifications.allFlow.collectAsState(emptyList())
+    val tzWatch: String by Pebble.tzFlow.collectAsState("")
+    val indicators by Indicators.allFlow.collectAsState(mapOf())
     var showHelp by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
-            TopBar {
+            TopBar(isConnected) {
                 showHelp = true
             }
         }
@@ -65,13 +77,21 @@ fun AppScaffold(
         if (permissionsGranted) {
             if (showHelp) {
                 HelpDialog(
+                    watchInfo = watchInfo,
+                    isConnected = isConnected,
+                    lastReceived = lastReceived,
                     modifier = Modifier.padding(innerPadding)
                 ) {
                     showHelp = false
                 }
             }
             MainPage(
-                context,
+                context = context,
+                activeList = activeList,
+                allList = allList,
+                isConnected = isConnected,
+                tzWatch = tzWatch,
+                indicators = indicators,
                 modifier = Modifier.padding(innerPadding)
             )
         } else {
@@ -87,10 +107,9 @@ fun AppScaffold(
 
 @Composable
 fun TopBar(
+    isConnected: Boolean,
     onHelp: () -> Unit
 ) {
-    val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
-
     TopAppBar(
         title = {
             Text(
@@ -128,12 +147,12 @@ fun TopBar(
 @Composable
 fun HelpDialog(
     modifier: Modifier = Modifier,
+    watchInfo: WatchInfo,
+    isConnected: Boolean,
+    lastReceived: Instant,
     onClose: () -> Unit
 ) {
     val scrollState = rememberScrollState()
-    val watchInfo: WatchInfo by Pebble.infoFlow.collectAsState(WatchInfo())
-    val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
-    val lastReceived: Instant by Pebble.lastReceived.collectAsState(Instant.DISTANT_PAST)
 
     Dialog(
         onDismissRequest = onClose
@@ -149,22 +168,61 @@ fun HelpDialog(
             ) {
                 Text(
                     text = stringResource(R.string.connected),
-                    fontSize = AppConstants.titleSize
+                    fontSize = AppConstants.titleSize,
+                    modifier = Modifier.padding(bottom = 10.dp)
                 )
+
                 if (isConnected) {
                     Text(
                         text = stringResource(R.string.model) + ": " +
                                 watchInfo.model + "\n" +
                                 stringResource(R.string.version) + ": " +
-                                watchInfo.version + "\n" +
-                                "Last message: " +
-                                lastReceived.formatDate() + "\n"
-                        ,
+                                watchInfo.version,
                         fontSize = AppConstants.textSize,
                     )
+                    Text(
+                        text = stringResource(R.string.last_seen) + ": " +
+                                lastReceived.formatDate(),
+                        fontSize = AppConstants.textSize,
+                        modifier = Modifier.padding(vertical = 10.dp)
+                    )
                 }
+
                 Text(
-                    text = stringResource(R.string.built) + AppConstants.buildDateTime,
+                    text = stringResource(R.string.android),
+                    fontSize = AppConstants.smallSize,
+                )
+                Text(
+                    textAlign = TextAlign.End,
+                    fontSize = AppConstants.smallSize,
+                    text = buildAnnotatedString {
+                        withLink(
+                            LinkAnnotation.Url(AppConstants.GithubAndroid)
+                        ) {
+                            append(AppConstants.GithubAndroid)
+                        }
+                    }
+                )
+                Text(
+                    text = stringResource(R.string.pebble),
+                    fontSize = AppConstants.smallSize,
+                )
+                Text(
+                    textAlign = TextAlign.End,
+                    fontSize = AppConstants.smallSize,
+                    text = buildAnnotatedString {
+                        withLink(
+                            LinkAnnotation.Url(AppConstants.GithubPebble)
+                        ) {
+                            append(AppConstants.GithubPebble)
+                        }
+                    }
+                )
+
+                Text(
+                    modifier = Modifier.padding(vertical = 10.dp),
+                    text = stringResource(R.string.built) + ": " +
+                            AppConstants.buildDateTime,
                     fontSize = AppConstants.smallSize
                 )
             }
@@ -175,16 +233,21 @@ fun HelpDialog(
 @Composable
 fun MainPage(
     context: Context,
+    activeList: List<String>,
+    allList: List<String>,
+    indicators: Map<String, Char>,
+    isConnected: Boolean,
+    tzWatch: String,
     modifier: Modifier = Modifier,
 ) {
-    val activeList by Notifications.activeFlow.collectAsState(emptyList())
-    val allList by Notifications.allFlow.collectAsState(emptyList())
-
     Column(
         modifier = modifier
             .fillMaxWidth(),
     ) {
-        AwayTimezone { tz ->
+        AwayTimezone(
+            isConnected = isConnected,
+            tzWatch = tzWatch
+        ) { tz ->
             Pebble.fromString(context, tz)
         }
         Text(
@@ -192,16 +255,21 @@ fun MainPage(
             fontSize = AppConstants.titleSize,
             modifier = Modifier.fillMaxWidth()
         )
-        ShowIndicators(context, activeList, allList)
+        ShowIndicators(
+            context = context,
+            activeList = activeList,
+            allList = allList,
+            indicators = indicators,
+        )
     }
 }
 
 @Composable
 fun AwayTimezone(
+    isConnected: Boolean,
+    tzWatch: String,
     onApply: (String) -> String
 ) {
-    val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
-    val tzWatch: String by Pebble.tzFlow.collectAsState("")
     var tz by remember { mutableStateOf("") }
     var editing by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
@@ -267,17 +335,30 @@ fun AwayTimezone(
 @Preview
 @Composable
 fun TopBarPreview() {
-    TopBar {}
+    TopBar(
+        isConnected = false
+    ) {}
 }
 
 @Preview
 @Composable
 fun MainPagePreview() {
-    MainPage(LocalContext.current)
+    MainPage(
+        context = LocalContext.current,
+        activeList = PreviewActiveList,
+        allList = PreviewAllList,
+        isConnected = true,
+        indicators = PreviewIndicators,
+        tzWatch = "+8.0",
+    )
 }
 
 @Preview
 @Composable
 fun HelpDialogPreview() {
-    HelpDialog {}
+    HelpDialog(
+        watchInfo = WatchInfo("model", "version"),
+        isConnected = true,
+        lastReceived = Clock.System.now()
+    ) {}
 }

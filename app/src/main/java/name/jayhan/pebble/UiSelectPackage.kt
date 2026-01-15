@@ -134,11 +134,11 @@ fun SelectPackage(
 @Preview
 @Composable
 fun SelectPackagePreview() {
-    SelectPackage(PreviewPackageList, listOf(), {}) { }
+    SelectPackage(PreviewActiveList, listOf(), {}) { }
 }
 
 @Preview
 @Composable
 fun SelectPackageNoActive() {
-    SelectPackage(listOf(), PreviewPackageList, {}) { }
+    SelectPackage(listOf(), PreviewActiveList, {}) { }
 }

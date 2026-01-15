@@ -22,8 +22,6 @@ Limitations:
 
 # Features
 
-![Watch face](app/src/main/res/drawable/help.gif)
-
 ## Time and Date
 
 - Current date and time (hey, it's a timepiece)
@@ -158,7 +156,7 @@ some usages of the Android SDK seem a bit clunky.
     - [x] Refresh after disconnection
     - [ ] Auto-start at boot
     - [ ] Manage connection?
-    - [ ] Beautify help screen
+    - [x] Beautify help screen
   
 - Pebble object
     - [x] Remove context field from Pebble
