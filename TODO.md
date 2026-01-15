@@ -7,12 +7,14 @@
     - [x] bug: Refresh main list after edit
     - [x] Sort main list by app name and channel name
     - [x] Nicer Timezone editor
+    - [ ] Make a nice icon
 
 - Permissions
     - [x] Request permissions one by one
     - [x] Honor "should display rationale"
     - [x] Group permissions
     - [ ] Beautify permission UI
+    - [ ] Detect permission revocation: server dies
 
 - Notification UI
 
