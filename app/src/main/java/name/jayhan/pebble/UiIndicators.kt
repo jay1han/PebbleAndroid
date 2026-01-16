@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -123,6 +125,8 @@ fun IndicatorList(
                     .verticalScroll(scrollState)
                     .fillMaxWidth()
             ) {
+                HorizontalDivider(thickness = 1.dp)
+
                 for (indicator in indicators) {
                     IndicatorItem(
                         indicator,
@@ -131,6 +135,7 @@ fun IndicatorList(
                             editDialog = true
                         }
                     )
+                    HorizontalDivider(thickness = 1.dp)
                 }
             }
         }
@@ -171,7 +176,7 @@ fun IndicatorItem(
                 .padding(horizontal = 8.dp)
                 .weight(1f)
         ) {
-            val appName = Notifications.getAppName(indicator.packageName)
+            val appName = Notifications.getApplicationName(indicator.packageName)
             if (appName != "") {
                 Text(
                     text = appName,
@@ -184,14 +189,28 @@ fun IndicatorItem(
                 fontSize = AppConstants.subSize,
                 modifier = Modifier.fillMaxWidth()
             )
-            if (indicator.channel != "") {
-                Text(
-                    text = indicator.channel,
-                    fontSize = AppConstants.subSize,
-                    fontStyle = FontStyle.Italic,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                if (indicator.channel.isNotEmpty()) {
+                    Text(
+                        text = indicator.channel,
+                        fontSize = AppConstants.subSize,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                if (indicator.ticker.isNotEmpty()) {
+                    Text(
+                        text = indicator.ticker,
+                        fontSize = AppConstants.subSize,
+                        fontStyle = FontStyle.Italic,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
 

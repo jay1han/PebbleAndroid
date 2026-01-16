@@ -28,7 +28,7 @@
     - [x] Use channels
     - [x] Show full list if no active
     - [x] Hide cursor in letter input field
-    - [ ] Filter by title?
+    - [x] Filter by title?
 
 - Other indicators
     - [x] BT: Remove "LE-"

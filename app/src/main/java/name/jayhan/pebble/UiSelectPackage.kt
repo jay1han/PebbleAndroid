@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -73,6 +74,7 @@ fun SelectPackage(
                         )
                     }
                 } else {
+                    item { HorizontalDivider(thickness = 1.dp) }
                     items(
                         items = listShown,
                     ) { packageName ->
@@ -95,7 +97,7 @@ fun SelectPackage(
                                 }
                             },
                             headlineContent = {
-                                val appName = Notifications.getAppName(packageName)
+                                val appName = Notifications.getApplicationName(packageName)
                                 if (appName != "") {
                                     Text(
                                         text = appName,
@@ -111,6 +113,7 @@ fun SelectPackage(
                                 )
                             }
                         )
+                        HorizontalDivider(thickness = 1.dp)
                     }
                 }
                 if (!showAllActual) {

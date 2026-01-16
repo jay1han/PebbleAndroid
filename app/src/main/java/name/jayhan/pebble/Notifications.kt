@@ -149,7 +149,7 @@ object Notifications : BroadcastReceiver()
         }
     }
 
-    fun getAppName(packageName: String): String {
+    fun getApplicationName(packageName: String): String {
         return mapPackageToName[packageName] ?: ""
     }
 }

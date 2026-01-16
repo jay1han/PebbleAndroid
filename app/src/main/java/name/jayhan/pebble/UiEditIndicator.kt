@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -222,7 +223,7 @@ fun EditIndicator(
                             onValueChange = { newChannel = it },
                             textStyle = TextStyle(
                                 fontSize = AppConstants.textSize,
-                                fontStyle = FontStyle.Italic,
+                                fontWeight = FontWeight.Bold,
                             ),
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Uri,
@@ -236,13 +237,12 @@ fun EditIndicator(
                             decorationBox = { inner ->
                                 if (newChannel.isEmpty() && !editChannel)
                                     Text(
-                                        text = stringResource(R.string.channel_filter_empty),
+                                        text = stringResource(R.string.filter_empty),
                                         fontSize = AppConstants.textSize,
-                                        fontStyle = FontStyle.Italic,
+                                        fontWeight = FontWeight.Bold,
                                         color = AppConstants.colorFade,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(10.dp)
                                             .background(color = AppConstants.colorBlank),
                                     )
                                 inner()
@@ -250,6 +250,54 @@ fun EditIndicator(
                         )
                     }
 
+                    // Ticker
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "Ticker filter",
+                        fontSize = AppConstants.textSize,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(color = AppConstants.colorBlank)
+                    ) {
+                        var editTicker by remember { mutableStateOf(false) }
+                        BasicTextField(
+                            value = newTicker,
+                            onValueChange = { newTicker = it },
+                            textStyle = TextStyle(
+                                fontSize = AppConstants.textSize,
+                                fontStyle = FontStyle.Italic,
+                            ),
+                            keyboardOptions = KeyboardOptions(
+                                autoCorrectEnabled = false,
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp)
+                                .onFocusChanged { editTicker = it.hasFocus }
+                                .background(color = AppConstants.colorBlank),
+                            decorationBox = { inner ->
+                                if (newTicker.isEmpty() && !editTicker)
+                                    Text(
+                                        text = stringResource(R.string.filter_empty),
+                                        fontSize = AppConstants.textSize,
+                                        fontStyle = FontStyle.Italic,
+                                        color = AppConstants.colorFade,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(color = AppConstants.colorBlank),
+                                    )
+                                inner()
+                            }
+                        )
+                    }
+
+                    // Buttons
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()

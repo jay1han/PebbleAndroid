@@ -118,8 +118,9 @@ object Indicators
     private fun saveList(
         newList: List<SingleIndicator>
     ) {
-        allList = newList.sortedBy { it.comparator() }
-            .toMutableList()
+        allList = newList.sortedBy {
+            Notifications.getApplicationName(it.packageName) + ":${it.channel}:${it.ticker}"
+        }.toMutableList()
 
         savedSettings.edit {
             clear()

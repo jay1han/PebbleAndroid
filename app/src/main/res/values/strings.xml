@@ -17,7 +17,7 @@
     <string name="package_name">Package name</string>
     <string name="package_name_empty">Enter package name</string>
     <string name="channel_filter">Channel filter</string>
-    <string name="channel_filter_empty">(optional)</string>
+    <string name="filter_empty">(optional)</string>
     <string name="save">Save</string>
     <string name="remove">Remove</string>
 
