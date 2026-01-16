@@ -1,5 +1,6 @@
 package name.jayhan.pebble
 
+import android.app.Notification
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -69,11 +70,7 @@ object Notifications : BroadcastReceiver()
                     .filter { !it.isOngoing && it.isClearable }
                 ) {
                     add(notification.packageName)
-                    val letter = Indicators.getLetter(
-                        notification.packageName,
-                        notification.notification.channelId,
-                        notification.notification.tickerText?.toString() ?: ""
-                    )
+                    val letter = Indicators.getLetter(notification)
                     if (letter != ' ') compact.add(letter)
                 }
             }

@@ -29,6 +29,7 @@
     - [x] Show full list if no active
     - [x] Hide cursor in letter input field
     - [x] Filter by title?
+    - [x] Filter by other text
 
 - Other indicators
     - [x] BT: Remove "LE-"

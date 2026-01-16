@@ -1,24 +1,24 @@
 package name.jayhan.pebble
 
+import android.app.Notification
 import android.content.Context
 import android.content.SharedPreferences
+import android.service.notification.StatusBarNotification
 import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 
 class SingleIndicator(
     var packageName: String = "",
     var channel: String = "",
-    var ticker: String = "",
+    var filterText: String = "",
     var letter: Char = ' '
 ) {
     override fun toString(): String {
-        return "$letter\n$packageName\n$channel\n$ticker"
+        return "$letter\n$packageName\n$channel\n$filterText"
     }
 
     fun comparator(): String {
-        return "$packageName:$channel:$ticker"
+        return "$packageName:$channel:$filterText"
     }
 
     fun equalTo(
@@ -26,7 +26,7 @@ class SingleIndicator(
     ): Boolean {
         return packageName == other.packageName &&
                 channel == other.channel &&
-                ticker == other.ticker
+                filterText == other.filterText
     }
 
     companion object {
@@ -37,7 +37,7 @@ class SingleIndicator(
             return SingleIndicator(
                 packageName = elements[1],
                 channel = elements[2],
-                ticker = elements[3],
+                filterText = elements[3],
                 letter = elements[0][0],
             )
         }
@@ -65,23 +65,33 @@ object Indicators
     }
 
     fun getLetter(
-        packageName: String,
-        channel: String,
-        ticker: String
+        sbn: StatusBarNotification
     ): Char {
+        val packageName = sbn.packageName
+        val notification = sbn.notification
+        val channel = notification.channelId
+        val text = notification.tickerText.toString() +
+                listOf(
+                    Notification.EXTRA_TEXT,
+                    Notification.EXTRA_BIG_TEXT,
+                    Notification.EXTRA_TITLE
+                ).joinToString("") {
+                    notification.extras.getString(it) ?: ""
+                }
+
         var provision = ' '
         var match = 0
 
         for (indicator in allList) {
             if (indicator.packageName == packageName) {
                 if (indicator.channel.isEmpty()) {
-                    if (indicator.ticker.isEmpty()) {
+                    if (indicator.filterText.isEmpty()) {
                         if (match < 10) {
                             provision = indicator.letter
                             match = 10
                         }
                     } else {
-                        if (indicator.ticker == ticker) {
+                        if (text.contains(indicator.filterText)) {
                             if (match < 20) {
                                 provision = indicator.letter
                                 match = 20
@@ -89,14 +99,14 @@ object Indicators
                         }
                     }
                 } else {
-                    if (indicator.channel == channel) {
-                        if (indicator.ticker.isEmpty()) {
+                    if (channel.contains(indicator.channel)) {
+                        if (indicator.filterText.isEmpty()) {
                             if (match < 50) {
                                 provision = indicator.letter
                                 match = 50
                             }
                         } else {
-                            if (indicator.ticker == ticker) {
+                            if (text.contains(indicator.filterText)) {
                                 provision = indicator.letter
                                 match = 100
                             }
@@ -119,7 +129,7 @@ object Indicators
         newList: List<SingleIndicator>
     ) {
         allList = newList.sortedBy {
-            Notifications.getApplicationName(it.packageName) + ":${it.channel}:${it.ticker}"
+            Notifications.getApplicationName(it.packageName) + ":${it.channel}:${it.filterText}"
         }.toMutableList()
 
         savedSettings.edit {

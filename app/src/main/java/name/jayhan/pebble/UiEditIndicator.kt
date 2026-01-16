@@ -49,7 +49,7 @@ fun EditIndicator(
 ) {
     var newPackage by remember { mutableStateOf(indicator.packageName) }
     var newChannel by remember { mutableStateOf(indicator.channel) }
-    var newTicker by remember { mutableStateOf(indicator.ticker) }
+    var newTicker by remember { mutableStateOf(indicator.filterText) }
     var newLetter by remember { mutableStateOf(indicator.letter) }
     var showPackageList by remember { mutableStateOf(false) }
 
@@ -71,7 +71,7 @@ fun EditIndicator(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp),
+                        .padding(horizontal = 10.dp),
                 ) {
                     Row(
                         verticalAlignment = Alignment.Top,
@@ -91,7 +91,7 @@ fun EditIndicator(
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 10.dp)
+                                    .padding(bottom = 10.dp)
                             )
                             OutlinedTextField(
                                 value = newLetter.toString(),
@@ -125,7 +125,7 @@ fun EditIndicator(
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 10.dp)
+                                    .padding(bottom = 10.dp)
                             )
                             val icon =
                                 if (activeList == PreviewActiveList) null
@@ -154,7 +154,6 @@ fun EditIndicator(
                     }
 
                     // PackageName
-                    Spacer(Modifier.height(8.dp))
                     Text(
                         text = stringResource(R.string.package_name),
                         fontSize = AppConstants.textSize,
@@ -253,7 +252,7 @@ fun EditIndicator(
                     // Ticker
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = "Ticker filter",
+                        text = stringResource(R.string.other_filter),
                         fontSize = AppConstants.textSize,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
@@ -312,7 +311,7 @@ fun EditIndicator(
                                         SingleIndicator(
                                             packageName = newPackage,
                                             channel = newChannel,
-                                            ticker = newTicker,
+                                            filterText = newTicker,
                                             letter = newLetter
                                         )
                                     )
@@ -366,7 +365,7 @@ fun EditIndicatorPreview() {
         indicator = SingleIndicator(
             packageName = "com.android.google.apps.messaging",
             channel = "jayhan.dev",
-            ticker = "",
+            filterText = "",
             letter = 'S'),
         activeList = PreviewActiveList,
         allList = listOf()

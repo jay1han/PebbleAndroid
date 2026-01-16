@@ -202,9 +202,9 @@ fun IndicatorItem(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-                if (indicator.ticker.isNotEmpty()) {
+                if (indicator.filterText.isNotEmpty()) {
                     Text(
-                        text = indicator.ticker,
+                        text = indicator.filterText,
                         fontSize = AppConstants.subSize,
                         fontStyle = FontStyle.Italic,
                         textAlign = TextAlign.End,
