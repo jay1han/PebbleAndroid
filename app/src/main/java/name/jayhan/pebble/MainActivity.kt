@@ -29,8 +29,8 @@ fun Instant.formatDate(): String {
 
 object AppConstants {
     const val TAG = "Capeta"
-    const val GithubAndroid = "https://github.com/jay1han/PebbleAndroid"
-    const val GithubPebble = "https://github.com/jay1han/Pebble"
+    const val GITHUB_ANDROID = "https://github.com/jay1han/PebbleAndroid"
+    const val GITHUB_PEBBLE = "https://github.com/jay1han/Pebble"
     val buildDateTime = Instant
         .fromEpochMilliseconds(BuildConfig.BUILDTIME)
         .formatDate()

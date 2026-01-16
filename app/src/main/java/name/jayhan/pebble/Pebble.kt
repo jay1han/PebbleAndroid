@@ -62,15 +62,15 @@ enum class ActionType(val code: Int) {
 }
 
 class WatchInfo(
-    var model: String = WatchModels[0],
-    var version: String = "",
+    var model: Int = 0,
+    var version: Int = 0,
     var battery: Int = 0,
     var plugged: Boolean = false,
     var charging: Boolean = false,
 ) {
     fun setInfo(
-        model: String,
-        version: String,
+        model: Int,
+        version: Int,
     ): WatchInfo {
         return WatchInfo(model, version, battery, plugged, charging)
     }
@@ -81,6 +81,22 @@ class WatchInfo(
         charging: Boolean,
     ): WatchInfo {
         return WatchInfo(model, version, battery, plugged, charging)
+    }
+
+    fun versionString(): String {
+        return "%d.%d.%d".format(
+            (version shr 16) and 0xFF,
+            (version shr 8) and 0xFF,
+            version and 0xFF
+        )
+    }
+
+    fun modelString(): String {
+        return try {
+            WatchModels[model]
+        } catch (e: IndexOutOfBoundsException) {
+            ""
+        }
     }
 }
 
@@ -200,13 +216,7 @@ object Pebble
         watchModel: Int,
         watchFwVersion: Int
     ) {
-        val versionString = "%d.%d.%d"
-            .format(
-                (watchFwVersion shr 16) and 0xFF,
-                (watchFwVersion shr 8) and 0xFF,
-                watchFwVersion and 0xFF
-            )
-        watchInfo = watchInfo.setInfo(WatchModels[watchModel], versionString)
+        watchInfo = watchInfo.setInfo(watchModel, watchFwVersion)
         infoFlow.value = watchInfo
     }
 

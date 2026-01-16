@@ -133,7 +133,7 @@ fun TopBar(
         ),
         title = {
             Text(
-                text = watchInfo.model.ifEmpty { "Disconnected" },
+                text = watchInfo.modelString().ifEmpty { "Disconnected" },
                 color = if (isConnected) AppConstants.colorText else AppConstants.colorWarning,
                 fontSize = AppConstants.titleSize
             )
@@ -180,9 +180,9 @@ fun HelpDialog(
                 if (isConnected) {
                     Text(
                         text = stringResource(R.string.model) + ": " +
-                                watchInfo.model + "\n" +
+                                watchInfo.modelString() + "\n" +
                                 stringResource(R.string.version) + ": " +
-                                watchInfo.version,
+                                watchInfo.versionString(),
                         fontSize = AppConstants.textSize,
                         modifier = Modifier.padding(bottom = 10.dp)
                     )
@@ -231,9 +231,9 @@ fun HelpDialog(
                     fontSize = AppConstants.smallSize,
                     text = buildAnnotatedString {
                         withLink(
-                            LinkAnnotation.Url(AppConstants.GithubAndroid)
+                            LinkAnnotation.Url(AppConstants.GITHUB_ANDROID)
                         ) {
-                            append(AppConstants.GithubAndroid)
+                            append(AppConstants.GITHUB_ANDROID)
                         }
                     }
                 )
@@ -247,9 +247,9 @@ fun HelpDialog(
                     fontSize = AppConstants.smallSize,
                     text = buildAnnotatedString {
                         withLink(
-                            LinkAnnotation.Url(AppConstants.GithubPebble)
+                            LinkAnnotation.Url(AppConstants.GITHUB_PEBBLE)
                         ) {
-                            append(AppConstants.GithubPebble)
+                            append(AppConstants.GITHUB_PEBBLE)
                         }
                     }
                 )
@@ -377,7 +377,7 @@ fun Splash(
 }
 
 val PreviewWatchInfo = WatchInfo(
-    "model", "version",
+    1, 0x10000,
     100, true, true
 )
 
