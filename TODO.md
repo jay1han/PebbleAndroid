@@ -40,7 +40,7 @@
     - [x] Auto-start at boot
     - [x] Manage connection?
     - [x] Beautify help screen
-    - [ ] Show connection state and watch battery in notification
+    - [x] Show connection state and watch battery in notification
 
 - App
     - [x] Android version 13 or above, minimal SDK 33

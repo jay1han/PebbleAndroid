@@ -1,5 +1,6 @@
 package name.jayhan.pebble
 
+import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -13,6 +14,9 @@ import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.IBinder
 import android.util.Log
+import androidx.annotation.RequiresPermission
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.getpebble.android.kit.util.PebbleDictionary
 
 class PebbleService():
@@ -25,6 +29,7 @@ class PebbleService():
     private lateinit var phoneCallback: PhoneCallback
 
     private val receiver = Receiver()
+    private lateinit var pendingIntent: PendingIntent
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -33,9 +38,14 @@ class PebbleService():
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.v(AppConstants.TAG, "Service starting")
         context = applicationContext
+        pendingIntent = getBroadcast(
+            context,
+            1,
+            Intent(AppConstants.INTENT_REVIVE),
+            PendingIntent.FLAG_IMMUTABLE
+        )
 
         val filter = IntentFilter().apply {
-            addAction(AppConstants.INTENT_START_FOREGROUND)
             addAction(AppConstants.INTENT_REVIVE)
             addAction(AppConstants.INTENT_SEND_PEBBLE)
         }
@@ -65,33 +75,31 @@ class PebbleService():
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun setupForeground() {
-        Log.v(AppConstants.TAG, "Running foreground")
-        val delIntent = Intent(AppConstants.INTENT_REVIVE)
-        val pendingIntent = getBroadcast(
-            context,
-            1,
-            delIntent,
-            PendingIntent.FLAG_IMMUTABLE
-        )
-        val notification = Notification.Builder(
+    fun restartForeground() {
+        val notification = NotificationCompat.Builder(
             context,
             AppConstants.CHANNEL_ID
         ).apply {
             setDeleteIntent(pendingIntent)
             setSmallIcon(R.drawable.ic_launcher_foreground)
-            setContentTitle("")
+            setContentTitle("${Pebble.watchInfo.model} ${Pebble.watchInfo.battery}%")
             setContentText("")
-            setVisibility(Notification.VISIBILITY_SECRET)
+            setVisibility(NotificationCompat.VISIBILITY_SECRET)
         }.build()
+
         this.startForeground(
             1,
             notification,
             ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         )
+    }
+
+    private fun setupForeground() {
+        Log.v(AppConstants.TAG, "Running foreground")
+
+        restartForeground()
 
         if (Permissions.allGranted) {
-            // TODO: Only if all permissions granted
             Pebble.init(context)
             Notifications.init(context)
 
@@ -106,13 +114,10 @@ class PebbleService():
     }
 
     inner class Receiver: BroadcastReceiver() {
+
         override fun onReceive(context: Context, intent: Intent) {
             when(intent.action) {
                 AppConstants.INTENT_REVIVE -> {
-                    setupForeground()
-                }
-
-                AppConstants.INTENT_START_FOREGROUND -> {
                     setupForeground()
                 }
 
@@ -169,6 +174,8 @@ class PebbleService():
                 Notifications.reprocess(context)
                 Pebble.doRefresh = false
             }
+
+            restartForeground()
         }
     }
 }

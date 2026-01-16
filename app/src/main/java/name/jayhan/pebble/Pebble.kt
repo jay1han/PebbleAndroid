@@ -62,7 +62,7 @@ enum class ActionType(val code: Int) {
 }
 
 class WatchInfo(
-    var model: String = "",
+    var model: String = WatchModels[0],
     var version: String = "",
     var battery: Int = 0,
     var plugged: Boolean = false,
@@ -148,7 +148,7 @@ private object NackReceiver:
 
 object Pebble
 {
-    private var watchInfo = WatchInfo()
+    var watchInfo = WatchInfo()
     val infoFlow = MutableStateFlow(WatchInfo())
     val isConnected = MutableStateFlow(false)
     private val clock = Clock.System

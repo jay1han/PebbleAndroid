@@ -50,7 +50,6 @@ object AppConstants {
     val colorWarning = Color(0xFFC00000)
     val colorBlack = Color(0xFF000000)
 
-    const val INTENT_START_FOREGROUND = "name.jayhan.pebble.START_FOREGROUND"
     const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE"
 
     const val INTENT_SEND_PEBBLE = "name.jayhan.pebble.SEND_PEBBLE"
