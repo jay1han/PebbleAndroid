@@ -27,6 +27,7 @@ class PebbleService():
 
     private val receiver = Receiver()
     private lateinit var reviveIntent: PendingIntent
+    private lateinit var launchIntent: PendingIntent
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -35,6 +36,14 @@ class PebbleService():
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.v(AppConstants.TAG, "Service starting")
         context = applicationContext
+        val activityIntent = Intent(context, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        }
+        launchIntent = PendingIntent.getActivity(
+            context, 2,
+            activityIntent,
+            PendingIntent.FLAG_IMMUTABLE
+            )
         reviveIntent = getBroadcast(
             context,
             1,
@@ -44,7 +53,6 @@ class PebbleService():
 
         val filter = IntentFilter().apply {
             addAction(AppConstants.INTENT_REVIVE)
-            addAction(AppConstants.INTENT_LAUNCH)
             addAction(AppConstants.INTENT_SEND_PEBBLE)
         }
         context.registerReceiver(receiver, filter,RECEIVER_EXPORTED)
@@ -79,6 +87,7 @@ class PebbleService():
             AppConstants.CHANNEL_ID
         ).apply {
             setDeleteIntent(reviveIntent)
+            setContentIntent(launchIntent)
             setSmallIcon(R.drawable.ic_launcher_foreground)
             setContentTitle("${Pebble.watchInfo.modelString()} ${Pebble.watchInfo.battery}%")
             setContentText("")

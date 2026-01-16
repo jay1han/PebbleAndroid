@@ -51,7 +51,6 @@ object AppConstants {
     val colorBlack = Color(0xFF000000)
 
     const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE"
-    const val INTENT_LAUNCH = "name.jayhan.pebble.LAUNCH"
 
     const val INTENT_SEND_PEBBLE = "name.jayhan.pebble.SEND_PEBBLE"
     const val EXTRA_MSG_TYPE = "msg_type"
@@ -83,14 +82,6 @@ class AppStart:
                 Log.v(AppConstants.TAG, "Boot completed")
                 val intent = Intent(context, PebbleService::class.java)
                 context.startForegroundService(intent)
-            }
-
-            AppConstants.INTENT_LAUNCH -> {
-                Log.v(AppConstants.TAG, "Launch app from notification")
-                val launchIntent = Intent(context, MainActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                context.startActivity(launchIntent)
             }
         }
     }

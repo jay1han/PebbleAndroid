@@ -124,6 +124,8 @@ private object DataReceiver:
                     val tzMinutes = data.getInteger(DictKey.TZ_MIN.code)
                     if (tzMinutes != null)
                         Pebble.fromMinutes(tzMinutes.toInt())
+                    if (context != null)
+                        Pebble.sendIntent(context, MsgType.WBATT) {}
                 }
 
                 MsgType.WBATT.code -> {
