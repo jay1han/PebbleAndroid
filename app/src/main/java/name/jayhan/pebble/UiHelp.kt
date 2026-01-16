@@ -16,6 +16,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -36,6 +38,7 @@ fun HelpDialog(
     onClose: () -> Unit
 ) {
     val scrollState = rememberScrollState()
+    val historyData: HistoryData by History.historyFlow.collectAsState(HistoryData())
 
     Dialog(
         onDismissRequest = onClose
@@ -97,11 +100,14 @@ fun HelpDialog(
                     }
                     
                     // TODO: calculate this asynch
+                    var historyText = stringResource(R.string.format_discharged_d)
+                        .format(historyData.numberOfCycles)
+                    historyText += "\n" + stringResource(R.string.format_drop_f)
+                        .format(historyData.dropRate)
+                    historyText += "\n" + stringResource(R.string.format_days_f)
+                        .format(watchInfo.battery / historyData.dropRate)
                     Text(
-                        text = "Discharged %d times\n".format(0) +
-                                "Average rate: %.1f%%/h\n".format(0f) +
-                                "Current charge: %.1f hours".format(1f)
-                        ,
+                        text = historyText,
                         fontSize = AppConstants.textSize,
                         modifier = Modifier.padding(top = 10.dp)
                     )

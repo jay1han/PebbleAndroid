@@ -1,6 +1,7 @@
 package name.jayhan.pebble
 
 import androidx.core.text.isDigitsOnly
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
 import java.io.FileReader
 import java.io.PrintWriter
@@ -9,13 +10,12 @@ import kotlin.time.Instant
 import kotlin.time.toKotlinInstant
 
 data class HistoryData(
-    var timeBetweenPlugging: Float = 0f,
-    var dropBetweenPlugging: Float = 0f,
     var numberOfCycles: Int = 0,
-    var dropRate: Float = 0f,
+    var dropRate: Float = 1.0f,
 )
 
 object History {
+    val historyFlow = MutableStateFlow(HistoryData())
     private lateinit var file: File
     private lateinit var writer: PrintWriter
     private lateinit var reader: FileReader
@@ -41,7 +41,7 @@ object History {
         writer.flush()
     }
 
-    fun calculate(): HistoryData {
+    fun calculate() {
         Tracker.init()
 
         reader.reset()
@@ -58,7 +58,7 @@ object History {
         }
         reader.reset()
 
-        return Tracker.condense()
+        historyFlow.value = Tracker.condense()
     }
 }
 
@@ -107,16 +107,14 @@ private object Accumulator {
         usageList.add(Usage(durationHours, levelDrop))
     }
 
-    var timeBetweenPlugging = 0f
-    var dropBetweenPlugging = 0f
+    var timeBetweenPlugs = 0f
+    var dropBetweenPlugs = 0f
     var numberOfCycles = 0
     var dropRate = 0f
 
     fun condense(): HistoryData {
         // TODO: Calculate averages
         return HistoryData(
-            timeBetweenPlugging,
-            dropBetweenPlugging,
             numberOfCycles,
             dropRate,
         )
