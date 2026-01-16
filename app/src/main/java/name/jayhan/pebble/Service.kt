@@ -1,6 +1,5 @@
 package name.jayhan.pebble
 
-import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -14,9 +13,7 @@ import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import com.getpebble.android.kit.util.PebbleDictionary
 
 class PebbleService():
@@ -29,7 +26,7 @@ class PebbleService():
     private lateinit var phoneCallback: PhoneCallback
 
     private val receiver = Receiver()
-    private lateinit var pendingIntent: PendingIntent
+    private lateinit var reviveIntent: PendingIntent
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -38,7 +35,7 @@ class PebbleService():
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.v(AppConstants.TAG, "Service starting")
         context = applicationContext
-        pendingIntent = getBroadcast(
+        reviveIntent = getBroadcast(
             context,
             1,
             Intent(AppConstants.INTENT_REVIVE),
@@ -47,6 +44,7 @@ class PebbleService():
 
         val filter = IntentFilter().apply {
             addAction(AppConstants.INTENT_REVIVE)
+            addAction(AppConstants.INTENT_LAUNCH)
             addAction(AppConstants.INTENT_SEND_PEBBLE)
         }
         context.registerReceiver(receiver, filter,RECEIVER_EXPORTED)
@@ -80,7 +78,7 @@ class PebbleService():
             context,
             AppConstants.CHANNEL_ID
         ).apply {
-            setDeleteIntent(pendingIntent)
+            setDeleteIntent(reviveIntent)
             setSmallIcon(R.drawable.ic_launcher_foreground)
             setContentTitle("${Pebble.watchInfo.modelString()} ${Pebble.watchInfo.battery}%")
             setContentText("")
@@ -118,6 +116,7 @@ class PebbleService():
         override fun onReceive(context: Context, intent: Intent) {
             when(intent.action) {
                 AppConstants.INTENT_REVIVE -> {
+                    Log.v(AppConstants.TAG, "Restart service")
                     setupForeground()
                 }
 

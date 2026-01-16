@@ -42,6 +42,7 @@
             android:name=".NotificationListener"
             android:label="Notification Listener"
             android:exported="true"
+            android:launchMode="singleInstance"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
