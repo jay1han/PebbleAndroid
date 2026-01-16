@@ -82,7 +82,7 @@ class PebbleService():
         ).apply {
             setDeleteIntent(pendingIntent)
             setSmallIcon(R.drawable.ic_launcher_foreground)
-            setContentTitle("${Pebble.watchInfo.model} ${Pebble.watchInfo.battery}%")
+            setContentTitle("${Pebble.watchInfo.modelString()} ${Pebble.watchInfo.battery}%")
             setContentText("")
             setVisibility(NotificationCompat.VISIBILITY_SECRET)
         }.build()
