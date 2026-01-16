@@ -64,7 +64,6 @@ private fun BluetoothDevice.isConnected(): Boolean {
         val result = method.invoke(this, BluetoothDevice.TRANSPORT_BREDR) as Boolean
         return result
     } catch (e: Exception) {
-        println(e)
         return false
     }
 }

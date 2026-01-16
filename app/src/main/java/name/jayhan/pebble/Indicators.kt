@@ -17,10 +17,6 @@ class SingleIndicator(
         return "$letter\n$packageName\n$channel\n$filterText"
     }
 
-    fun comparator(): String {
-        return "$packageName:$channel:$filterText"
-    }
-
     fun equalTo(
         other: SingleIndicator
     ): Boolean {

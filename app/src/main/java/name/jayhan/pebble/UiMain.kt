@@ -377,8 +377,8 @@ fun Splash(
 }
 
 val PreviewWatchInfo = WatchInfo(
-    1, 0x10000,
-    100, true, true
+    model = 1, version = 0x10000,
+    battery = 100, plugged = true, charging = true
 )
 
 @Preview
