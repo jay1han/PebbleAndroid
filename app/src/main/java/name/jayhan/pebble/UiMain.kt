@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -41,6 +42,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.TextStyle
@@ -189,23 +191,28 @@ fun HelpDialog(
                         fontSize = AppConstants.textSize,
                         modifier = Modifier.padding(bottom = 10.dp)
                     )
-                    Text(
-                        text = stringResource(R.string.battery) + ": " +
-                                watchInfo.battery.toString() + "%" +
-                                (if (watchInfo.plugged) {
-                                    " Plugged" +
-                                    (if (watchInfo.charging) " & Charging" else "")
-                                } else "")
-                        ,
-                        fontSize = AppConstants.textSize,
-                    )
-                    Button(
-                        onClick = { Pebble.askInfo() },
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = "Refresh",
-                            fontSize = AppConstants.smallSize
+                            text = stringResource(R.string.battery) + ": " +
+                                    watchInfo.battery.toString() + "%\n" +
+                                    (if (watchInfo.plugged) {
+                                        "Plugged" +
+                                                (if (watchInfo.charging) " & Charging" else "")
+                                    } else ""),
+                            fontSize = AppConstants.textSize,
                         )
+                        Button(
+                            onClick = { Pebble.askInfo() },
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.outline_refresh_24),
+                                contentDescription = "Refresh"
+                            )
+                        }
                     }
                 }
 
