@@ -58,8 +58,7 @@ fun UiPermissions(
                         .clickable {
                             showDetails = permissionGroup
                         }
-                        .fillMaxWidth()
-                        .padding(10.dp),
+                        .fillMaxWidth(),
                     headlineContent = {
                         Text(
                             text = stringResource(permissionGroup.title),
@@ -69,7 +68,7 @@ fun UiPermissions(
                     },
                     supportingContent = {
                         Text(
-                            text = stringResource(permissionGroup.title),
+                            text = stringResource(permissionGroup.description),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 20.dp),

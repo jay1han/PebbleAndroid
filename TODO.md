@@ -2,7 +2,7 @@
 
 - Main UI
     - [ ] Make a nice icon
-    - [ ] Permission description text
+    - [x] Permission description text
 
 - Service
     - [ ] Resend ALL info at reconnect (BT)
