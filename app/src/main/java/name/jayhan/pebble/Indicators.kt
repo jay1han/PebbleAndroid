@@ -75,11 +75,15 @@ object Indicators
                     notification.extras.getString(it) ?: ""
                 }
 
-        var provision = ' '
+        var provision = '-'
         var match = 0
 
         for (indicator in allList) {
             if (indicator.packageName == packageName) {
+                if (match < 5) {
+                    match = 5
+                    provision = '+'
+                }
                 if (indicator.channel.isEmpty()) {
                     if (indicator.filterText.isEmpty()) {
                         if (match < 10) {
