@@ -9,7 +9,7 @@
     - [ ] Reinit at watchface reload
 
 - Pebble
-    - [ ] Manage Pebble battery (history)
+    - [x] Manage Pebble battery (history)
     - [ ] Blackout watchface when disconnected
     
 - Clean code

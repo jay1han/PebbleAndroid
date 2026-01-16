@@ -229,6 +229,7 @@ object Pebble
     ) {
         watchInfo = watchInfo.setBattery(battery, plugged, charging)
         infoFlow.value = watchInfo
+        History.store(battery, plugged)
     }
 
     private var minutes: Int = 0
@@ -291,5 +292,9 @@ object Pebble
 
     fun askInfo() {
         // TODO: Re-ask WatchInfo
+    }
+
+    fun askBattery() {
+        // TODO: Re-ask Battery
     }
 }

@@ -23,14 +23,14 @@ import kotlin.time.toJavaInstant
 fun Instant.formatDate(): String {
     val jInstant = this.toJavaInstant()
     val jdate = Date.from(jInstant)
-    val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
-    return dateFormat.format(jdate)
+    return AppConstants.dateFormat.format(jdate)
 }
 
 object AppConstants {
     const val TAG = "Capeta"
     const val GITHUB_ANDROID = "https://github.com/jay1han/PebbleAndroid"
     const val GITHUB_PEBBLE = "https://github.com/jay1han/Pebble"
+    val dateFormat = SimpleDateFormat("yyyy/MM/dd-HH:mm:ss")
     val buildDateTime = Instant
         .fromEpochMilliseconds(BuildConfig.BUILDTIME)
         .formatDate()

@@ -15,9 +15,10 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.getpebble.android.kit.util.PebbleDictionary
+import java.io.File
 
-class PebbleService():
-    Service() {
+class PebbleService: Service()
+{
 
     private lateinit var context: Context
     private lateinit var batteryReceiver: BatteryReceiver
@@ -109,6 +110,8 @@ class PebbleService():
         if (Permissions.allGranted) {
             Pebble.init(context)
             Notifications.init(context)
+            val file = File(context.filesDir, "history")
+            History.init(file)
 
             batteryReceiver = BatteryReceiver(context)
             bluetoothReceiver = BluetoothReceiver(context)
