@@ -4,39 +4,50 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
-fun String.packageName(): String { return this.substringBefore(':') }
-fun Map.Entry<String, Char>.packageName(): String { return this.key.packageName() }
-fun String.channel(): String { return this.substringAfter(':') }
-fun Map.Entry<String, Char>.channel(): String { return this.key.channel() }
-fun Map.Entry<String, Char>.letter(): Char { return this.value }
-fun Map<String, Char>.addMutableEntry(
-    packageName: String,
-    channel: String,
-    letter: Char
-): MutableMap<String, Char> {
-    val newMap = this.toMutableMap()
-    newMap["$packageName:$channel"] = letter
-    return newMap
-}
-fun sortMap(
-    map: MutableMap<String, Char>
-): MutableMap<String, Char> {
-    val newMap = map.toSortedMap { first, second ->
-        val firstAppName = Notifications.getAppName(first.packageName())
-        val secondAppName = Notifications.getAppName(second.packageName())
-        if (firstAppName == secondAppName)
-            first.channel().compareTo(second.channel())
-        else
-            firstAppName.compareTo(secondAppName)
+class SingleIndicator(
+    var packageName: String = "",
+    var channel: String = "",
+    var ticker: String = "",
+    var letter: Char = ' '
+) {
+    override fun toString(): String {
+        return "$letter\n$packageName\n$channel\n$ticker"
     }
-    return newMap
+
+    fun comparator(): String {
+        return "$packageName:$channel:$ticker"
+    }
+
+    fun equalTo(
+        other: SingleIndicator
+    ): Boolean {
+        return packageName == other.packageName &&
+                channel == other.channel &&
+                ticker == other.ticker
+    }
+
+    companion object {
+        fun fromString(
+            string: String
+        ): SingleIndicator {
+            val elements = string.split('\n', limit = 4)
+            return SingleIndicator(
+                packageName = elements[1],
+                channel = elements[2],
+                ticker = elements[3],
+                letter = elements[0][0],
+            )
+        }
+    }
 }
 
 object Indicators
 {
-    private var allMap = mapOf<String, Char>()
-    val allFlow = MutableStateFlow(mapOf<String, Char>())
+    private var allList = mutableListOf<SingleIndicator>()
+    val allFlow = MutableStateFlow(mutableListOf<SingleIndicator>())
     private lateinit var savedSettings: SharedPreferences
 
     fun init(context: Context) {
@@ -45,18 +56,12 @@ object Indicators
             Context.MODE_PRIVATE
         )
 
-        val newMap: MutableMap<String, Char> =
-            try {
-                mutableMapOf<String, Char>().apply {
-                    savedSettings.all.forEach {
-                        put(it.key, (it.value as String)[0])
-                    }
-                }
-            } catch (_: NumberFormatException) {
-                mutableMapOf()
-            }
+        val newList = mutableListOf<SingleIndicator>()
+        savedSettings.all.forEach {
+            newList.add(SingleIndicator.fromString(it.key))
+        }
 
-        saveMap(newMap)
+        saveList(newList)
     }
 
     fun getLetter(
@@ -65,14 +70,38 @@ object Indicators
         ticker: String
     ): Char {
         var provision = ' '
+        var match = 0
 
-        for (indicator in allMap) {
-            if (indicator.packageName() == packageName) {
-                if (indicator.channel() == "")
-                    provision = indicator.letter()
-                else {
-                    if (channel.contains(indicator.channel()))
-                        return indicator.letter()
+        for (indicator in allList) {
+            if (indicator.packageName == packageName) {
+                if (indicator.channel.isEmpty()) {
+                    if (indicator.ticker.isEmpty()) {
+                        if (match < 10) {
+                            provision = indicator.letter
+                            match = 10
+                        }
+                    } else {
+                        if (indicator.ticker == ticker) {
+                            if (match < 20) {
+                                provision = indicator.letter
+                                match = 20
+                            }
+                        }
+                    }
+                } else {
+                    if (indicator.channel == channel) {
+                        if (indicator.ticker.isEmpty()) {
+                            if (match < 50) {
+                                provision = indicator.letter
+                                match = 50
+                            }
+                        } else {
+                            if (indicator.ticker == ticker) {
+                                provision = indicator.letter
+                                match = 100
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -80,55 +109,50 @@ object Indicators
     }
 
     fun add(
-        packageName: String,
-        channel: String,
-        letter: Char
+        indicator: SingleIndicator
     ) {
-        val newList = allMap.addMutableEntry(
-            packageName,
-            channel,
-            letter
-            )
-        saveMap(newList)
+        allList.add(indicator)
+        saveList(allList)
     }
 
-    private fun saveMap(
-        newMap: MutableMap<String, Char>
+    private fun saveList(
+        newList: List<SingleIndicator>
     ) {
-        allMap = sortMap(newMap)
+        allList = newList.sortedBy { it.comparator() }
+            .toMutableList()
 
         savedSettings.edit {
             clear()
-            for (item in allMap) {
-                putString(item.key, item.value.toString())
+            for (item in allList) {
+                putBoolean(item.toString(), true)
             }
             commit()
         }
 
-        allFlow.value = allMap
+        allFlow.value = allList
     }
 
     fun remove(
-        packageName: String,
-        channel: String,
+        indicator: SingleIndicator
     ) {
-        val newMap = allMap.filterNot {
-            it.packageName() == packageName && it.channel() == channel
-        }.toMutableMap()
-        saveMap(newMap)
+        val newList = allList.filterNot {
+            it.equalTo(indicator)
+        }
+        saveList(newList)
     }
 
     fun reset() {
-        saveMap(mutableMapOf())
+        saveList(listOf())
     }
 }
 
-val PreviewIndicators = mapOf(
-    "com.android.google.apps.dialer:" to 'C',
-    "com.android.google.apps.messaging:" to 'T',
-    "com.android.google.apps.gm:jay" to 'j',
-    "com.android.google.apps.gm:pebble" to 'p',
-    "com.android.google.apps.gm:" to 'G',
-    "com.whatsapp:" to 'W',
-    "com.kakao.talk:" to 'K'
+val PreviewIndicators = listOf(
+    SingleIndicator("com.android.google.apps.dialer", "", "", 'C'),
+    SingleIndicator("com.android.google.apps.messaging", "", "", 'T'),
+    SingleIndicator("com.android.google.apps.gm", "jay", "", 'j'),
+    SingleIndicator("com.android.google.apps.gm", "pebble","", 'p'),
+    SingleIndicator("com.android.google.apps.gm", "", "", 'G'),
+    SingleIndicator("com.whatsapp", "", "", 'W'),
+    SingleIndicator("com.kakao.talk", "",  "", 'K'),
+    SingleIndicator("com.kakao.talk", "", "Bob", 'b')
 )

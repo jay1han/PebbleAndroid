@@ -66,7 +66,7 @@ fun AppScaffold(
     val activeList by Notifications.activeFlow.collectAsState(emptyList())
     val allList by Notifications.allFlow.collectAsState(emptyList())
     val tzWatch: String by Pebble.tzFlow.collectAsState("")
-    val indicators by Indicators.allFlow.collectAsState(mapOf())
+    val indicators by Indicators.allFlow.collectAsState(listOf())
     var showHelp by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -196,13 +196,16 @@ fun HelpDialog(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier.fillMaxWidth()
                     ) {
+                        var text = stringResource(R.string.battery) + ": " +
+                                watchInfo.battery.toString() + "%\n"
+                        if (watchInfo.plugged) {
+                            text += stringResource(R.string.plugged)
+                            if (watchInfo.charging)
+                                text += stringResource(R.string.and_charging)
+                        } else text += stringResource(R.string.unplugged)
+
                         Text(
-                            text = stringResource(R.string.battery) + ": " +
-                                    watchInfo.battery.toString() + "%\n" +
-                                    (if (watchInfo.plugged) {
-                                        "Plugged" +
-                                                (if (watchInfo.charging) " & Charging" else "")
-                                    } else ""),
+                            text = text,
                             fontSize = AppConstants.textSize,
                         )
                         Button(
@@ -267,7 +270,7 @@ fun MainPage(
     context: Context,
     activeList: List<String>,
     allList: List<String>,
-    indicators: Map<String, Char>,
+    indicators: List<SingleIndicator>,
     isConnected: Boolean,
     tzWatch: String,
     modifier: Modifier = Modifier,

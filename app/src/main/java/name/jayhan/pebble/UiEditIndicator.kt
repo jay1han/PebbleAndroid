@@ -39,18 +39,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
 @Composable
-fun EditIndicators(
+fun EditIndicator(
     context: Context,
-    letter: Char,
-    packageName: String,
-    channel: String,
+    indicator: SingleIndicator,
     activeList: List<String>,
     allList: List<String>,
     onClose: () -> Unit
 ) {
-    var newLetter by remember { mutableStateOf(letter) }
-    var newPackage by remember { mutableStateOf(packageName) }
-    var newChannel by remember { mutableStateOf(channel) }
+    var newPackage by remember { mutableStateOf(indicator.packageName) }
+    var newChannel by remember { mutableStateOf(indicator.channel) }
+    var newTicker by remember { mutableStateOf(indicator.ticker) }
+    var newLetter by remember { mutableStateOf(indicator.letter) }
     var showPackageList by remember { mutableStateOf(false) }
 
     if (showPackageList) {
@@ -260,11 +259,14 @@ fun EditIndicators(
                         Button(
                             onClick = {
                                 if (newLetter != ' ' && newPackage.isNotEmpty()) {
-                                    Indicators.remove(packageName, channel)
+                                    Indicators.remove(indicator)
                                     Indicators.add(
-                                        packageName = newPackage,
-                                        channel = newChannel,
-                                        letter = newLetter,
+                                        SingleIndicator(
+                                            packageName = newPackage,
+                                            channel = newChannel,
+                                            ticker = newTicker,
+                                            letter = newLetter
+                                        )
                                     )
                                     Notifications.reprocess(context)
                                 }
@@ -278,7 +280,7 @@ fun EditIndicators(
                         }
                         Button(
                             onClick = {
-                                Indicators.remove(packageName, channel)
+                                Indicators.remove(indicator)
                                 Notifications.reprocess(context)
                                 onClose()
                             }
@@ -298,7 +300,11 @@ fun EditIndicators(
 fun acceptLetter(input: String): Char {
     if (input.isEmpty()) return ' '
 
-    val letter = input.removePrefix(" ").removeSuffix(" ").last()
+    val letter = try {
+        input.removePrefix(" ").removeSuffix(" ").last()
+    } catch (e: NoSuchElementException) {
+        ' '
+    }
     if (letter.code >= '!'.code && letter.code <= '~'.code) return letter
 
     return ' '
@@ -306,12 +312,14 @@ fun acceptLetter(input: String): Char {
 
 @Preview
 @Composable
-fun EditIndicatorsPreview() {
-    EditIndicators(
+fun EditIndicatorPreview() {
+    EditIndicator(
         context = LocalContext.current,
-        letter = 'S',
-        packageName = "com.android.google.apps.messaging",
-        channel = "jayhan.dev",
+        indicator = SingleIndicator(
+            packageName = "com.android.google.apps.messaging",
+            channel = "jayhan.dev",
+            ticker = "",
+            letter = 'S'),
         activeList = PreviewActiveList,
         allList = listOf()
     ) { }
@@ -319,12 +327,10 @@ fun EditIndicatorsPreview() {
 
 @Preview
 @Composable
-fun EditIndicatorsEmpty() {
-    EditIndicators(
+fun EditIndicatorEmpty() {
+    EditIndicator(
         context = LocalContext.current,
-        letter = ' ',
-        packageName = "",
-        channel = "",
+        indicator = SingleIndicator(),
         activeList = PreviewActiveList,
         allList = listOf()
     ) { }

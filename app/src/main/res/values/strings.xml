@@ -80,5 +80,9 @@
     <string name="zen_rule">Zen rule</string>
     <string name="zen_rule_2">Zen rule 2</string>
     <string name="battery">Battery</string>
+    <string name="no_indicators">Nothing!</string>
+    <string name="unplugged">Unplugged</string>
+    <string name="plugged">Plugged</string>
+    <string name="and_charging"><![CDATA[" & Charging"]]></string>
 
 </resources>

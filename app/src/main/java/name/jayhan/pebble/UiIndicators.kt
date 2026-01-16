@@ -42,28 +42,22 @@ fun IndicatorList(
     context: Context,
     activeList: List<String>,
     allList: List<String>,
-    indicators: Map<String, Char>
+    indicators: List<SingleIndicator>
 ) {
     var editDialog by remember { mutableStateOf(false) }
-    var editLetter by remember { mutableStateOf(' ') }
-    var editPackageName by remember { mutableStateOf("") }
-    var editChannel by remember { mutableStateOf("") }
+    var editIndicator by remember { mutableStateOf(SingleIndicator()) }
     val scrollState = rememberScrollState()
     var resetDialog by remember { mutableStateOf(false) }
 
     if (editDialog) {
-        EditIndicators(
+        EditIndicator(
             context = context,
-            letter = editLetter,
-            packageName = editPackageName,
-            channel = editChannel,
+            indicator = editIndicator,
             activeList = activeList,
             allList = allList
         ) {
             editDialog = false
-            editLetter = ' '
-            editPackageName = ""
-            editChannel = ""
+            editIndicator = SingleIndicator()
         }
     }
 
@@ -103,8 +97,7 @@ fun IndicatorList(
             )
             Button(
                 onClick = {
-                    editLetter = ' '
-                    editPackageName = ""
+                    editIndicator = SingleIndicator()
                     editDialog = true
                 },
             ) {
@@ -115,23 +108,30 @@ fun IndicatorList(
             }
         }
 
-        Column(
-            modifier = Modifier
-                .verticalScroll(scrollState)
-                .fillMaxWidth()
-        ) {
-            for (indicator in indicators) {
-                IndicatorItem(
-                    letter = indicator.letter(),
-                    packageName = indicator.packageName(),
-                    channel = indicator.channel(),
-                    onEdit = {
-                        editLetter = indicator.letter()
-                        editPackageName = indicator.packageName()
-                        editChannel = indicator.channel()
-                        editDialog = true
-                    }
-                )
+        if (indicators.isEmpty()) {
+            Text(
+                text = stringResource(R.string.no_indicators),
+                textAlign = TextAlign.Center,
+                fontSize = AppConstants.titleSize,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
+            )
+        } else {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(scrollState)
+                    .fillMaxWidth()
+            ) {
+                for (indicator in indicators) {
+                    IndicatorItem(
+                        indicator,
+                        onEdit = {
+                            editIndicator = indicator
+                            editDialog = true
+                        }
+                    )
+                }
             }
         }
     }
@@ -139,9 +139,7 @@ fun IndicatorList(
 
 @Composable
 fun IndicatorItem(
-    letter: Char,
-    packageName: String,
-    channel: String,
+    indicator: SingleIndicator,
     onEdit: () -> Unit
 ) {
     Row(
@@ -156,11 +154,11 @@ fun IndicatorItem(
                 .fillMaxWidth(.1f)
                 .padding(4.dp)
         ) {
-            val icon = getApplicationIcon(LocalContext.current, packageName)
+            val icon = getApplicationIcon(LocalContext.current, indicator.packageName)
             if (icon != null) {
                 Image(
                     bitmap = icon,
-                    contentDescription = packageName,
+                    contentDescription = indicator.packageName,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -173,7 +171,7 @@ fun IndicatorItem(
                 .padding(horizontal = 8.dp)
                 .weight(1f)
         ) {
-            val appName = Notifications.getAppName(packageName)
+            val appName = Notifications.getAppName(indicator.packageName)
             if (appName != "") {
                 Text(
                     text = appName,
@@ -182,13 +180,13 @@ fun IndicatorItem(
                 )
             }
             Text(
-                text = packageName,
+                text = indicator.packageName,
                 fontSize = AppConstants.subSize,
                 modifier = Modifier.fillMaxWidth()
             )
-            if (channel != "") {
+            if (indicator.channel != "") {
                 Text(
-                    text = channel,
+                    text = indicator.channel,
                     fontSize = AppConstants.subSize,
                     fontStyle = FontStyle.Italic,
                     textAlign = TextAlign.End,
@@ -198,7 +196,7 @@ fun IndicatorItem(
         }
 
         Text(
-            text = letter.toString(),
+            text = indicator.letter.toString(),
             fontSize = AppConstants.titleSize,
             color = AppConstants.colorText,
             modifier = Modifier
@@ -304,9 +302,11 @@ val PreviewAllList = listOf(
 @Composable
 fun IndicatorItemPreview() {
     IndicatorItem(
-        'S',
-        "com.google.android.apps.messaging",
-        "jayhan.dev"
+        SingleIndicator(
+            "com.google.android.apps.messaging",
+            "jayhan.dev",
+            "",
+            'S'),
     ) { }
 }
 
@@ -318,6 +318,17 @@ fun IndicatorListPreview() {
         activeList = PreviewActiveList,
         allList = PreviewAllList,
         indicators = PreviewIndicators
+    )
+}
+
+@Preview
+@Composable
+fun IndicatorListEmpty() {
+    IndicatorList(
+        context = LocalContext.current,
+        activeList = PreviewActiveList,
+        allList = PreviewAllList,
+        indicators = listOf(),
     )
 }
 

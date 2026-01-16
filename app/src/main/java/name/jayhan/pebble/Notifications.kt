@@ -72,7 +72,7 @@ object Notifications : BroadcastReceiver()
                     val letter = Indicators.getLetter(
                         notification.packageName,
                         notification.notification.channelId,
-                        notification.notification.tickerText.toString()
+                        notification.notification.tickerText?.toString() ?: ""
                     )
                     if (letter != ' ') compact.add(letter)
                 }
