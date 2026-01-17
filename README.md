@@ -1,4 +1,4 @@
-# Capeta[^1] companion (Android app)
+# Dolbom[^1] companion (Android app)
 
 This app, together with the related watchface and watchapp,
 is intended to replace the combination of Tasker, Canvas, and PebbleTasker
@@ -7,8 +7,9 @@ that I personally used on the original Pebble (and Pebble Time).
 Compared to the previous combination, this version has much fewer customizability
 (no Takser! no Canvas!) but corresponds to the specific configuration I used[^2].
 
-[^1]: The name comes from Canvas, Pebble and Tasker. It's formally a common word,
-so it can be capitalized any way.
+[^1]: The name comes from "dol", meaning "pebble" in Korean,
+and "bom", which means "to see". Together, the word "dolbom" also means
+"to care for".
 
 [^2]: I *may* be convinced to add functionality at a later date.
 

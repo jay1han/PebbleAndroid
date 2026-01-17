@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.UUID
+import kotlin.time.Duration
 import kotlin.time.Instant
 import kotlin.time.toJavaInstant
 
@@ -26,8 +27,26 @@ fun Instant.formatDate(): String {
     return AppConstants.dateFormat.format(jdate)
 }
 
+fun Duration.formatDuration(): String {
+    var seconds = this.inWholeSeconds
+
+    if (seconds >= 60) {
+        var minutes = seconds / 60
+        seconds %= 60
+        if (minutes >= 60) {
+            var hours = minutes / 60
+            minutes %= 60
+            if (hours >= 24) {
+                var days = hours / 24
+                hours %= 24
+                return "${days}d ${hours}h"
+            } else return "${hours}h ${minutes}m"
+        } else return "${minutes}m"
+    } else return "<1m"
+}
+
 object AppConstants {
-    const val TAG = "Capeta"
+    const val TAG = "Dolbom"
     const val GITHUB_ANDROID = "https://github.com/jay1han/PebbleAndroid"
     const val GITHUB_PEBBLE = "https://github.com/jay1han/Pebble"
     val dateFormat = SimpleDateFormat("yyyy/MM/dd-HH:mm:ss")
@@ -63,12 +82,16 @@ object AppConstants {
     const val EXTRA_BTID = "btid"
     const val EXTRA_BTC = "btc"
 
-    const val CHANNEL_ID = "CapetaService"
+    const val CHANNEL_ID = "Dolbom"
 
     const val PREF_INDIC = "name.jayhan.pebble.INDICATORS"
     const val PREF_HISTORY = "name.jayhan.pebble.HISTORY"
-    const val HIST_DISCHG_RATE_F = "dischg_rate_f"
-    const val HIST_N_CYCLES_I = "n_cycles_i"
+    const val HIST_DISCHG_RATE = "dischg_rate"
+    const val HIST_N_CYCLES = "n_cycles"
+    const val HIST_UNPLUG_TIME = "unplug_time"
+    const val HIST_PLUG_STATE = "plug_state"
+    const val HIST_UNPLUG_LEVEL = "unplug_level"
+    const val HIST_INIT_DATE = "init_date"
 
     val APP_UUID: UUID? = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
     const val MAX_NOTI_INDICATORS = 15

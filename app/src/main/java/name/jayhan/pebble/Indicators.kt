@@ -72,7 +72,7 @@ object Indicators
                     Notification.EXTRA_BIG_TEXT,
                     Notification.EXTRA_TITLE
                 ).joinToString("") {
-                    notification.extras.getString(it) ?: ""
+                    notification.extras.getCharSequence(it, "")
                 }
 
         var provision = '-'

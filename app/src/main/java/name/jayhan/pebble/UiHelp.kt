@@ -13,14 +13,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
@@ -29,16 +29,25 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import kotlin.time.Clock
 
 @Composable
 fun HelpDialog(
     watchInfo: WatchInfo,
     isConnected: Boolean,
     lastReceived: String,
+    historyData: HistoryData,
     onClose: () -> Unit
 ) {
     val scrollState = rememberScrollState()
-    val historyData: HistoryData by History.historyFlow.collectAsState(HistoryData())
+    var confirmClear by remember { mutableStateOf(false) }
+
+    if (confirmClear) {
+        ClearBatteryDialog(
+            historyData = historyData,
+            onConfirm = { History.clear() }
+        ) { confirmClear = false }
+    }
 
     Dialog(
         onDismissRequest = onClose
@@ -89,18 +98,11 @@ fun HelpDialog(
                             text = text,
                             fontSize = AppConstants.textSize,
                         )
-                        Button(
-                            onClick = { Pebble.askBattery() },
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.outline_refresh_24),
-                                contentDescription = "Refresh"
-                            )
-                        }
                     }
 
-                    val historyText = if (historyData.isValid) {
-                        "" + stringResource(R.string.format_discharged_d)
+                    val historyText = if (historyData.isValid()) {
+                        "Since " + historyData.initDate.formatDate() +
+                                "\n" + stringResource(R.string.format_discharged_d)
                             .format(historyData.numberOfCycles) +
                                 "\n" + stringResource(R.string.format_drop_f)
                             .format(historyData.dischargeRate) +
@@ -115,6 +117,15 @@ fun HelpDialog(
                         fontSize = AppConstants.textSize,
                         modifier = Modifier.padding(top = 10.dp)
                     )
+
+                    Button(
+                        onClick = { confirmClear = true },
+                    ) {
+                        Text(
+                            text = "Clear history",
+                            fontSize = AppConstants.textSize,
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -164,6 +175,80 @@ fun HelpDialog(
 }
 
 @Composable
+fun ClearBatteryDialog(
+    historyData: HistoryData,
+    onConfirm: () -> Unit,
+    onExit: () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = { onExit() }
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
+            ) {
+                if (historyData.isValid()) {
+                    val duration = Clock.System.now() - historyData.initDate
+                    val historySince = "There is history since " + historyData.initDate.formatDate()
+                    val historyDuring = "Time span of " + duration.formatDuration()
+                    Text(
+                        text = historySince,
+                        fontSize = AppConstants.textSize,
+                        modifier = Modifier.fillMaxWidth().padding(10.dp)
+                    )
+                    Text(
+                        text = historyDuring,
+                        fontSize = AppConstants.textSize,
+                        modifier = Modifier.fillMaxWidth().padding(10.dp)
+                    )
+                } else {
+                    Text(
+                        text = "No valid history",
+                        fontSize = AppConstants.textSize,
+                        modifier = Modifier.fillMaxWidth().padding(10.dp)
+                    )
+                }
+
+                Text(
+                    text = "Clear battery history?",
+                    fontSize = AppConstants.titleSize,
+                    modifier = Modifier.fillMaxWidth().padding(10.dp)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = {
+                            onConfirm()
+                            onExit()
+                        }
+                    ) {
+                        Text(
+                            text = "Yes",
+                            fontSize = AppConstants.textSize
+                        )
+                    }
+                    Button(
+                        onClick = { onExit() }
+                    ) {
+                        Text(
+                            text = "No",
+                            fontSize = AppConstants.textSize
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun Splash(
     modifier : Modifier = Modifier
 ) {
@@ -178,14 +263,30 @@ fun Splash(
     }
 }
 
+val PreviewHistoryData = HistoryData(
+    Clock.System.now(),
+    10,
+    4.5f
+)
+
 @Preview
 @Composable
-fun HelpDialogPreview() {
+fun HelpDialogBattery() {
     HelpDialog(
         watchInfo = PreviewWatchInfo,
         isConnected = true,
-        lastReceived = "Now"
+        lastReceived = "Now",
+        historyData = PreviewHistoryData,
     ) {}
+}
+
+@Preview
+@Composable
+fun ConfirmClearPreview() {
+    ClearBatteryDialog(
+        historyData = PreviewHistoryData,
+        onConfirm = {}
+    ) { }
 }
 
 @Preview

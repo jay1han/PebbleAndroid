@@ -1,16 +1,18 @@
 # TODO
 
 - Main UI
-    - [ ] Make a nice icon
     - [x] Permission description text
+    - [ ] Make a nice icon
+    - [ ] Splash screen
 
 - Service
     - [ ] Resend ALL info at reconnect (BT)
     - [ ] Reinit at watchface reload
+    - [ ] Sort indicators by age
 
 - Pebble
     - [x] Manage Pebble battery (history)
-    - [ ] Blackout watchface when disconnected
+    - [x] Blackout watchface when disconnected
     
 - Clean code
     - [ ] Remove hard-coded dimensions

@@ -62,7 +62,7 @@ object Notifications : BroadcastReceiver()
         context: Context,
         activeNotifications: Array<StatusBarNotification>
     ) {
-        val compact: MutableSet<Char> = mutableSetOf()
+        val letters = Letters()
         val activeList = mutableListOf<String>()
             .apply {
                 for (notification in activeNotifications
@@ -70,12 +70,12 @@ object Notifications : BroadcastReceiver()
                 ) {
                     add(notification.packageName)
                     val letter = Indicators.getLetter(notification)
-                    if (letter != ' ') compact.add(letter)
+                    if (letter != ' ') letters.add(letter, notification.postTime)
                 }
             }
         activeFlow.value = activeList.dedup()
 
-        val text = compact.joinToString("")
+        val text = letters.getCompact()
             .take(AppConstants.MAX_NOTI_INDICATORS)
 
         Pebble.sendIntent(context, MsgType.NOTI) {
@@ -156,4 +156,29 @@ fun List<String>.dedup(): List<String> {
         if (!newList.contains(item)) newList.add(item)
     }
     return newList
+}
+
+private class Letters {
+    data class Letter(
+        val letter: Char,
+        val ref: Long
+    )
+    private val letters = mutableListOf<Letter>()
+
+    fun add(
+        letter: Char,
+        ref: Long
+    ) {
+        letters.removeIf { it.letter == letter }
+        letters.add(Letter(letter, ref))
+    }
+
+    fun getCompact(): String {
+        val apps = letters.filter { it.letter != '-' && it.letter != '+' }
+        val sorted = apps.sortedBy { it.ref }.reversed()
+        val indicators = sorted.map { it.letter }.toMutableList()
+        if (letters.find { it.letter == '+'} != null) indicators.add('+')
+        if (letters.find { it.letter == '-'} != null) indicators.add('-')
+        return indicators.joinToString("")
+    }
 }

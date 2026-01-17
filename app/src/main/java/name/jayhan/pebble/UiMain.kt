@@ -56,6 +56,7 @@ fun AppScaffold(
     val allList by Notifications.allFlow.collectAsState(emptyList())
     val tzWatch: String by Pebble.tzFlow.collectAsState("")
     val indicators by Indicators.allFlow.collectAsState(listOf())
+    val historyData: HistoryData by History.historyFlow.collectAsState(HistoryData())
     var showHelp by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -73,6 +74,7 @@ fun AppScaffold(
                         watchInfo = watchInfo,
                         isConnected = isConnected,
                         lastReceived = lastReceived,
+                        historyData = historyData,
                     ) {
                         showHelp = false
                     }
