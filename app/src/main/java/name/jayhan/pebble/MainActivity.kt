@@ -65,7 +65,10 @@ object AppConstants {
 
     const val CHANNEL_ID = "CapetaService"
 
-    const val PREF_NAME = "name.jayhan.pebble.NOTIFICATIONS_LIST"
+    const val PREF_INDIC = "name.jayhan.pebble.INDICATORS"
+    const val PREF_HISTORY = "name.jayhan.pebble.HISTORY"
+    const val HIST_DISCHG_RATE_F = "dischg_rate_f"
+    const val HIST_N_CYCLES_I = "n_cycles_i"
 
     val APP_UUID: UUID? = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
     const val MAX_NOTI_INDICATORS = 15

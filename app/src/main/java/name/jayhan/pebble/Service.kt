@@ -111,7 +111,7 @@ class PebbleService: Service()
             Pebble.init(context)
             Notifications.init(context)
             val file = File(context.filesDir, "history")
-            History.init(file)
+            History.init(context)
 
             batteryReceiver = BatteryReceiver(context)
             bluetoothReceiver = BluetoothReceiver(context)

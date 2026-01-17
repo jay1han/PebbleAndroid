@@ -97,5 +97,6 @@
     <string name="format_discharged_d">Discharged %d times</string>
     <string name="format_drop_f">Average rate: %.1f%%/day</string>
     <string name="format_days_f">Current charge: %.1f days</string>
+    <string name="battery_invalid">Battery info not available</string>
 
 </resources>

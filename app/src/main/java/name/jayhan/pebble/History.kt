@@ -1,122 +1,71 @@
 package name.jayhan.pebble
 
-import androidx.core.text.isDigitsOnly
+import android.content.Context
+import android.content.SharedPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
-import java.io.File
-import java.io.FileReader
-import java.io.PrintWriter
 import kotlin.time.Clock
 import kotlin.time.Instant
-import kotlin.time.toKotlinInstant
+import kotlin.time.isDistantPast
 
 data class HistoryData(
+    var isValid: Boolean = false,
     var numberOfCycles: Int = 0,
-    var dropRate: Float = 1.0f,
+    var dischargeRate: Float = 1.0f,
 )
 
 object History {
     val historyFlow = MutableStateFlow(HistoryData())
-    private lateinit var file: File
-    private lateinit var writer: PrintWriter
-    private lateinit var reader: FileReader
+    private lateinit var savedHistory: SharedPreferences
 
-    fun init(
-        file: File
-    ) {
-        this.file = file
-        if (!file.exists()) file.createNewFile()
-        writer = PrintWriter(file)
-        reader = FileReader(file)
+    fun init(context: Context) {
+        savedHistory = context.getSharedPreferences(
+            AppConstants.PREF_HISTORY,
+            Context.MODE_PRIVATE
+        )
+        val numberOfCycles = savedHistory.getInt(AppConstants.HIST_N_CYCLES_I, 0)
+        if (numberOfCycles > 0) {
+            val dischargeRate = savedHistory.getFloat(AppConstants.HIST_DISCHG_RATE_F, 0f)
+            if (dischargeRate != 0f) {
+                historyFlow.value = HistoryData(
+                    true,
+                    numberOfCycles,
+                    dischargeRate
+                )
+            }
+        }
     }
 
-    fun store(
+    var unpluggedTime: Instant = Instant.DISTANT_PAST
+    var currentlyPlugged: Boolean = false
+    var unpluggedLevel: Int = 0
+
+    fun event(
         level: Int,
         plugged: Boolean
     ) {
-        // TODO: Don't store everything!
-        val now = Clock.System.now()
-        writer.print(now.formatDate())
-        writer.printf(" %d ", level)
-        writer.println(if (plugged) "P" else "U")
-        writer.flush()
-    }
-
-    fun calculate() {
-        Tracker.init()
-
-        reader.reset()
-        reader.forEachLine {
-            val columns = it.split(' ')
-            if (columns.size == 3 && columns[1].isDigitsOnly()) {
-                val datetime = AppConstants.dateFormat.parse(columns[0])?.toInstant()?.toKotlinInstant()
-                if (datetime != null) {
-                    val level = columns[1].toInt()
-                    val plugged = columns[2] == "P"
-                    Tracker.addEvent(datetime, level, plugged)
+        if (plugged && !currentlyPlugged) {
+            if (!unpluggedTime.isDistantPast) {
+                val discharge = unpluggedLevel - level
+                val duration = Clock.System.now() - unpluggedTime
+                if (discharge > 0 && duration.inWholeSeconds > 3600) {
+                    val inDays = duration.inWholeSeconds.toFloat() / (3600 * 24)
+                    val dischargeRate = discharge.toFloat() / inDays
+                    val numberOfCycles = historyFlow.value.numberOfCycles
+                    val newRate = (historyFlow.value.dischargeRate * numberOfCycles + dischargeRate) /
+                            (numberOfCycles + 1)
+                    historyFlow.value = HistoryData(
+                        true,
+                        numberOfCycles,
+                        newRate
+                    )
                 }
             }
         }
-        reader.reset()
+        if (currentlyPlugged && !plugged) {
+            unpluggedTime = Clock.System.now()
+            unpluggedLevel = level
+        }
 
-        historyFlow.value = Tracker.condense()
-    }
-}
-
-private object Tracker {
-    var timeUnplugged = Instant.DISTANT_PAST
-    var levelUnplugged = 0
-    var plugged = false
-
-    fun init() {
-        timeUnplugged = Instant.DISTANT_PAST
-        levelUnplugged = 0
-        plugged = false
-        Accumulator.reset()
-    }
-
-    fun addEvent(
-        datetime: Instant,
-        level: Int,
-        plug: Boolean,
-    ) {
-        // TODO: Calculate battery cycle duration and utilization
-        Accumulator.add(0f, 0f)
-    }
-
-    fun condense(): HistoryData {
-        return Accumulator.condense()
-    }
-}
-
-private object Accumulator {
-    private var usageList = mutableListOf<Usage>()
-
-    private data class Usage(
-        val durationHours: Float,
-        val levelDrop: Float
-    )
-
-    fun reset() {
-        usageList = mutableListOf()
-    }
-
-    fun add(
-        durationHours: Float,
-        levelDrop: Float,
-    ) {
-        usageList.add(Usage(durationHours, levelDrop))
-    }
-
-    var timeBetweenPlugs = 0f
-    var dropBetweenPlugs = 0f
-    var numberOfCycles = 0
-    var dropRate = 0f
-
-    fun condense(): HistoryData {
-        // TODO: Calculate averages
-        return HistoryData(
-            numberOfCycles,
-            dropRate,
-        )
+        currentlyPlugged = plugged
     }
 }

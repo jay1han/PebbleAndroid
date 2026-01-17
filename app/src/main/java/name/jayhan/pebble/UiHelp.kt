@@ -98,14 +98,18 @@ fun HelpDialog(
                             )
                         }
                     }
-                    
-                    // TODO: calculate this asynch
-                    var historyText = stringResource(R.string.format_discharged_d)
-                        .format(historyData.numberOfCycles)
-                    historyText += "\n" + stringResource(R.string.format_drop_f)
-                        .format(historyData.dropRate)
-                    historyText += "\n" + stringResource(R.string.format_days_f)
-                        .format(watchInfo.battery / historyData.dropRate)
+
+                    val historyText = if (historyData.isValid) {
+                        "" + stringResource(R.string.format_discharged_d)
+                            .format(historyData.numberOfCycles) +
+                                "\n" + stringResource(R.string.format_drop_f)
+                            .format(historyData.dischargeRate) +
+                                "\n" + stringResource(R.string.format_days_f)
+                            .format(watchInfo.battery / historyData.dischargeRate)
+                    } else {
+                        stringResource(R.string.battery_invalid)
+                    }
+
                     Text(
                         text = historyText,
                         fontSize = AppConstants.textSize,

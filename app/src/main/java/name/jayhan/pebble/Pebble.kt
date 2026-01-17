@@ -229,7 +229,7 @@ object Pebble
     ) {
         watchInfo = watchInfo.setBattery(battery, plugged, charging)
         infoFlow.value = watchInfo
-        History.store(battery, plugged)
+        History.event(battery, plugged)
     }
 
     private var minutes: Int = 0
