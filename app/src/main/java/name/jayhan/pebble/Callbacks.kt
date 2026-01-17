@@ -14,7 +14,8 @@ import android.telephony.TelephonyManager
 class WifiCallback(
     private val context: Context,
 ) :
-    ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
+    ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO)
+{
     private val connMan = context.getSystemService(Context.CONNECTIVITY_SERVICE)
             as ConnectivityManager
     private var ssid = ""
@@ -61,10 +62,14 @@ class WifiCallback(
         send()
     }
 
-    fun send() {
+    private fun send() {
         Pebble.sendIntent(context, MsgType.WIFI) {
             putExtra(AppConstants.EXTRA_WIFI, ssid)
         }
+    }
+
+    fun refresh() {
+        send()
     }
 }
 
@@ -77,12 +82,20 @@ class PhoneCallback(
             as TelephonyManager
     private var mobileGen = 0
 
-    init {
+    private fun scan() {
         try {
             val cellType = teleMan.dataNetworkType
             mobileGen = getCellGen(cellType)
             send()
+        } catch (e: SecurityException) {
+            println(e)
+        }
+    }
 
+    init {
+        scan()
+
+        try {
             teleMan.registerTelephonyCallback(
                 TelephonyManager.INCLUDE_LOCATION_DATA_FINE,
                 context.mainExecutor,
@@ -94,21 +107,7 @@ class PhoneCallback(
     }
 
     override fun onServiceStateChanged(serviceState: ServiceState) {
-        var mobile = 0
-        fun bumpTo(to: Int) {
-            if (to > mobile) mobile = to
-        }
-
-        if (serviceState.state == ServiceState.STATE_IN_SERVICE) {
-            for (reginfo in serviceState.networkRegistrationInfoList) {
-                bumpTo(getCellGen(reginfo.accessNetworkTechnology))
-            }
-        } else {
-            mobile = 0
-        }
-        mobileGen = mobile
-
-        send()
+        scan()
     }
 
     private fun getCellGen(gen: Int): Int {
@@ -128,9 +127,13 @@ class PhoneCallback(
         }
     }
 
-    fun send() {
+    private fun send() {
         Pebble.sendIntent(context, MsgType.NET) {
             putExtra(AppConstants.EXTRA_NET, mobileGen)
         }
+    }
+
+    fun refresh() {
+        scan()
     }
 }

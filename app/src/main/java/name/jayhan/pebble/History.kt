@@ -32,7 +32,7 @@ object History {
         val numberOfCycles = savedHistory.getInt(AppConstants.HIST_N_CYCLES, 0)
         val dischargeRate = savedHistory.getFloat(AppConstants.HIST_DISCHG_RATE, 0f)
         val initDate = readInitDate()
-        Log.v(AppConstants.TAG, "History init ${numberOfCycles} since ${initDate.formatDate()} rate=$dischargeRate")
+        Log.v(AppConstants.TAG, "History init $numberOfCycles since ${initDate.formatDate()} rate=$dischargeRate")
 
         if (numberOfCycles > 0) {
             if (dischargeRate != 0f) {

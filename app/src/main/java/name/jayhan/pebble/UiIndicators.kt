@@ -294,7 +294,7 @@ fun getApplicationIcon(
 
     val drawable = try {
         context.packageManager.getApplicationIcon(packageName)
-    } catch (e: PackageManager.NameNotFoundException) {
+    } catch (_: PackageManager.NameNotFoundException) {
         return null
     }
 

@@ -128,6 +128,9 @@ private object DataReceiver:
                         Pebble.fromMinutes(tzMinutes.toInt())
                     if (msgType == MsgType.FRESH.code) {
                         Pebble.doRefresh = true
+                    } else {
+                        if (context != null)
+                            Pebble.sendIntent(context, MsgType.WBATT) {}
                     }
                 }
 

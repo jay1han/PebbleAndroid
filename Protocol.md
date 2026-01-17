@@ -39,7 +39,7 @@ class.
 | Id | Direction | Android(`MsgType`) | Pebble(`msg_type_t`) | Extras     | Notes                        |
 |----|-----------|--------------------|----------------------|------------|------------------------------|
 | 1  | P to W    | `INFO`             |                      | none       | Request for info             |
-|    | W to P    |                    | `MSG_INFO`           | 12, 13     | Response                     |
+|    | W to P    |                    | `MSG_INFO`           | 2, 12, 13  | Response                     |
 | 2  | P to W    | `TZ`               | `MSG_TZ`             | 2          | Set Away timezone            |
 | 3  |           | `PHONE_DND`        | `MSG_PHONE_DND`      | 3          |                              |
 | 4  | P to W    | `PHONE_CHG`        | `MSG_PHONE_CHG`      | 4, 5       | Phone's battery              |
@@ -50,7 +50,7 @@ class.
 | 9  | P to W    | `WBATT`            | `MSG_WBATT`          | none       | Request watch battery status |
 |    | W to P    |                    |                      | 14, 15, 16 | Response                     |
 | 10 | W to P    | `ACTION`           | `MSG_ACTION`         | 11         | Trigger Phone action         |
-| 11 | W to P    | `FRESH`            | `MSG_FRESH`          | 12, 13     | Watch restarted              |
+| 11 | W to P    | `FRESH`            | `MSG_FRESH`          | 2, 12, 13  | Watch restarted              |
 
 ## Lifecycle
 

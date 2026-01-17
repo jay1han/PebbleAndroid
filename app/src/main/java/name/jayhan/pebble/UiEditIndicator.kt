@@ -349,7 +349,7 @@ fun acceptLetter(input: String): Char {
 
     val letter = try {
         input.removePrefix(" ").removeSuffix(" ").last()
-    } catch (e: NoSuchElementException) {
+    } catch (_: NoSuchElementException) {
         ' '
     }
     if (letter.code >= '!'.code && letter.code <= '~'.code) return letter

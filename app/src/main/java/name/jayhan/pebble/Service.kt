@@ -15,7 +15,6 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.getpebble.android.kit.util.PebbleDictionary
-import java.io.File
 
 class PebbleService: Service()
 {
@@ -110,7 +109,6 @@ class PebbleService: Service()
         if (Permissions.allGranted) {
             Pebble.init(context)
             Notifications.init(context)
-            val file = File(context.filesDir, "history")
             History.init(context)
 
             batteryReceiver = BatteryReceiver(context)
@@ -187,11 +185,11 @@ class PebbleService: Service()
                 Pebble.sendIntent(context, MsgType.WBATT) {}
                 Notifications.refresh(context)
 
-                batteryReceiver.send()
-                bluetoothReceiver.send()
+                batteryReceiver.refresh()
+                bluetoothReceiver.refresh()
 
-                wifiCallback.send()
-                phoneCallback.send()
+                wifiCallback.refresh()
+                phoneCallback.refresh()
             }
 
             restartForeground()

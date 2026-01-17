@@ -28,21 +28,17 @@ fun Instant.formatDate(): String {
 }
 
 fun Duration.formatDuration(): String {
-    var seconds = this.inWholeSeconds
+    var minutes = this.inWholeSeconds / 60
 
-    if (seconds >= 60) {
-        var minutes = seconds / 60
-        seconds %= 60
-        if (minutes >= 60) {
-            var hours = minutes / 60
-            minutes %= 60
-            if (hours >= 24) {
-                var days = hours / 24
-                hours %= 24
-                return "${days}d ${hours}h"
-            } else return "${hours}h ${minutes}m"
-        } else return "${minutes}m"
-    } else return "<1m"
+    if (minutes >= 60) {
+        var hours = minutes / 60
+        minutes %= 60
+        if (hours >= 24) {
+            val days = hours / 24
+            hours %= 24
+            return "${days}d ${hours}h"
+        } else return "${hours}h ${minutes}m"
+    } else return "${minutes}m"
 }
 
 object AppConstants {
