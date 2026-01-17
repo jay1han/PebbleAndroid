@@ -95,7 +95,7 @@ class WatchInfo(
     fun modelString(): String {
         return try {
             WatchModels[model]
-        } catch (e: IndexOutOfBoundsException) {
+        } catch (_: IndexOutOfBoundsException) {
             ""
         }
     }

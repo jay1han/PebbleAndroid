@@ -10,12 +10,27 @@ import kotlin.time.Instant
 import kotlin.time.isDistantPast
 
 class HistoryData(
-    var initDate: Instant = Instant.DISTANT_PAST,
-    var numberOfCycles: Int = 0,
-    var dischargeRate: Float = 1.0f,
+    val initDate: Instant = Instant.DISTANT_PAST,
+    val lastUnplug: Instant = Instant.DISTANT_PAST,
+    val numberOfCycles: Int = 0,
+    val dischargeRate: Float = 1.0f,
 ) {
     fun isValid(): Boolean {
         return initDate != Instant.DISTANT_PAST
+    }
+
+    fun set(
+        initDate: Instant? = null,
+        lastUnplug: Instant? = null,
+        numberOfCycles: Int? = null,
+        dischargeRate: Float? = null
+    ): HistoryData {
+        return HistoryData(
+            initDate ?: this.initDate,
+            lastUnplug ?:this.lastUnplug,
+            numberOfCycles ?: this.numberOfCycles,
+            dischargeRate ?: this.dischargeRate
+        )
     }
 }
 
@@ -31,13 +46,19 @@ object History {
 
         val numberOfCycles = savedHistory.getInt(AppConstants.HIST_N_CYCLES, 0)
         val dischargeRate = savedHistory.getFloat(AppConstants.HIST_DISCHG_RATE, 0f)
-        val initDate = readInitDate()
-        Log.v(AppConstants.TAG, "History init $numberOfCycles since ${initDate.formatDate()} rate=$dischargeRate")
+        val initDate = longToDate(savedHistory.getLong(AppConstants.HIST_INIT_DATE, 0))
+        val lastUnplug = longToDate(savedHistory.getLong(AppConstants.HIST_UNPLUG_TIME, 0L))
+        Log.v(
+            AppConstants.TAG,
+            "History init $numberOfCycles since ${initDate.formatDate()} rate=$dischargeRate, " +
+                    "unplugged ${lastUnplug.formatDate()}"
+        )
 
         if (numberOfCycles > 0) {
             if (dischargeRate != 0f) {
                 historyFlow.value = HistoryData(
                     initDate,
+                    lastUnplug,
                     numberOfCycles,
                     dischargeRate
                 )
@@ -45,32 +66,28 @@ object History {
         }
     }
 
-    private fun readInitDate(): Instant {
-        val initDateLong = savedHistory.getLong(AppConstants.HIST_INIT_DATE, 0)
-        val initDate =
-            if (initDateLong == 0L) Instant.DISTANT_PAST
-            else Instant.fromEpochSeconds(initDateLong)
-        return initDate
+    private fun longToDate(dateLong: Long): Instant {
+        return (
+                if (dateLong == 0L) Instant.DISTANT_PAST
+                else Instant.fromEpochSeconds(dateLong)
+                )
     }
 
     fun event(
         level: Int,
         plugged: Boolean
     ) {
-        val timeLong = savedHistory.getLong(AppConstants.HIST_UNPLUG_TIME, 0L)
-        var unpluggedTime =
-            if (timeLong == 0L) Instant.DISTANT_PAST
-            else Instant.fromEpochSeconds(timeLong)
+        var lastUnplug = longToDate(savedHistory.getLong(AppConstants.HIST_UNPLUG_TIME, 0L))
         var currentlyPlugged = savedHistory.getBoolean(AppConstants.HIST_PLUG_STATE, false)
         var unpluggedLevel = savedHistory.getInt(AppConstants.HIST_UNPLUG_LEVEL, 0)
         // TODO: Sanitation
         Log.v(AppConstants.TAG, "History event ($level,$plugged)" +
-                " when ($unpluggedLevel,$currentlyPlugged,$unpluggedTime)")
+                " when ($unpluggedLevel,$currentlyPlugged,$lastUnplug)")
 
         if (plugged && !currentlyPlugged) {
-            if (!unpluggedTime.isDistantPast) {
+            if (!lastUnplug.isDistantPast) {
                 val discharge = unpluggedLevel - level
-                val duration = Clock.System.now() - unpluggedTime
+                val duration = Clock.System.now() - lastUnplug
                 Log.v(AppConstants.TAG, "History cycle $discharge% in ${duration.inWholeSeconds}s")
                 if (discharge > 0 && duration.inWholeSeconds > 3600) {
                     val inDays = duration.inWholeSeconds.toFloat() / (3600 * 24)
@@ -82,34 +99,38 @@ object History {
                         putInt(AppConstants.HIST_N_CYCLES, numberOfCycles + 1)
                         putFloat(AppConstants.HIST_DISCHG_RATE, newRate)
                         if (numberOfCycles == 0)
-                            putLong(AppConstants.HIST_INIT_DATE, unpluggedTime.epochSeconds)
+                            putLong(AppConstants.HIST_INIT_DATE, lastUnplug.epochSeconds)
                     }
                     Log.v(AppConstants.TAG, "History saved ${numberOfCycles+1} cycles rate=$newRate")
 
-                    historyFlow.value = HistoryData(
-                        readInitDate(),
-                        numberOfCycles + 1,
-                        newRate
+                    historyFlow.value = historyFlow.value.set(
+                        numberOfCycles = numberOfCycles + 1,
+                        dischargeRate = newRate
                     )
                 }
             }
         }
+
         if (currentlyPlugged && !plugged) {
-            unpluggedTime = Clock.System.now()
+            lastUnplug = Clock.System.now()
             unpluggedLevel = level
             savedHistory.edit {
-                putLong(AppConstants.HIST_UNPLUG_TIME, unpluggedTime.epochSeconds)
+                putLong(AppConstants.HIST_UNPLUG_TIME, lastUnplug.epochSeconds)
                 putInt(AppConstants.HIST_UNPLUG_LEVEL, unpluggedLevel)
             }
-            Log.v(AppConstants.TAG, "History unplugged $unpluggedTime at $unpluggedLevel")
+            Log.v(AppConstants.TAG, "History unplugged $lastUnplug at $unpluggedLevel")
+
+            historyFlow.value = historyFlow.value.set(
+                lastUnplug = lastUnplug,
+            )
         }
 
         if (currentlyPlugged != plugged) {
             currentlyPlugged = plugged
             savedHistory.edit {
                 putBoolean(AppConstants.HIST_PLUG_STATE, currentlyPlugged)
-                Log.v(AppConstants.TAG, "History plugged=$currentlyPlugged")
             }
+            Log.v(AppConstants.TAG, "History plugged=$currentlyPlugged")
         }
     }
 

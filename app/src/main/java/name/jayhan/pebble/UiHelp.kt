@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -64,64 +62,67 @@ fun HelpDialog(
                     .padding(10.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.connected),
+                    text = "${watchInfo.modelString()} (${watchInfo.versionString()})",
                     fontSize = AppConstants.titleSize,
-                    modifier = Modifier.padding(bottom = 10.dp)
+                )
+                Text(
+                    text = lastReceived,
+                    fontSize = AppConstants.textSize,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                 )
 
-                if (isConnected) {
-                    Text(
-                        text = stringResource(R.string.model) + ": " +
-                                watchInfo.modelString() + "\n" +
-                                stringResource(R.string.version) + ": " +
-                                watchInfo.versionString(),
-                        fontSize = AppConstants.textSize,
-                        modifier = Modifier.padding(bottom = 10.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.last_seen) + ": " + lastReceived,
-                        fontSize = AppConstants.textSize,
-                        modifier = Modifier.padding(bottom = 10.dp)
-                    )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        var text = stringResource(R.string.battery) + ": " +
-                                watchInfo.battery.toString() + "%\n"
-                        if (watchInfo.plugged) {
-                            text += stringResource(R.string.plugged)
-                            if (watchInfo.charging)
-                                text += stringResource(R.string.and_charging)
-                        } else text += stringResource(R.string.unplugged)
+                val batteryText = StringBuilder()
+                    .append(stringResource(R.string.format_battery)
+                        .format(watchInfo.battery))
+                    .append("\n")
+                if (watchInfo.plugged) {
+                    batteryText.append(stringResource(R.string.plugged))
+                    if (watchInfo.charging)
+                        batteryText.append(stringResource(R.string.and_charging))
+                } else batteryText.append(stringResource(R.string.unplugged))
 
-                        Text(
-                            text = text,
-                            fontSize = AppConstants.textSize,
-                        )
-                    }
+                Text(
+                    text = batteryText.toString(),
+                    fontSize = AppConstants.textSize,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-                    val historyText = if (historyData.isValid()) {
-                        "Since " + historyData.initDate.formatDate() +
-                                "\n" + stringResource(R.string.format_discharged_d)
-                            .format(historyData.numberOfCycles) +
-                                "\n" + stringResource(R.string.format_drop_f)
-                            .format(historyData.dischargeRate) +
-                                "\n" + stringResource(R.string.format_days_f)
-                            .format(watchInfo.battery / historyData.dischargeRate)
-                    } else {
-                        stringResource(R.string.battery_invalid)
-                    }
+                val historyText = if (historyData.isValid()) {
+                    StringBuilder()
+                        .append(stringResource(R.string.this_cycle))
+                        .append(historyData.lastUnplug.formatDate())
+                        .append("\n")
+                        .append(stringResource(R.string.format_cycle_since)
+                            .format(historyData.numberOfCycles))
+                        .append(historyData.initDate.formatDate())
+                        .append("\n")
+                        .append(stringResource(R.string.format_rate)
+                            .format(
+                                historyData.dischargeRate,
+                                100f / historyData.dischargeRate
+                            ))
+                        .append("\n")
+                        .append(stringResource(R.string.format_estimate)
+                            .format(watchInfo.battery / historyData.dischargeRate))
+                        .toString()
+                } else {
+                    stringResource(R.string.battery_invalid)
+                }
 
-                    Text(
-                        text = historyText,
-                        fontSize = AppConstants.textSize,
-                        modifier = Modifier.padding(top = 10.dp)
-                    )
+                Text(
+                    text = historyText,
+                    fontSize = AppConstants.smallSize,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
                     Button(
                         onClick = { confirmClear = true },
+                        modifier = Modifier.padding(4.dp)
                     ) {
                         Text(
                             text = "Clear history",
@@ -129,8 +130,6 @@ fun HelpDialog(
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
                     text = stringResource(R.string.android_github),
@@ -200,25 +199,33 @@ fun ClearBatteryDialog(
                     Text(
                         text = historySince,
                         fontSize = AppConstants.textSize,
-                        modifier = Modifier.fillMaxWidth().padding(10.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
                     )
                     Text(
                         text = historyDuring,
                         fontSize = AppConstants.textSize,
-                        modifier = Modifier.fillMaxWidth().padding(10.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
                     )
                 } else {
                     Text(
                         text = "No valid history",
                         fontSize = AppConstants.textSize,
-                        modifier = Modifier.fillMaxWidth().padding(10.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
                     )
                 }
 
                 Text(
                     text = "Clear battery history?",
                     fontSize = AppConstants.titleSize,
-                    modifier = Modifier.fillMaxWidth().padding(10.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
                 )
 
                 Row(
@@ -267,6 +274,7 @@ fun Splash(
 }
 
 val PreviewHistoryData = HistoryData(
+    Clock.System.now(),
     Clock.System.now(),
     10,
     4.5f
