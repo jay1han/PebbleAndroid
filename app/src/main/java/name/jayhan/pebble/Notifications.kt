@@ -136,7 +136,7 @@ object Notifications : BroadcastReceiver()
         allFlow.value = newPairs.map { it.first }
     }
 
-    fun reprocess(
+    fun refresh(
         context: Context
     ) {
         if (savedNotifications != null) {

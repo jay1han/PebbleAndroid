@@ -70,7 +70,7 @@ fun IndicatorList(
             },
             onConfirm = {
                 Indicators.reset()
-                Notifications.reprocess(context)
+                Notifications.refresh(context)
             }
         )
     }

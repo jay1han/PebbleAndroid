@@ -17,9 +17,10 @@ class WifiCallback(
     ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
     private val connMan = context.getSystemService(Context.CONNECTIVITY_SERVICE)
             as ConnectivityManager
+    private var ssid = ""
 
     init {
-        sendToPebble("")
+        send()
         val networkRequest = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
             .build()
@@ -32,9 +33,9 @@ class WifiCallback(
         val info = connMan.getNetworkCapabilities(network)?.transportInfo
         if (info != null) {
             val wifiInfo = info as WifiInfo
-            val ssid = wifiInfo.ssid
+            ssid = wifiInfo.ssid
             if (ssid != WifiManager.UNKNOWN_SSID)
-                sendToPebble(wifiInfo.ssid)
+                send()
         }
     }
 
@@ -42,8 +43,9 @@ class WifiCallback(
         super.onLost(network)
 
         val info = connMan.getNetworkCapabilities(network)?.transportInfo
+        ssid = ""
         if (info is WifiInfo) {
-            sendToPebble("")
+            send()
         }
     }
 
@@ -54,12 +56,12 @@ class WifiCallback(
         super.onCapabilitiesChanged(network, capabilities)
 
         val info = capabilities.transportInfo as WifiInfo
-        val ssid = info.ssid.removeSurrounding("\"")
+        ssid = info.ssid.removeSurrounding("\"")
         if (ssid == WifiManager.UNKNOWN_SSID) return
-        sendToPebble(ssid)
+        send()
     }
 
-    private fun sendToPebble(ssid: String) {
+    fun send() {
         Pebble.sendIntent(context, MsgType.WIFI) {
             putExtra(AppConstants.EXTRA_WIFI, ssid)
         }
@@ -73,11 +75,13 @@ class PhoneCallback(
 
     private val teleMan = context.getSystemService(Context.TELEPHONY_SERVICE)
             as TelephonyManager
+    private var mobileGen = 0
 
     init {
         try {
             val cellType = teleMan.dataNetworkType
-            sendToPebble(getCellGen(cellType))
+            mobileGen = getCellGen(cellType)
+            send()
 
             teleMan.registerTelephonyCallback(
                 TelephonyManager.INCLUDE_LOCATION_DATA_FINE,
@@ -102,7 +106,9 @@ class PhoneCallback(
         } else {
             mobile = 0
         }
-        sendToPebble(mobile)
+        mobileGen = mobile
+
+        send()
     }
 
     private fun getCellGen(gen: Int): Int {
@@ -122,9 +128,9 @@ class PhoneCallback(
         }
     }
 
-    private fun sendToPebble(gen: Int) {
+    fun send() {
         Pebble.sendIntent(context, MsgType.NET) {
-            putExtra(AppConstants.EXTRA_NET, gen)
+            putExtra(AppConstants.EXTRA_NET, mobileGen)
         }
     }
 }

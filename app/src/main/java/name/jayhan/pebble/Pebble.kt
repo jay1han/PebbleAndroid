@@ -54,6 +54,7 @@ enum class MsgType(val code: Int) {
     NOTI(8),
     WBATT(9),
     ACTION(10),
+    FRESH(11),
 }
 
 enum class ActionType(val code: Int) {
@@ -116,7 +117,8 @@ private object DataReceiver:
         if (data != null) {
             val msgType = data.getInteger(DictKey.MSG_TYPE.code)?.toInt() ?: 0
             when (msgType) {
-                MsgType.INFO.code -> {
+                MsgType.INFO.code,
+                MsgType.FRESH.code -> {
                     val watchModel = data.getInteger(DictKey.MODEL.code)?.toInt() ?: 0
                     val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.code)?.toInt() ?: 0
                     if (watchModel != 0 && watchFwVersion != 0)
@@ -124,8 +126,9 @@ private object DataReceiver:
                     val tzMinutes = data.getInteger(DictKey.TZ_MIN.code)
                     if (tzMinutes != null)
                         Pebble.fromMinutes(tzMinutes.toInt())
-                    if (context != null)
-                        Pebble.sendIntent(context, MsgType.WBATT) {}
+                    if (msgType == MsgType.FRESH.code) {
+                        Pebble.doRefresh = true
+                    }
                 }
 
                 MsgType.WBATT.code -> {

@@ -139,7 +139,8 @@ class PebbleService: Service()
                     pebbleDict.addInt8(DictKey.MSG_TYPE.code, msgType.toByte())
 
                     when(msgType) {
-                        MsgType.INFO.code -> {
+                        MsgType.INFO.code,
+                        MsgType.WBATT.code -> {
                         }
 
                         MsgType.TZ.code -> {
@@ -182,8 +183,15 @@ class PebbleService: Service()
                 }
             }
             if (Pebble.doRefresh) {
-                Notifications.reprocess(context)
                 Pebble.doRefresh = false
+                Pebble.sendIntent(context, MsgType.WBATT) {}
+                Notifications.refresh(context)
+
+                batteryReceiver.send()
+                bluetoothReceiver.send()
+
+                wifiCallback.send()
+                phoneCallback.send()
             }
 
             restartForeground()

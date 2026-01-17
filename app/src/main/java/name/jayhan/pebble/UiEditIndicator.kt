@@ -315,7 +315,7 @@ fun EditIndicator(
                                             letter = newLetter
                                         )
                                     )
-                                    Notifications.reprocess(context)
+                                    Notifications.refresh(context)
                                 }
                                 onClose()
                             },
@@ -328,7 +328,7 @@ fun EditIndicator(
                         Button(
                             onClick = {
                                 Indicators.remove(indicator)
-                                Notifications.reprocess(context)
+                                Notifications.refresh(context)
                                 onClose()
                             }
                         ) {
