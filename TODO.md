@@ -2,13 +2,13 @@
 
 - Main UI
     - [x] Permission description text
-    - [ ] Make a nice icon
-    - [ ] Splash screen
+    - [x] Splash screen
+    - [ ] Nicer icon
 
 - Service
-    - [ ] Resend ALL info at reconnect (BT)
-    - [ ] Reinit at watchface reload
-    - [ ] Sort indicators by age
+    - [x] Resend ALL info at reconnect (BT)
+    - [x] Reinit at watchface reload
+    - [x] Sort indicators by age
 
 - Pebble
     - [x] Manage Pebble battery (history)
