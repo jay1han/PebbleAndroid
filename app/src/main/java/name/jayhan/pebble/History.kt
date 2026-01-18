@@ -111,18 +111,20 @@ object History {
             }
         }
 
-        if (currentlyPlugged && !plugged) {
-            lastUnplug = Clock.System.now()
-            unpluggedLevel = level
-            savedHistory.edit {
-                putLong(AppConstants.HIST_UNPLUG_TIME, lastUnplug.epochSeconds)
-                putInt(AppConstants.HIST_UNPLUG_LEVEL, unpluggedLevel)
-            }
-            Log.v(AppConstants.TAG, "History unplugged $lastUnplug at $unpluggedLevel")
+        if (!plugged) {
+            if (currentlyPlugged || level > unpluggedLevel) {
+                lastUnplug = Clock.System.now()
+                unpluggedLevel = level
+                Log.v(AppConstants.TAG, "History discharging $lastUnplug at $unpluggedLevel")
+                savedHistory.edit {
+                    putLong(AppConstants.HIST_UNPLUG_TIME, lastUnplug.epochSeconds)
+                    putInt(AppConstants.HIST_UNPLUG_LEVEL, unpluggedLevel)
+                }
 
-            historyFlow.value = historyFlow.value.set(
-                lastUnplug = lastUnplug,
-            )
+                historyFlow.value = historyFlow.value.set(
+                    lastUnplug = lastUnplug,
+                )
+            }
         }
 
         if (currentlyPlugged != plugged) {

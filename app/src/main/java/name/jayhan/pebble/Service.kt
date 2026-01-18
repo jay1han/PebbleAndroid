@@ -82,7 +82,7 @@ class PebbleService: Service()
     }
 
     fun restartForeground() {
-        val notification = NotificationCompat.Builder(
+        val notification = Notification.Builder(
             context,
             AppConstants.CHANNEL_ID
         ).apply {
@@ -90,8 +90,8 @@ class PebbleService: Service()
             setContentIntent(launchIntent)
             setContentTitle("${Pebble.watchInfo.modelString()} ${Pebble.watchInfo.battery}%")
             setContentText("")
-            setSmallIcon(R.mipmap.ic_launcher)
-            setVisibility(NotificationCompat.VISIBILITY_SECRET)
+//            setSmallIcon(R.mipmap.ic_launcher)
+            setVisibility(Notification.VISIBILITY_SECRET)
         }.build()
 
         this.startForeground(

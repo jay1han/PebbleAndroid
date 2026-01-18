@@ -5,7 +5,8 @@
     - [x] Splash screen
     - [x] Prettier date/time
     - [x] Use LaunchEffect to count seconds since lastReceived
-    - [ ] Nicer icon
+    - [x] Nicer icon
+    - [ ] Notification icon has circle
     - [ ] Use theme
 
 - Service
@@ -16,6 +17,7 @@
 - Pebble
     - [x] Manage Pebble battery (history)
     - [x] Blackout watchface when disconnected
+    - [x] Battery goes up after unplugging
     
 - Clean code
     - [ ] Remove hard-coded dimensions
