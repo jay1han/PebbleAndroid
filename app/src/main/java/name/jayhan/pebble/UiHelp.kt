@@ -59,7 +59,9 @@ fun HelpDialog(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(10.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
                     .verticalScroll(scrollState),
             ) {
                 Text(
@@ -73,7 +75,9 @@ fun HelpDialog(
                             " (%s)".format((clockNow - lastReceived).formatDurationSeconds()),
                     fontSize = AppConst.textSize,
                     textAlign = TextAlign.End,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
                 )
                 LaunchedEffect(clockNow) {
                     delay(1000)
@@ -197,9 +201,7 @@ fun ClearBatteryDialog(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp),
+                modifier = Modifier.fillMaxWidth().padding(10.dp),
             ) {
                 if (historyData.isValid()) {
                     val duration = Clock.System.now() - historyData.initDate
@@ -211,26 +213,21 @@ fun ClearBatteryDialog(
                     Text(
                         text = historyText,
                         fontSize = AppConst.textSize,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp)
+                        modifier = Modifier.fillMaxWidth().padding(10.dp)
                     )
                 } else {
                     Text(
-                        text = "No valid history",
+                        text = stringResource(R.string.no_history),
                         fontSize = AppConst.textSize,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp)
+                        modifier = Modifier.fillMaxWidth().padding(10.dp)
                     )
                 }
 
                 Text(
-                    text = "Clear battery history?",
+                    text = stringResource(R.string.clear_battery_history),
                     fontSize = AppConst.titleSize,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)
+                    lineHeight = AppConst.titleSize * 1.2,
+                    modifier = Modifier.fillMaxWidth().padding(10.dp)
                 )
 
                 Row(

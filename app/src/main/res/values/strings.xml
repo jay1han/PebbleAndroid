@@ -101,5 +101,7 @@
     <string name="zen_rule_2">In order to control the phone\'s Do-not-disturb feature,
         a Zen rule must be registered and toggled on or off.</string>
     <string name="ignore_indication">Ignore</string>
+    <string name="clear_battery_history">Clear battery history?</string>
+    <string name="no_history">No history</string>
 
 </resources>
