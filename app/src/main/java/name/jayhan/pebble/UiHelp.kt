@@ -304,11 +304,3 @@ fun ConfirmClearPreview() {
         ) { }
     }
 }
-
-@Preview
-@Composable
-fun SplashPreview() {
-    PebbleTheme {
-        Splash()
-    }
-}

@@ -58,24 +58,35 @@ fun AppScaffold(
     val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
     val lastReceived: Instant by Pebble.lastReceived.collectAsState(Clock.System.now())
     val permissionsGranted by Permissions.grantFlow.collectAsState(Permissions.allGranted)
-    val serverUp by Permissions.initFlow.collectAsState(false)
+    val permissionsInit by Permissions.initFlow.collectAsState(false)
     val activeList by Notifications.activeFlow.collectAsState(emptyList())
     val allList by Notifications.allFlow.collectAsState(emptyList())
     val tzWatch: String by Pebble.tzFlow.collectAsState("")
     val indicators by Indicators.allFlow.collectAsState(listOf())
     val historyData: HistoryData by History.historyFlow.collectAsState(HistoryData())
     var showHelp by remember { mutableStateOf(false) }
+    var firstEntry by remember { mutableStateOf(true) }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            TopBar(isConnected, watchInfo) {
-                showHelp = true
+    if (!permissionsInit) {
+        Splash()
+    } else {
+        if (!permissionsGranted) {
+            PermissionsScaffold(context)
+
+        } else {
+            if (firstEntry) {
+                firstEntry = false
+                Permissions.restartService(context)
             }
-        },
-    ) { innerPadding ->
-        if (serverUp) {
-            if (permissionsGranted) {
+
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                topBar = {
+                    MainTopBar(isConnected, watchInfo) {
+                        showHelp = true
+                    }
+                },
+            ) { innerPadding ->
                 if (showHelp) {
                     HelpDialog(
                         watchInfo = watchInfo,
@@ -96,27 +107,13 @@ fun AppScaffold(
                     modifier = Modifier.padding(innerPadding)
                         .consumeWindowInsets(innerPadding)
                 )
-
-            } else {
-                val missingList by Permissions.missingFlow.collectAsState(listOf())
-
-                UiPermissions(
-                    missingList,
-                    modifier = Modifier.padding(innerPadding)
-                        .consumeWindowInsets(innerPadding)
-                )
             }
-        } else {
-            Splash(
-                modifier = Modifier.padding(innerPadding)
-                    .consumeWindowInsets(innerPadding)
-            )
         }
     }
 }
 
 @Composable
-fun TopBar(
+fun MainTopBar(
     isConnected: Boolean,
     watchInfo: WatchInfo,
     onHelp: () -> Unit
@@ -278,9 +275,9 @@ val PreviewWatchInfo = WatchInfo(
 
 @Preview
 @Composable
-fun TopBarPreview() {
+fun MainTopBarPreview() {
     PebbleTheme {
-        TopBar(
+        MainTopBar(
             isConnected = true,
             watchInfo = PreviewWatchInfo
         ) {}
@@ -289,9 +286,9 @@ fun TopBarPreview() {
 
 @Preview
 @Composable
-fun TopBarDisconnected() {
+fun MainTopBarDisconnected() {
     PebbleTheme {
-        TopBar(
+        MainTopBar(
             isConnected = false,
             watchInfo = WatchInfo()
         ) {}
@@ -310,5 +307,13 @@ fun MainPagePreview() {
             indicators = PreviewIndicators,
             tzWatch = "+8.0",
         )
+    }
+}
+
+@Preview
+@Composable
+fun SplashPreview() {
+    PebbleTheme {
+        Splash()
     }
 }

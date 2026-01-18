@@ -17,7 +17,6 @@ import com.getpebble.android.kit.util.PebbleDictionary
 
 class PebbleService: Service()
 {
-
     private lateinit var context: Context
     private lateinit var batteryReceiver: BatteryReceiver
     private lateinit var bluetoothReceiver: BluetoothReceiver

@@ -14,19 +14,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 const val SETTINGS_ENABLED_LISTENERS = "enabled_notification_listeners"
 const val ACTION_LISTENER_SETTING = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"
 
-const val NOTIFICATION_LISTENER = "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
-const val RECEIVE_BOOT_COMPLETED = "android.permission.RECEIVE_BOOT_COMPLETED"
-const val NETWORK_STATE = "android.permission.ACCESS_NETWORK_STATE"
-const val WIFI_STATE = "android.permission.ACCESS_WIFI_STATE"
-const val NOTIFICATION_POLICY = "android.permission.ACCESS_NOTIFICATION_POLICY"
 const val FOREGROUND_SERVICE = "android.permission.FOREGROUND_SERVICE"
 const val CONNECTED_DEVICE = "android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"
 const val POST_NOTIFICATION = "android.permission.POST_NOTIFICATIONS"
-const val PHONE_STATE = "android.permission.READ_PHONE_STATE"
 const val BLUETOOTH_CONNECT = "android.permission.BLUETOOTH_CONNECT"
+const val NETWORK_STATE = "android.permission.ACCESS_NETWORK_STATE"
+const val WIFI_STATE = "android.permission.ACCESS_WIFI_STATE"
 const val FINE_LOCATION = "android.permission.ACCESS_FINE_LOCATION"
 const val BACKGROUND_LOCATION = "android.permission.ACCESS_BACKGROUND_LOCATION"
+const val PHONE_STATE = "android.permission.READ_PHONE_STATE"
 const val QUERY_ALL_PACKAGES = "android.permission.QUERY_ALL_PACKAGES"
+const val RECEIVE_BOOT_COMPLETED = "android.permission.RECEIVE_BOOT_COMPLETED"
+const val NOTIFICATION_POLICY = "android.permission.ACCESS_NOTIFICATION_POLICY"
+const val NOTIFICATION_LISTENER = "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
 
 val AllPermissionGroups = listOf(
     PermissionGroup(
@@ -251,6 +251,15 @@ object Permissions
         if (singlePermission != null) {
             singlePermission.update()
             collectMissing()
+        }
+    }
+
+    fun restartService(
+        context: Context
+    ) {
+        if (allGranted) {
+            val intent = Intent(context, PebbleService::class.java)
+            context.startForegroundService(intent)
         }
     }
 
