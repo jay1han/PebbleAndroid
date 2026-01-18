@@ -6,6 +6,7 @@
     - [x] Prettier date/time
     - [x] Use LaunchEffect to count seconds since lastReceived
     - [ ] Nicer icon
+    - [ ] Use theme
 
 - Service
     - [x] Resend ALL info at reconnect (BT)

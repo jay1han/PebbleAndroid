@@ -3,6 +3,7 @@
 package name.jayhan.pebble
 
 import android.content.Context
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -120,13 +122,16 @@ fun TopBar(
                 if (isConnected) onHelp()
                 else Pebble.askInfo()
             },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = AppConstants.colorBack,
-        ),
+        navigationIcon = {
+            Image(
+                painterResource(R.drawable.navicon),
+                contentDescription = "Logo",
+                modifier = Modifier.padding(4.dp).height(40.dp),
+            )
+        },
         title = {
             Text(
                 text = watchInfo.modelString().ifEmpty { "Disconnected" },
-                color = if (isConnected) AppConstants.colorText else AppConstants.colorWarning,
                 fontSize = AppConstants.titleSize
             )
         },
@@ -135,13 +140,11 @@ fun TopBar(
                 Text(
                     text = "${watchInfo.battery}%",
                     fontSize = AppConstants.titleSize,
-                    color = AppConstants.colorText,
                 )
             } else {
                 Icon(
                     painterResource(R.drawable.outline_refresh_24),
                     contentDescription = "Refresh",
-                    tint = AppConstants.colorWarning
                 )
             }
         }
@@ -214,9 +217,6 @@ fun AwayTimezone(
                 .onFocusChanged { editing = it.hasFocus },
             textStyle = TextStyle(fontSize = AppConstants.titleSize),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledTextColor = AppConstants.colorBlack
-            )
         )
 
         if (isConnected) {
@@ -231,7 +231,6 @@ fun AwayTimezone(
                         focusManager.clearFocus()
                     }
                 },
-                modifier = Modifier.padding(AppConstants.padSize)
             ) {
                 Text(
                     text =

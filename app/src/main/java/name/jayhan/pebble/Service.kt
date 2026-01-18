@@ -13,7 +13,9 @@ import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.IBinder
 import android.util.Log
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.core.app.NotificationCompat
+import androidx.core.graphics.drawable.toBitmap
 import com.getpebble.android.kit.util.PebbleDictionary
 
 class PebbleService: Service()
@@ -88,9 +90,9 @@ class PebbleService: Service()
         ).apply {
             setDeleteIntent(reviveIntent)
             setContentIntent(launchIntent)
-            setSmallIcon(R.drawable.ic_launcher_foreground)
             setContentTitle("${Pebble.watchInfo.modelString()} ${Pebble.watchInfo.battery}%")
             setContentText("")
+            setSmallIcon(R.mipmap.ic_launcher)
             setVisibility(NotificationCompat.VISIBILITY_SECRET)
         }.build()
 
