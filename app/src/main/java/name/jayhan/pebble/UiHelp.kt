@@ -68,19 +68,19 @@ fun HelpDialog(
                     fontSize = AppConstants.titleSize,
                 )
 
-                var gapSeconds by remember { mutableStateOf("0h00m00s") }
+                var clockNow by remember { mutableStateOf(Clock.System.now()) }
                 Text (
                     text = lastReceived.formatTimeSecond() +
-                            " (%s)".format(gapSeconds),
+                            " (%s)".format((clockNow - lastReceived).formatDurationSeconds()),
                     fontSize = AppConstants.textSize,
                     textAlign = TextAlign.End,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
                 )
-                LaunchedEffect(gapSeconds) {
+                LaunchedEffect(clockNow) {
                     delay(1000)
-                    gapSeconds = (Clock.System.now() - lastReceived).formatDurationSeconds()
+                    clockNow = Clock.System.now()
                 }
 
                 val batteryText = StringBuilder()
@@ -103,6 +103,8 @@ fun HelpDialog(
                     StringBuilder()
                         .append(stringResource(R.string.this_cycle))
                         .append(historyData.lastUnplug.formatTime())
+                        .append(" (%s)"
+                            .format((clockNow - historyData.lastUnplug).formatDurationShort()))
                         .append("\n")
                         .append(stringResource(R.string.format_cycle_since)
                             .format(historyData.numberOfCycles))

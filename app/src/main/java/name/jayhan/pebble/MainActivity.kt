@@ -149,6 +149,20 @@ fun Duration.formatDuration(): String {
     } else return "%d minutes".format(minutes)
 }
 
+fun Duration.formatDurationShort(): String {
+    var minutes = this.inWholeSeconds / 60
+
+    if (minutes >= 60) {
+        var hours = minutes / 60
+        minutes %= 60
+        if (hours >= 24) {
+            val days = hours / 24
+            hours %= 24
+            return "%dd%dh".format(days, hours)
+        } else return "%dh%02dm".format(hours, minutes)
+    } else return "%dm".format(minutes)
+}
+
 fun Duration.formatDurationSeconds(): String {
     var seconds = this.inWholeSeconds.toInt()
     var minutes = 0

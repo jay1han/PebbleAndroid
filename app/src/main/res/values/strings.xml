@@ -40,7 +40,9 @@
     <string name="format_cycles_since">%d cycles since </string>
     <string name="format_rate">Rate %.1f%%/day, %.1f days/charge</string>
     <string name="format_estimate">Estimate: %.1f days</string>
-    <string name="this_cycle">"This cycle: "</string>
+    <string name="this_cycle">"Cycle: "</string>
+    <string name="format_cycle_since">"%d cycles since "</string>
+    <string name="format_data_since">Since %s\nHistory %s</string>
 
     <string name="android_github">Android</string>
     <string name="pebble_github">Pebble</string>
@@ -98,7 +100,5 @@
     <string name="zen_rule">Create and manage a Zen rule</string>
     <string name="zen_rule_2">In order to control the phone\'s Do-not-disturb feature,
         a Zen rule must be registered and toggled on or off.</string>
-    <string name="format_cycle_since">"%d cycles since "</string>
-    <string name="format_data_since">Since %s\nData for %s</string>
 
 </resources>
