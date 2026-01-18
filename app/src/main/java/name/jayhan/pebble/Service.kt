@@ -13,9 +13,10 @@ import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.IBinder
 import android.util.Log
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.core.app.NotificationCompat
+import androidx.core.graphics.drawable.toBitmap
 import com.getpebble.android.kit.util.PebbleDictionary
-import java.io.File
 
 class PebbleService: Service()
 {
@@ -89,9 +90,9 @@ class PebbleService: Service()
         ).apply {
             setDeleteIntent(reviveIntent)
             setContentIntent(launchIntent)
-            setSmallIcon(R.drawable.ic_launcher_foreground)
             setContentTitle("${Pebble.watchInfo.modelString()} ${Pebble.watchInfo.battery}%")
             setContentText("")
+            setSmallIcon(R.mipmap.ic_launcher)
             setVisibility(NotificationCompat.VISIBILITY_SECRET)
         }.build()
 
@@ -110,7 +111,6 @@ class PebbleService: Service()
         if (Permissions.allGranted) {
             Pebble.init(context)
             Notifications.init(context)
-            val file = File(context.filesDir, "history")
             History.init(context)
 
             batteryReceiver = BatteryReceiver(context)
@@ -139,7 +139,8 @@ class PebbleService: Service()
                     pebbleDict.addInt8(DictKey.MSG_TYPE.code, msgType.toByte())
 
                     when(msgType) {
-                        MsgType.INFO.code -> {
+                        MsgType.INFO.code,
+                        MsgType.WBATT.code -> {
                         }
 
                         MsgType.TZ.code -> {
@@ -182,8 +183,15 @@ class PebbleService: Service()
                 }
             }
             if (Pebble.doRefresh) {
-                Notifications.reprocess(context)
                 Pebble.doRefresh = false
+                Pebble.sendIntent(context, MsgType.WBATT) {}
+                Notifications.refresh(context)
+
+                batteryReceiver.refresh()
+                bluetoothReceiver.refresh()
+
+                wifiCallback.refresh()
+                phoneCallback.refresh()
             }
 
             restartForeground()

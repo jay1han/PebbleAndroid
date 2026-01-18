@@ -3,6 +3,7 @@
 package name.jayhan.pebble
 
 import android.content.Context
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -42,6 +44,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @Composable
 fun AppScaffold(
@@ -49,7 +53,7 @@ fun AppScaffold(
 ) {
     val watchInfo: WatchInfo by Pebble.infoFlow.collectAsState(WatchInfo())
     val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
-    val lastReceived: String by Pebble.lastReceived.collectAsState("")
+    val lastReceived: Instant by Pebble.lastReceived.collectAsState(Clock.System.now())
     val permissionsGranted by Permissions.grantFlow.collectAsState(Permissions.allGranted)
     val serverUp by Permissions.initFlow.collectAsState(false)
     val activeList by Notifications.activeFlow.collectAsState(emptyList())
@@ -72,7 +76,6 @@ fun AppScaffold(
                 if (showHelp) {
                     HelpDialog(
                         watchInfo = watchInfo,
-                        isConnected = isConnected,
                         lastReceived = lastReceived,
                         historyData = historyData,
                     ) {
@@ -119,13 +122,16 @@ fun TopBar(
                 if (isConnected) onHelp()
                 else Pebble.askInfo()
             },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = AppConstants.colorBack,
-        ),
+        navigationIcon = {
+            Image(
+                painterResource(R.drawable.navicon),
+                contentDescription = "Logo",
+                modifier = Modifier.padding(4.dp).height(40.dp),
+            )
+        },
         title = {
             Text(
                 text = watchInfo.modelString().ifEmpty { "Disconnected" },
-                color = if (isConnected) AppConstants.colorText else AppConstants.colorWarning,
                 fontSize = AppConstants.titleSize
             )
         },
@@ -134,13 +140,11 @@ fun TopBar(
                 Text(
                     text = "${watchInfo.battery}%",
                     fontSize = AppConstants.titleSize,
-                    color = AppConstants.colorText,
                 )
             } else {
                 Icon(
                     painterResource(R.drawable.outline_refresh_24),
                     contentDescription = "Refresh",
-                    tint = AppConstants.colorWarning
                 )
             }
         }
@@ -213,9 +217,6 @@ fun AwayTimezone(
                 .onFocusChanged { editing = it.hasFocus },
             textStyle = TextStyle(fontSize = AppConstants.titleSize),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledTextColor = AppConstants.colorBlack
-            )
         )
 
         if (isConnected) {
@@ -230,7 +231,6 @@ fun AwayTimezone(
                         focusManager.clearFocus()
                     }
                 },
-                modifier = Modifier.padding(AppConstants.padSize)
             ) {
                 Text(
                     text =

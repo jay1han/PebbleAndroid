@@ -4,6 +4,7 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothProfile
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -19,7 +20,7 @@ class BatteryReceiver(
     private var percent = 0
 
     init {
-        sendToPebble()
+        send()
 
         val batteryFilter = IntentFilter().apply {
             addAction(Intent.ACTION_BATTERY_CHANGED)
@@ -44,10 +45,10 @@ class BatteryReceiver(
                 isPlugged = false
             }
         }
-        sendToPebble()
+        send()
     }
 
-    private fun sendToPebble() {
+    private fun send() {
         Pebble.sendIntent(
             context,
             MsgType.PHONE_CHG
@@ -56,15 +57,9 @@ class BatteryReceiver(
             putExtra(AppConstants.EXTRA_PHONE_BATT, percent)
         }
     }
-}
 
-private fun BluetoothDevice.isConnected(): Boolean {
-    try {
-        val method = this.javaClass.getMethod("isConnected", Int::class.java)
-        val result = method.invoke(this, BluetoothDevice.TRANSPORT_BREDR) as Boolean
-        return result
-    } catch (e: Exception) {
-        return false
+    fun refresh() {
+        send()
     }
 }
 
@@ -84,25 +79,46 @@ class BluetoothReceiver(
     private val context: Context
 ):
     BroadcastReceiver() {
+    private var blueMan = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
-    init {
-        try {
-            val blueMan = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-            val bluetoothAdapter = blueMan.adapter
-            val devices = bluetoothAdapter.bondedDevices
-            val connectedDevice = devices.firstOrNull { it.isConnected() }
-            if (connectedDevice != null) {
-                sendToPebble(
-                    connectedDevice.name.removePrefix("LE-"),
-                    connectedDevice.getBatteryLevel()
-                )
-            } else {
-                sendToPebble("", 0)
+    var name = ""
+    var battery = 0
+
+    inner class Listener:
+        BluetoothProfile.ServiceListener {
+
+        @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+        override fun onServiceConnected(profile: Int, proxy: BluetoothProfile?) {
+            if (proxy != null) {
+                val devices = proxy.connectedDevices
+                devices.forEach {
+                    if (it.name.isNotEmpty()) {
+                        name = it.name
+                        battery = it.getBatteryLevel()
+                        send()
+                        return
+                    }
+                }
             }
+        }
+
+        override fun onServiceDisconnected(profile: Int) {
+            name = ""
+            battery = 0
+            send()
+        }
+    }
+    val listener = Listener()
+
+    fun refresh() {
+        try {
+            blueMan.adapter.getProfileProxy(context, listener, BluetoothProfile.A2DP)
         } catch(e: SecurityException) {
             println(e)
         }
+    }
 
+    init {
         context.registerReceiver(
             this,
             IntentFilter().apply {
@@ -116,26 +132,30 @@ class BluetoothReceiver(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun onReceive(context: Context, intent: Intent) {
         val state = intent.getIntExtra(BluetoothAdapter.EXTRA_CONNECTION_STATE, BluetoothAdapter.STATE_DISCONNECTED)
-        var name = ""
-        var battery = 0
-
-        if (state == BluetoothAdapter.STATE_CONNECTED) {
-            val device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
-            if (device != null) {
-                name = device.name.removePrefix("LE-").take(19)
+        val device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+        if (device != null) {
+            val deviceName = device.name.clean()
+            if (state == BluetoothAdapter.STATE_CONNECTED) {
+                name = deviceName
                 battery = device.getBatteryLevel()
+            } else {
+                if (name == deviceName) {
+                    name = ""
+                    battery = 0
+                }
             }
+            send()
         }
-        sendToPebble(name, battery)
     }
 
-    private fun sendToPebble(
-        name: String,
-        battery: Int
-    ) {
+    private fun send() {
         Pebble.sendIntent(context, MsgType.BT) {
             putExtra(AppConstants.EXTRA_BTID, name.take(AppConstants.MAX_LEN_BTID))
             putExtra(AppConstants.EXTRA_BTC, battery)
         }
+    }
+
+    private fun String.clean(): String {
+        return this.removePrefix("LE-")
     }
 }

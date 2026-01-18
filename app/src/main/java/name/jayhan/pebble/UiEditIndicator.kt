@@ -99,18 +99,13 @@ fun EditIndicator(
                                 singleLine = true,
                                 textStyle = TextStyle(
                                     fontSize = AppConstants.titleSize,
-                                    color = AppConstants.colorText,
                                     textAlign = TextAlign.Center,
                                 ),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Uri,
                                     autoCorrectEnabled = false,
                                 ),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    cursorColor = AppConstants.colorTransparent
-                                ),
                                 modifier = Modifier
-                                    .background(AppConstants.colorNotiBack)
                                     .padding(horizontal = 8.dp)
                             )
                         }
@@ -165,7 +160,6 @@ fun EditIndicator(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(color = AppConstants.colorBlank)
                     ) {
                         var editPackageName by remember { mutableStateOf(false) }
                         BasicTextField(
@@ -181,19 +175,16 @@ fun EditIndicator(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(10.dp)
-                                .onFocusChanged { editPackageName = it.hasFocus }
-                                .background(color = AppConstants.colorBlank),
+                                .onFocusChanged { editPackageName = it.hasFocus },
                             decorationBox = { inner ->
                                 Box {
                                     if (newPackage.isEmpty() && !editPackageName)
                                         Text(
                                             text = stringResource(R.string.package_name_empty),
                                             fontSize = AppConstants.textSize,
-                                            color = AppConstants.colorFade,
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .padding(10.dp)
-                                                .background(color = AppConstants.colorBlank),
                                         )
                                     inner()
                                 }
@@ -214,7 +205,6 @@ fun EditIndicator(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(color = AppConstants.colorBlank)
                     ) {
                         var editChannel by remember { mutableStateOf(false) }
                         BasicTextField(
@@ -231,18 +221,15 @@ fun EditIndicator(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(10.dp)
-                                .onFocusChanged { editChannel = it.hasFocus }
-                                .background(color = AppConstants.colorBlank),
+                                .onFocusChanged { editChannel = it.hasFocus },
                             decorationBox = { inner ->
                                 if (newChannel.isEmpty() && !editChannel)
                                     Text(
                                         text = stringResource(R.string.filter_empty),
                                         fontSize = AppConstants.textSize,
                                         fontWeight = FontWeight.Bold,
-                                        color = AppConstants.colorFade,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .background(color = AppConstants.colorBlank),
                                     )
                                 inner()
                             }
@@ -262,7 +249,6 @@ fun EditIndicator(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(color = AppConstants.colorBlank)
                     ) {
                         var editTicker by remember { mutableStateOf(false) }
                         BasicTextField(
@@ -278,18 +264,15 @@ fun EditIndicator(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(10.dp)
-                                .onFocusChanged { editTicker = it.hasFocus }
-                                .background(color = AppConstants.colorBlank),
+                                .onFocusChanged { editTicker = it.hasFocus },
                             decorationBox = { inner ->
                                 if (newTicker.isEmpty() && !editTicker)
                                     Text(
                                         text = stringResource(R.string.filter_empty),
                                         fontSize = AppConstants.textSize,
                                         fontStyle = FontStyle.Italic,
-                                        color = AppConstants.colorFade,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .background(color = AppConstants.colorBlank),
                                     )
                                 inner()
                             }
@@ -315,7 +298,7 @@ fun EditIndicator(
                                             letter = newLetter
                                         )
                                     )
-                                    Notifications.reprocess(context)
+                                    Notifications.refresh(context)
                                 }
                                 onClose()
                             },
@@ -328,7 +311,7 @@ fun EditIndicator(
                         Button(
                             onClick = {
                                 Indicators.remove(indicator)
-                                Notifications.reprocess(context)
+                                Notifications.refresh(context)
                                 onClose()
                             }
                         ) {
@@ -349,7 +332,7 @@ fun acceptLetter(input: String): Char {
 
     val letter = try {
         input.removePrefix(" ").removeSuffix(" ").last()
-    } catch (e: NoSuchElementException) {
+    } catch (_: NoSuchElementException) {
         ' '
     }
     if (letter.code >= '!'.code && letter.code <= '~'.code) return letter

@@ -31,13 +31,17 @@
     <string name="list_all">List all</string>
 
     <string name="connected">Connected</string>
-    <string name="model">Model</string>
-    <string name="version">"Version"</string>
-    <string name="last_seen">Last seen</string>
-    <string name="battery">Battery</string>
+
+    <string name="battery_invalid">Battery info not available</string>
+    <string name="format_battery">Battery: %d%%</string>
     <string name="unplugged">Unplugged</string>
     <string name="plugged">Plugged</string>
     <string name="and_charging"><![CDATA[" & Charging"]]></string>
+    <string name="format_cycles_since">%d cycles since </string>
+    <string name="format_rate">Rate %.1f%%/day, %.1f days/charge</string>
+    <string name="format_estimate">Estimate: %.1f days</string>
+    <string name="this_cycle">"This cycle: "</string>
+
     <string name="android_github">Android</string>
     <string name="pebble_github">Pebble</string>
     <string name="built">"App build"</string>
@@ -94,9 +98,7 @@
     <string name="zen_rule">Create and manage a Zen rule</string>
     <string name="zen_rule_2">In order to control the phone\'s Do-not-disturb feature,
         a Zen rule must be registered and toggled on or off.</string>
-    <string name="format_discharged_d">Discharged %d times</string>
-    <string name="format_drop_f">Average rate: %.1f%%/day</string>
-    <string name="format_days_f">Current charge: %.1f days</string>
-    <string name="battery_invalid">Battery info not available</string>
+    <string name="format_cycle_since">"%d cycles since "</string>
+    <string name="format_data_since">Since %s\nData for %s</string>
 
 </resources>

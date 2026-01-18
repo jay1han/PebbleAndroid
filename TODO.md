@@ -2,13 +2,16 @@
 
 - Main UI
     - [x] Permission description text
-    - [ ] Make a nice icon
-    - [ ] Splash screen
+    - [x] Splash screen
+    - [x] Prettier date/time
+    - [x] Use LaunchEffect to count seconds since lastReceived
+    - [ ] Nicer icon
+    - [ ] Use theme
 
 - Service
-    - [ ] Resend ALL info at reconnect (BT)
-    - [ ] Reinit at watchface reload
-    - [ ] Sort indicators by age
+    - [x] Resend ALL info at reconnect (BT)
+    - [x] Reinit at watchface reload
+    - [x] Sort indicators by age
 
 - Pebble
     - [x] Manage Pebble battery (history)
@@ -16,6 +19,10 @@
     
 - Clean code
     - [ ] Remove hard-coded dimensions
+
+- Feature
+    - [ ] SIM indicator
+    - [ ] PLMN connected
 
 - Future: DND
 
