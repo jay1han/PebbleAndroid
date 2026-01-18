@@ -76,10 +76,10 @@ object Notifications : BroadcastReceiver()
         activeFlow.value = activeList.dedup()
 
         val text = letters.getCompact()
-            .take(AppConstants.MAX_NOTI_INDICATORS)
+            .take(AppConst.MAX_NOTI_INDICATORS)
 
         Pebble.sendIntent(context, MsgType.NOTI) {
-            putExtra(AppConstants.EXTRA_NOTI, text)
+            putExtra(AppConst.EXTRA_NOTI, text)
         }
     }
 

@@ -13,7 +13,6 @@ import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.IBinder
 import android.util.Log
-import androidx.core.app.NotificationCompat
 import com.getpebble.android.kit.util.PebbleDictionary
 
 class PebbleService: Service()
@@ -34,7 +33,7 @@ class PebbleService: Service()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.v(AppConstants.TAG, "Service starting")
+        Log.v(AppConst.TAG, "Service starting")
         context = applicationContext
         val activityIntent = Intent(context, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -47,13 +46,13 @@ class PebbleService: Service()
         reviveIntent = getBroadcast(
             context,
             1,
-            Intent(AppConstants.INTENT_REVIVE),
+            Intent(AppConst.INTENT_REVIVE),
             PendingIntent.FLAG_IMMUTABLE
         )
 
         val filter = IntentFilter().apply {
-            addAction(AppConstants.INTENT_REVIVE)
-            addAction(AppConstants.INTENT_SEND_PEBBLE)
+            addAction(AppConst.INTENT_REVIVE)
+            addAction(AppConst.INTENT_SEND_PEBBLE)
         }
         context.registerReceiver(receiver, filter,RECEIVER_EXPORTED)
 
@@ -63,7 +62,7 @@ class PebbleService: Service()
             val notiMan = context.getSystemService(NOTIFICATION_SERVICE)
                     as NotificationManager
             val channel = NotificationChannel(
-                AppConstants.CHANNEL_ID,
+                AppConst.CHANNEL_ID,
                 getString(R.string.app_title),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
@@ -84,13 +83,13 @@ class PebbleService: Service()
     fun restartForeground() {
         val notification = Notification.Builder(
             context,
-            AppConstants.CHANNEL_ID
+            AppConst.CHANNEL_ID
         ).apply {
             setDeleteIntent(reviveIntent)
             setContentIntent(launchIntent)
             setContentTitle("${Pebble.watchInfo.modelString()} ${Pebble.watchInfo.battery}%")
             setContentText("")
-//            setSmallIcon(R.mipmap.ic_launcher)
+            setSmallIcon(R.mipmap.ic_launcher)
             setVisibility(Notification.VISIBILITY_SECRET)
         }.build()
 
@@ -102,7 +101,7 @@ class PebbleService: Service()
     }
 
     private fun setupForeground() {
-        Log.v(AppConstants.TAG, "Running foreground")
+        Log.v(AppConst.TAG, "Running foreground")
 
         restartForeground()
 
@@ -117,7 +116,7 @@ class PebbleService: Service()
             wifiCallback = WifiCallback(context)
             phoneCallback = PhoneCallback(context)
         } else {
-            Log.v(AppConstants.TAG, "Permissions missing")
+            Log.v(AppConst.TAG, "Permissions missing")
         }
     }
 
@@ -125,13 +124,13 @@ class PebbleService: Service()
 
         override fun onReceive(context: Context, intent: Intent) {
             when(intent.action) {
-                AppConstants.INTENT_REVIVE -> {
-                    Log.v(AppConstants.TAG, "Restart service")
+                AppConst.INTENT_REVIVE -> {
+                    Log.v(AppConst.TAG, "Restart service")
                     setupForeground()
                 }
 
-                AppConstants.INTENT_SEND_PEBBLE -> {
-                    val msgType = intent.getIntExtra(AppConstants.EXTRA_MSG_TYPE, 0)
+                AppConst.INTENT_SEND_PEBBLE -> {
+                    val msgType = intent.getIntExtra(AppConst.EXTRA_MSG_TYPE, 0)
 
                     val pebbleDict = PebbleDictionary()
                     pebbleDict.addInt8(DictKey.MSG_TYPE.code, msgType.toByte())
@@ -142,36 +141,40 @@ class PebbleService: Service()
                         }
 
                         MsgType.TZ.code -> {
-                            val minutes = intent.getIntExtra(AppConstants.EXTRA_TZ_MIN, 0)
+                            val minutes = intent.getIntExtra(AppConst.EXTRA_TZ_MIN, 0)
                             pebbleDict.addInt16(DictKey.TZ_MIN.code, minutes.toShort())
                         }
 
                         MsgType.PHONE_CHG.code -> {
-                            val isCharging = intent.getIntExtra(AppConstants.EXTRA_PHONE_CHG, 0)
+                            val isCharging = intent.getIntExtra(AppConst.EXTRA_PHONE_CHG, 0)
                             pebbleDict.addInt8(DictKey.PHONE_CHG.code, isCharging.toByte())
-                            val percent = intent.getIntExtra(AppConstants.EXTRA_PHONE_BATT, 0)
+                            val percent = intent.getIntExtra(AppConst.EXTRA_PHONE_BATT, 0)
                             pebbleDict.addInt8(DictKey.PHONE_BATT.code, percent.toByte())
                         }
 
                         MsgType.WIFI.code -> {
-                            val ssid = intent.getStringExtra(AppConstants.EXTRA_WIFI) ?: ""
-                            pebbleDict.addString(DictKey.WIFI.code, ssid.take(AppConstants.MAX_LEN_SSID))
+                            val ssid = intent.getStringExtra(AppConst.EXTRA_WIFI) ?: ""
+                            pebbleDict.addString(DictKey.WIFI.code, ssid.take(AppConst.MAX_LEN_ID))
                         }
 
                         MsgType.NET.code -> {
-                            val gen = intent.getIntExtra(AppConstants.EXTRA_NET, 0)
+                            val gen = intent.getIntExtra(AppConst.EXTRA_NET, 0)
                             pebbleDict.addInt8(DictKey.NET.code, gen.toByte())
+                            val sim = intent.getIntExtra(AppConst.EXTRA_SIM, 0)
+                            pebbleDict.addInt8(DictKey.SIM.code, sim.toByte())
+                            val carrier = intent.getStringExtra(AppConst.EXTRA_CARRIER) ?: ""
+                            pebbleDict.addString(DictKey.CARRIER.code, carrier.take(AppConst.MAX_LEN_ID))
                         }
 
                         MsgType.NOTI.code -> {
-                            val noti = intent.getStringExtra(AppConstants.EXTRA_NOTI) ?: ""
-                            pebbleDict.addString(DictKey.NOTI.code, noti.take(AppConstants.MAX_NOTI_INDICATORS))
+                            val noti = intent.getStringExtra(AppConst.EXTRA_NOTI) ?: ""
+                            pebbleDict.addString(DictKey.NOTI.code, noti.take(AppConst.MAX_NOTI_INDICATORS))
                         }
 
                         MsgType.BT.code -> {
-                            val btid = intent.getStringExtra(AppConstants.EXTRA_BTID) ?: ""
-                            pebbleDict.addString(DictKey.BTID.code, btid.take(AppConstants.MAX_LEN_BTID))
-                            val btc = intent.getIntExtra(AppConstants.EXTRA_BTC, 0)
+                            val btid = intent.getStringExtra(AppConst.EXTRA_BTID) ?: ""
+                            pebbleDict.addString(DictKey.BTID.code, btid.take(AppConst.MAX_LEN_ID))
+                            val btc = intent.getIntExtra(AppConst.EXTRA_BTC, 0)
                             pebbleDict.addInt8(DictKey.BTC.code, btc.toByte())
 
                         }

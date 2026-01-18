@@ -85,7 +85,7 @@ fun EditIndicator(
                         ) {
                             Text(
                                 text = stringResource(R.string.indicator),
-                                fontSize = AppConstants.textSize,
+                                fontSize = AppConst.textSize,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -96,7 +96,7 @@ fun EditIndicator(
                                 onValueChange = { newLetter = acceptLetter(it) },
                                 singleLine = true,
                                 textStyle = TextStyle(
-                                    fontSize = AppConstants.titleSize,
+                                    fontSize = AppConst.titleSize,
                                     textAlign = TextAlign.Center,
                                 ),
                                 keyboardOptions = KeyboardOptions(
@@ -114,7 +114,7 @@ fun EditIndicator(
                         ) {
                             Text(
                                 text = stringResource(R.string.application),
-                                fontSize = AppConstants.textSize,
+                                fontSize = AppConst.textSize,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -138,7 +138,7 @@ fun EditIndicator(
                                 ) {
                                     Text(
                                         text = stringResource(R.string.select_package),
-                                        fontSize = AppConstants.textSize,
+                                        fontSize = AppConst.textSize,
                                         textAlign = TextAlign.Center
                                     )
                                 }
@@ -149,7 +149,7 @@ fun EditIndicator(
                     // PackageName
                     Text(
                         text = stringResource(R.string.package_name),
-                        fontSize = AppConstants.textSize,
+                        fontSize = AppConst.textSize,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -164,7 +164,7 @@ fun EditIndicator(
                             value = newPackage,
                             onValueChange = { newPackage = it },
                             textStyle = TextStyle(
-                                fontSize = AppConstants.textSize,
+                                fontSize = AppConst.textSize,
                             ),
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Uri,
@@ -179,7 +179,7 @@ fun EditIndicator(
                                     if (newPackage.isEmpty() && !editPackageName)
                                         Text(
                                             text = stringResource(R.string.package_name_empty),
-                                            fontSize = AppConstants.textSize,
+                                            fontSize = AppConst.textSize,
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .padding(10.dp)
@@ -194,7 +194,7 @@ fun EditIndicator(
                     Spacer(Modifier.height(8.dp))
                     Text(
                         text = stringResource(R.string.channel_filter),
-                        fontSize = AppConstants.textSize,
+                        fontSize = AppConst.textSize,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -209,7 +209,7 @@ fun EditIndicator(
                             value = newChannel,
                             onValueChange = { newChannel = it },
                             textStyle = TextStyle(
-                                fontSize = AppConstants.textSize,
+                                fontSize = AppConst.textSize,
                                 fontWeight = FontWeight.Bold,
                             ),
                             keyboardOptions = KeyboardOptions(
@@ -224,7 +224,7 @@ fun EditIndicator(
                                 if (newChannel.isEmpty() && !editChannel)
                                     Text(
                                         text = stringResource(R.string.filter_empty),
-                                        fontSize = AppConstants.textSize,
+                                        fontSize = AppConst.textSize,
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -238,7 +238,7 @@ fun EditIndicator(
                     Spacer(Modifier.height(8.dp))
                     Text(
                         text = stringResource(R.string.other_filter),
-                        fontSize = AppConstants.textSize,
+                        fontSize = AppConst.textSize,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -253,7 +253,7 @@ fun EditIndicator(
                             value = newTicker,
                             onValueChange = { newTicker = it },
                             textStyle = TextStyle(
-                                fontSize = AppConstants.textSize,
+                                fontSize = AppConst.textSize,
                                 fontStyle = FontStyle.Italic,
                             ),
                             keyboardOptions = KeyboardOptions(
@@ -267,7 +267,7 @@ fun EditIndicator(
                                 if (newTicker.isEmpty() && !editTicker)
                                     Text(
                                         text = stringResource(R.string.filter_empty),
-                                        fontSize = AppConstants.textSize,
+                                        fontSize = AppConst.textSize,
                                         fontStyle = FontStyle.Italic,
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -303,7 +303,7 @@ fun EditIndicator(
                         ) {
                             Text(
                                 text = stringResource(R.string.save),
-                                fontSize = AppConstants.textSize
+                                fontSize = AppConst.textSize
                             )
                         }
                         Button(
@@ -315,7 +315,7 @@ fun EditIndicator(
                         ) {
                             Text(
                                 text = stringResource(R.string.remove),
-                                fontSize = AppConstants.textSize
+                                fontSize = AppConst.textSize
                             )
                         }
                     }

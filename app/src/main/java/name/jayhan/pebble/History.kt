@@ -40,16 +40,16 @@ object History {
 
     fun init(context: Context) {
         savedHistory = context.getSharedPreferences(
-            AppConstants.PREF_HISTORY,
+            AppConst.PREF_HISTORY,
             Context.MODE_PRIVATE
         )
 
-        val numberOfCycles = savedHistory.getInt(AppConstants.HIST_N_CYCLES, 0)
-        val dischargeRate = savedHistory.getFloat(AppConstants.HIST_DISCHG_RATE, 0f)
-        val initDate = longToDate(savedHistory.getLong(AppConstants.HIST_INIT_DATE, 0))
-        val lastUnplug = longToDate(savedHistory.getLong(AppConstants.HIST_UNPLUG_TIME, 0L))
+        val numberOfCycles = savedHistory.getInt(AppConst.HIST_N_CYCLES, 0)
+        val dischargeRate = savedHistory.getFloat(AppConst.HIST_DISCHG_RATE, 0f)
+        val initDate = longToDate(savedHistory.getLong(AppConst.HIST_INIT_DATE, 0))
+        val lastUnplug = longToDate(savedHistory.getLong(AppConst.HIST_UNPLUG_TIME, 0L))
         Log.v(
-            AppConstants.TAG,
+            AppConst.TAG,
             "History init $numberOfCycles since ${initDate.formatDate()} rate=$dischargeRate, " +
                     "unplugged ${lastUnplug.formatDateTime()}"
         )
@@ -77,18 +77,18 @@ object History {
         level: Int,
         plugged: Boolean
     ) {
-        var lastUnplug = longToDate(savedHistory.getLong(AppConstants.HIST_UNPLUG_TIME, 0L))
-        var currentlyPlugged = savedHistory.getBoolean(AppConstants.HIST_PLUG_STATE, false)
-        var unpluggedLevel = savedHistory.getInt(AppConstants.HIST_UNPLUG_LEVEL, 0)
+        var lastUnplug = longToDate(savedHistory.getLong(AppConst.HIST_UNPLUG_TIME, 0L))
+        var currentlyPlugged = savedHistory.getBoolean(AppConst.HIST_PLUG_STATE, false)
+        var unpluggedLevel = savedHistory.getInt(AppConst.HIST_UNPLUG_LEVEL, 0)
         // TODO: Sanitation
-        Log.v(AppConstants.TAG, "History event ($level,$plugged)" +
+        Log.v(AppConst.TAG, "History event ($level,$plugged)" +
                 " when ($unpluggedLevel,$currentlyPlugged,$lastUnplug)")
 
         if (plugged && !currentlyPlugged) {
             if (!lastUnplug.isDistantPast) {
                 val discharge = unpluggedLevel - level
                 val duration = Clock.System.now() - lastUnplug
-                Log.v(AppConstants.TAG, "History cycle $discharge% in ${duration.inWholeSeconds}s")
+                Log.v(AppConst.TAG, "History cycle $discharge% in ${duration.inWholeSeconds}s")
                 if (discharge > 0 && duration.inWholeSeconds > 3600) {
                     val inDays = duration.inWholeSeconds.toFloat() / (3600 * 24)
                     val dischargeRate = discharge.toFloat() / inDays
@@ -96,12 +96,12 @@ object History {
                     val newRate = (historyFlow.value.dischargeRate * numberOfCycles + dischargeRate) /
                             (numberOfCycles + 1)
                     savedHistory.edit {
-                        putInt(AppConstants.HIST_N_CYCLES, numberOfCycles + 1)
-                        putFloat(AppConstants.HIST_DISCHG_RATE, newRate)
+                        putInt(AppConst.HIST_N_CYCLES, numberOfCycles + 1)
+                        putFloat(AppConst.HIST_DISCHG_RATE, newRate)
                         if (numberOfCycles == 0)
-                            putLong(AppConstants.HIST_INIT_DATE, lastUnplug.epochSeconds)
+                            putLong(AppConst.HIST_INIT_DATE, lastUnplug.epochSeconds)
                     }
-                    Log.v(AppConstants.TAG, "History saved ${numberOfCycles+1} cycles rate=$newRate")
+                    Log.v(AppConst.TAG, "History saved ${numberOfCycles+1} cycles rate=$newRate")
 
                     historyFlow.value = historyFlow.value.set(
                         numberOfCycles = numberOfCycles + 1,
@@ -115,10 +115,10 @@ object History {
             if (currentlyPlugged || level > unpluggedLevel) {
                 lastUnplug = Clock.System.now()
                 unpluggedLevel = level
-                Log.v(AppConstants.TAG, "History discharging $lastUnplug at $unpluggedLevel")
+                Log.v(AppConst.TAG, "History discharging $lastUnplug at $unpluggedLevel")
                 savedHistory.edit {
-                    putLong(AppConstants.HIST_UNPLUG_TIME, lastUnplug.epochSeconds)
-                    putInt(AppConstants.HIST_UNPLUG_LEVEL, unpluggedLevel)
+                    putLong(AppConst.HIST_UNPLUG_TIME, lastUnplug.epochSeconds)
+                    putInt(AppConst.HIST_UNPLUG_LEVEL, unpluggedLevel)
                 }
 
                 historyFlow.value = historyFlow.value.set(
@@ -130,18 +130,18 @@ object History {
         if (currentlyPlugged != plugged) {
             currentlyPlugged = plugged
             savedHistory.edit {
-                putBoolean(AppConstants.HIST_PLUG_STATE, currentlyPlugged)
+                putBoolean(AppConst.HIST_PLUG_STATE, currentlyPlugged)
             }
-            Log.v(AppConstants.TAG, "History plugged=$currentlyPlugged")
+            Log.v(AppConst.TAG, "History plugged=$currentlyPlugged")
         }
     }
 
     fun clear() {
         savedHistory.edit {
-            putBoolean(AppConstants.HIST_PLUG_STATE, false)
-            putInt(AppConstants.HIST_N_CYCLES, 0)
-            putFloat(AppConstants.HIST_DISCHG_RATE, 1.0f)
-            putLong(AppConstants.HIST_INIT_DATE, Instant.DISTANT_PAST.epochSeconds)
+            putBoolean(AppConst.HIST_PLUG_STATE, false)
+            putInt(AppConst.HIST_N_CYCLES, 0)
+            putFloat(AppConst.HIST_DISCHG_RATE, 1.0f)
+            putLong(AppConst.HIST_INIT_DATE, Instant.DISTANT_PAST.epochSeconds)
         }
         historyFlow.value = HistoryData()
     }

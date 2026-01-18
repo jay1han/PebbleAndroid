@@ -83,12 +83,12 @@ fun IndicatorList(
             ) {
                 Text(
                     text = stringResource(R.string.reset),
-                    fontSize = AppConstants.textSize
+                    fontSize = AppConst.textSize
                 )
             }
             Text(
                 text = stringResource(R.string.indicators),
-                fontSize = AppConstants.titleSize,
+                fontSize = AppConst.titleSize,
             )
             Button(
                 onClick = {
@@ -98,7 +98,7 @@ fun IndicatorList(
             ) {
                 Text(
                     text = stringResource(R.string.add),
-                    fontSize = AppConstants.textSize
+                    fontSize = AppConst.textSize
                 )
             }
         }
@@ -107,7 +107,7 @@ fun IndicatorList(
             Text(
                 text = stringResource(R.string.no_indicators),
                 textAlign = TextAlign.Center,
-                fontSize = AppConstants.titleSize,
+                fontSize = AppConst.titleSize,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(10.dp)
@@ -159,7 +159,7 @@ fun IndicatorItem(
             } else {
                 Text(
                     text = "?",
-                    fontSize = AppConstants.titleSize,
+                    fontSize = AppConst.titleSize,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -176,23 +176,23 @@ fun IndicatorItem(
             if (appName != "") {
                 Text(
                     text = appName,
-                    fontSize = AppConstants.textSize,
-                    lineHeight = AppConstants.textSize,
+                    fontSize = AppConst.textSize,
+                    lineHeight = AppConst.textSize,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
             Text(
                 text = indicator.packageName,
-                fontSize = AppConstants.subSize,
-                lineHeight = AppConstants.subSize,
+                fontSize = AppConst.subSize,
+                lineHeight = AppConst.subSize,
                 modifier = Modifier.fillMaxWidth()
             )
 
             if (indicator.channel.isNotEmpty()) {
                 Text(
                     text = indicator.channel,
-                    fontSize = AppConstants.subSize,
-                    lineHeight = AppConstants.subSize,
+                    fontSize = AppConst.subSize,
+                    lineHeight = AppConst.subSize,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start,
                     modifier = Modifier.fillMaxWidth()
@@ -201,8 +201,8 @@ fun IndicatorItem(
             if (indicator.filterText.isNotEmpty()) {
                 Text(
                     text = indicator.filterText,
-                    fontSize = AppConstants.subSize,
-                    lineHeight = AppConstants.subSize,
+                    fontSize = AppConst.subSize,
+                    lineHeight = AppConst.subSize,
                     fontStyle = FontStyle.Italic,
                     textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxWidth()
@@ -212,7 +212,7 @@ fun IndicatorItem(
 
         Text(
             text = indicator.letter.toString(),
-            fontSize = AppConstants.titleSize,
+            fontSize = AppConst.titleSize,
             modifier = Modifier
                 .fillMaxWidth(.1f)
                 .padding(horizontal = 16.dp),
@@ -246,8 +246,8 @@ fun ResetDialog(
             ) {
                 Text(
                     text = stringResource(R.string.reset_question),
-                    fontSize = AppConstants.titleSize,
-                    lineHeight = AppConstants.titleSize * 1.2f,
+                    fontSize = AppConst.titleSize,
+                    lineHeight = AppConst.titleSize * 1.2f,
                     modifier = Modifier.padding(10.dp)
                 )
                 Row(
@@ -261,7 +261,7 @@ fun ResetDialog(
                     ) {
                         Text(
                             text = stringResource(R.string.reset_no),
-                            fontSize = AppConstants.textSize,
+                            fontSize = AppConst.textSize,
                         )
                     }
                     Button(
@@ -272,7 +272,7 @@ fun ResetDialog(
                     ) {
                         Text(
                             text = stringResource(R.string.reset_yes),
-                            fontSize = AppConstants.textSize,
+                            fontSize = AppConst.textSize,
                         )
                     }
                 }

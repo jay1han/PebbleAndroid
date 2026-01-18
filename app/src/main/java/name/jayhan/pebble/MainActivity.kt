@@ -27,7 +27,7 @@ import kotlin.time.Duration
 import kotlin.time.Instant
 import kotlin.time.toJavaInstant
 
-object AppConstants {
+object AppConst {
     const val TAG = "Dolbom"
     const val GITHUB_ANDROID = "https://github.com/jay1han/PebbleAndroid"
     const val GITHUB_PEBBLE = "https://github.com/jay1han/Pebble"
@@ -50,6 +50,8 @@ object AppConstants {
     const val EXTRA_TZ_MIN = "tz_min"
     const val EXTRA_WIFI = "wifi"
     const val EXTRA_NET = "net"
+    const val EXTRA_SIM = "sim"
+    const val EXTRA_CARRIER = "carrier"
     const val EXTRA_NOTI = "noti"
     const val EXTRA_BTID = "btid"
     const val EXTRA_BTC = "btc"
@@ -67,8 +69,7 @@ object AppConstants {
 
     val APP_UUID: UUID? = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
     const val MAX_NOTI_INDICATORS = 15
-    const val MAX_LEN_SSID = 19
-    const val MAX_LEN_BTID = 19
+    const val MAX_LEN_ID = 19
 }
 
 class AppStart:
@@ -77,7 +78,7 @@ class AppStart:
         if (context == null || intent == null) return
         when (intent.action) {
             Intent.ACTION_BOOT_COMPLETED -> {
-                Log.v(AppConstants.TAG, "Boot completed")
+                Log.v(AppConst.TAG, "Boot completed")
                 val intent = Intent(context, PebbleService::class.java)
                 context.startForegroundService(intent)
             }
@@ -90,7 +91,7 @@ class MainActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.v(AppConstants.TAG, "Start activity")
+        Log.v(AppConst.TAG, "Start activity")
 
         val context = applicationContext
         Permissions.initActivity(mainActivity = this)

@@ -13,6 +13,9 @@
     - [x] Resend ALL info at reconnect (BT)
     - [x] Reinit at watchface reload
     - [x] Sort indicators by age
+    - [x] SIM indicator
+    - [x] PLMN connected
+    - [ ] Indicator to ignore notification
 
 - Pebble
     - [x] Manage Pebble battery (history)
@@ -23,8 +26,6 @@
     - [ ] Remove hard-coded dimensions
 
 - Feature
-    - [ ] SIM indicator
-    - [ ] PLMN connected
 
 - Future: DND
 

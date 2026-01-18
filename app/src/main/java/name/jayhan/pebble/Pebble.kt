@@ -41,7 +41,9 @@ enum class DictKey(val code: Int) {
     FW_VERSION(13),
     WATCH_BATT(14),
     WATCH_PLUG(15),
-    WATCH_CHG(16)
+    WATCH_CHG(16),
+    SIM(17),
+    CARRIER(18)
 }
 enum class MsgType(val code: Int) {
     INFO(1),
@@ -108,7 +110,7 @@ private val Receivers = mapOf(
 )
 
 private object DataReceiver:
-    PebbleKit.PebbleDataReceiver(AppConstants.APP_UUID)
+    PebbleKit.PebbleDataReceiver(AppConst.APP_UUID)
 {
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
         Pebble.received(true)
@@ -155,7 +157,7 @@ private object DataReceiver:
 }
 
 private object AckReceiver:
-    PebbleKit.PebbleAckReceiver(AppConstants.APP_UUID)
+    PebbleKit.PebbleAckReceiver(AppConst.APP_UUID)
 {
     override fun receiveAck(context: Context?, transactionId: Int) {
         Pebble.received(true)
@@ -163,7 +165,7 @@ private object AckReceiver:
 }
 
 private object NackReceiver:
-    PebbleKit.PebbleNackReceiver(AppConstants.APP_UUID)
+    PebbleKit.PebbleNackReceiver(AppConst.APP_UUID)
 {
     override fun receiveNack(context: Context?, transactionId: Int) {
         Pebble.received(false)
@@ -182,7 +184,7 @@ object Pebble
     fun init(
         context: Context
     ) {
-        Log.v(AppConstants.TAG, "Pebble object init")
+        Log.v(AppConst.TAG, "Pebble object init")
         Receivers.forEach {
             val filter = IntentFilter(it.key)
             context.registerReceiver(it.value, filter, Context.RECEIVER_EXPORTED)
@@ -205,8 +207,8 @@ object Pebble
         msgType: MsgType,
         extra: Intent.() -> Unit
     ) {
-        val intent = Intent(AppConstants.INTENT_SEND_PEBBLE).apply {
-            putExtra(AppConstants.EXTRA_MSG_TYPE, msgType.code)
+        val intent = Intent(AppConst.INTENT_SEND_PEBBLE).apply {
+            putExtra(AppConst.EXTRA_MSG_TYPE, msgType.code)
             extra()
         }
         context.sendBroadcast(intent)
@@ -216,7 +218,7 @@ object Pebble
         context: Context,
         data: PebbleDictionary
     ) {
-        PebbleKit.sendDataToPebble(context, AppConstants.APP_UUID, data)
+        PebbleKit.sendDataToPebble(context, AppConst.APP_UUID, data)
         lastSent = clock.now()
     }
 
@@ -268,7 +270,7 @@ object Pebble
         if (negative) minutes = -minutes
 
         sendIntent(context, MsgType.TZ) {
-            putExtra(AppConstants.EXTRA_TZ_MIN, minutes)
+            putExtra(AppConst.EXTRA_TZ_MIN, minutes)
         }
 
         return makeString()

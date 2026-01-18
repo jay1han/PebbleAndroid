@@ -50,7 +50,7 @@ fun UiPermissions(
         ) {
             Text(
                 text = stringResource(R.string.pg_title),
-                fontSize = AppConstants.titleSize
+                fontSize = AppConst.titleSize
             )
 
             for (permissionGroup in missingList) {
@@ -64,7 +64,7 @@ fun UiPermissions(
                         Text(
                             text = stringResource(permissionGroup.title),
                             modifier = Modifier.fillMaxWidth(),
-                            fontSize = AppConstants.textSize
+                            fontSize = AppConst.textSize
                         )
                     },
                     supportingContent = {
@@ -73,7 +73,7 @@ fun UiPermissions(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 20.dp),
-                            fontSize = AppConstants.smallSize,
+                            fontSize = AppConst.smallSize,
                         )
                     },
                     trailingContent = {
@@ -107,17 +107,17 @@ fun Rationale(
             ) {
                 Text(
                     text = stringResource(permissionGroup.title),
-                    fontSize = AppConstants.titleSize,
+                    fontSize = AppConst.titleSize,
                     modifier = Modifier.padding(10.dp)
                 )
                 Text(
                     text = stringResource(permissionGroup.description),
-                    fontSize = AppConstants.textSize,
+                    fontSize = AppConst.textSize,
                     modifier = Modifier.padding(8.dp)
                 )
                 Text(
                     text = stringResource(permissionGroup.rationale),
-                    fontSize = AppConstants.smallSize,
+                    fontSize = AppConst.smallSize,
                     modifier = Modifier.padding(4.dp)
                 )
                 Row(
@@ -132,7 +132,7 @@ fun Rationale(
                     ) {
                         Text(
                             text = stringResource(R.string.accept),
-                            fontSize = AppConstants.textSize
+                            fontSize = AppConst.textSize
                         )
                     }
                 }

@@ -48,7 +48,7 @@ object Indicators
 
     fun init(context: Context) {
         savedSettings = context.getSharedPreferences(
-            AppConstants.PREF_INDIC,
+            AppConst.PREF_INDIC,
             Context.MODE_PRIVATE
         )
 

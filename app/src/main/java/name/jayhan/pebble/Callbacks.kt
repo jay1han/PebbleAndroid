@@ -7,9 +7,12 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
+import android.os.Build
 import android.telephony.ServiceState
+import android.telephony.SubscriptionManager
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
+import androidx.annotation.RequiresPermission
 
 class WifiCallback(
     private val context: Context,
@@ -64,7 +67,7 @@ class WifiCallback(
 
     private fun send() {
         Pebble.sendIntent(context, MsgType.WIFI) {
-            putExtra(AppConstants.EXTRA_WIFI, ssid)
+            putExtra(AppConst.EXTRA_WIFI, ssid)
         }
     }
 
@@ -80,16 +83,42 @@ class PhoneCallback(
 
     private val teleMan = context.getSystemService(Context.TELEPHONY_SERVICE)
             as TelephonyManager
+    private val subsMan = context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE)
+            as SubscriptionManager
     private var mobileGen = 0
+    private var activeSim = 0
+    private var operator = ""
 
     private fun scan() {
         try {
-            val cellType = teleMan.dataNetworkType
-            mobileGen = getCellGen(cellType)
+            val isRoaming = teleMan.isNetworkRoaming
+            if (isRoaming) activeSim = activeSim or 0x10
+
+            if (teleMan.isMultiSimSupported == TelephonyManager.MULTISIM_ALLOWED) {
+                activeSim = activeSim and 0x10
+                val simMccMnc = teleMan.simOperator
+                val subsList = subsMan.activeSubscriptionInfoList
+                subsList?.forEach {
+                    val simIndex = it.simSlotIndex
+                    val mcc = it.mccString
+                    val mnc = it.mncString
+                    if (simMccMnc == mcc + mnc) {
+                        activeSim = activeSim or (simIndex + 1)
+                    }
+                }
+            } else {
+                activeSim = activeSim and 0x10
+            }
+
+            operator = teleMan.networkOperatorName
+            val isDataConnected = teleMan.dataState
+            if (isDataConnected == TelephonyManager.DATA_CONNECTED) {
+                val cellType = teleMan.dataNetworkType
+                mobileGen = getCellGen(cellType)
+            } else mobileGen = 0
             send()
-        } catch (e: SecurityException) {
-            println(e)
-        }
+
+        } catch (_: SecurityException) { }
     }
 
     init {
@@ -129,7 +158,9 @@ class PhoneCallback(
 
     private fun send() {
         Pebble.sendIntent(context, MsgType.NET) {
-            putExtra(AppConstants.EXTRA_NET, mobileGen)
+            putExtra(AppConst.EXTRA_NET, mobileGen)
+            putExtra(AppConst.EXTRA_SIM, activeSim)
+            putExtra(AppConst.EXTRA_CARRIER, operator)
         }
     }
 

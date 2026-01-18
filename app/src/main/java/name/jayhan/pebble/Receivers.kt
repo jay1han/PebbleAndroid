@@ -53,8 +53,8 @@ class BatteryReceiver(
             context,
             MsgType.PHONE_CHG
         ) {
-            putExtra(AppConstants.EXTRA_PHONE_CHG, if (isPlugged) 1 else 0)
-            putExtra(AppConstants.EXTRA_PHONE_BATT, percent)
+            putExtra(AppConst.EXTRA_PHONE_CHG, if (isPlugged) 1 else 0)
+            putExtra(AppConst.EXTRA_PHONE_BATT, percent)
         }
     }
 
@@ -93,7 +93,7 @@ class BluetoothReceiver(
                 val devices = proxy.connectedDevices
                 devices.forEach {
                     if (it.name.isNotEmpty()) {
-                        name = it.name
+                        name = it.name.clean()
                         battery = it.getBatteryLevel()
                         send()
                         return
@@ -150,8 +150,8 @@ class BluetoothReceiver(
 
     private fun send() {
         Pebble.sendIntent(context, MsgType.BT) {
-            putExtra(AppConstants.EXTRA_BTID, name.take(AppConstants.MAX_LEN_BTID))
-            putExtra(AppConstants.EXTRA_BTC, battery)
+            putExtra(AppConst.EXTRA_BTID, name)
+            putExtra(AppConst.EXTRA_BTC, battery)
         }
     }
 

@@ -138,14 +138,14 @@ fun TopBar(
         title = {
             Text(
                 text = watchInfo.modelString().ifEmpty { "Disconnected" },
-                fontSize = AppConstants.titleSize
+                fontSize = AppConst.titleSize
             )
         },
         actions = {
             if (isConnected) {
                 Text(
                     text = "${watchInfo.battery}%",
-                    fontSize = AppConstants.titleSize,
+                    fontSize = AppConst.titleSize,
                 )
             } else {
                 Icon(
@@ -211,7 +211,7 @@ fun AwayTimezone(
     ) {
         Text(
             text = stringResource(R.string.timezone),
-            fontSize = AppConstants.titleSize,
+            fontSize = AppConst.titleSize,
         )
 
         Box(
@@ -228,8 +228,8 @@ fun AwayTimezone(
                     .focusProperties { canFocus = editing }
                     .onFocusChanged { editing = it.hasFocus || it.isFocused },
                 textStyle = TextStyle(
-                    fontSize = AppConstants.titleSize,
-                    lineHeight = AppConstants.titleSize
+                    fontSize = AppConst.titleSize,
+                    lineHeight = AppConst.titleSize
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
@@ -237,8 +237,8 @@ fun AwayTimezone(
             if (!editing) {
                 Text(
                     text = "",
-                    fontSize = AppConstants.titleSize,
-                    lineHeight = AppConstants.titleSize,
+                    fontSize = AppConst.titleSize,
+                    lineHeight = AppConst.titleSize,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
                         .alpha(0f)
                         .clickable {
@@ -267,7 +267,7 @@ fun AwayTimezone(
                     text =
                         if (editing) stringResource(R.string.apply)
                         else stringResource(R.string.edit),
-                    fontSize = AppConstants.textSize,
+                    fontSize = AppConst.textSize,
                 )
             }
         }
