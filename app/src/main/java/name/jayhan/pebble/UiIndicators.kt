@@ -31,7 +31,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import name.jayhan.pebble.ui.theme.PebbleTheme
 
 @Composable
 fun IndicatorList(
@@ -141,7 +143,7 @@ fun IndicatorItem(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().padding(0.dp)
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
     ) {
         Box(
             modifier = Modifier
@@ -166,7 +168,6 @@ fun IndicatorItem(
         }
 
         Column(
-            horizontalAlignment = Alignment.Start,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp)
@@ -177,12 +178,14 @@ fun IndicatorItem(
                 Text(
                     text = appName,
                     fontSize = AppConstants.textSize,
+                    lineHeight = AppConstants.textSize,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
             Text(
                 text = indicator.packageName,
                 fontSize = AppConstants.subSize,
+                lineHeight = AppConstants.subSize,
                 modifier = Modifier.fillMaxWidth()
             )
             Row(
@@ -193,6 +196,7 @@ fun IndicatorItem(
                     Text(
                         text = indicator.channel,
                         fontSize = AppConstants.subSize,
+                        lineHeight = AppConstants.subSize,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Start,
                         modifier = Modifier.fillMaxWidth()
@@ -202,6 +206,7 @@ fun IndicatorItem(
                     Text(
                         text = indicator.filterText,
                         fontSize = AppConstants.subSize,
+                        lineHeight = AppConstants.subSize,
                         fontStyle = FontStyle.Italic,
                         textAlign = TextAlign.End,
                         modifier = Modifier.fillMaxWidth()
@@ -295,42 +300,51 @@ val PreviewAllList = listOf(
 @Preview
 @Composable
 fun IndicatorItemPreview() {
-    IndicatorItem(
-        SingleIndicator(
-            "com.google.android.apps.messaging",
-            "jayhan.dev",
-            "",
-            'S'),
-    ) { }
+    PebbleTheme {
+        IndicatorItem(
+            SingleIndicator(
+                "com.google.android.apps.messaging",
+                "jayhan.dev",
+                "",
+                'S'
+            ),
+        ) { }
+    }
 }
 
 @Preview
 @Composable
 fun IndicatorListPreview() {
-    IndicatorList(
-        context = LocalContext.current,
-        activeList = PreviewActiveList,
-        allList = PreviewAllList,
-        indicators = PreviewIndicators
-    )
+    PebbleTheme {
+        IndicatorList(
+            context = LocalContext.current,
+            activeList = PreviewActiveList,
+            allList = PreviewAllList,
+            indicators = PreviewIndicators
+        )
+    }
 }
 
 @Preview
 @Composable
 fun IndicatorListEmpty() {
-    IndicatorList(
-        context = LocalContext.current,
-        activeList = PreviewActiveList,
-        allList = PreviewAllList,
-        indicators = listOf(),
-    )
+    PebbleTheme {
+        IndicatorList(
+            context = LocalContext.current,
+            activeList = PreviewActiveList,
+            allList = PreviewAllList,
+            indicators = listOf(),
+        )
+    }
 }
 
 @Preview
 @Composable
 fun ResetDialogPreview() {
-    ResetDialog(
-        onClose = {},
-        onConfirm = {}
-    )
+    PebbleTheme {
+        ResetDialog(
+            onClose = {},
+            onConfirm = {}
+        )
+    }
 }

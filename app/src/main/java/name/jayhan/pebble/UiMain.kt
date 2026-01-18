@@ -4,25 +4,28 @@ package name.jayhan.pebble
 
 import android.content.Context
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,10 +34,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -44,6 +49,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import name.jayhan.pebble.ui.theme.PebbleTheme
+import kotlin.math.sin
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -91,6 +98,7 @@ fun AppScaffold(
                     isConnected = isConnected,
                     tzWatch = tzWatch,
                     modifier = Modifier.padding(innerPadding)
+                        .consumeWindowInsets(innerPadding)
                 )
 
             } else {
@@ -99,11 +107,13 @@ fun AppScaffold(
                 UiPermissions(
                     missingList,
                     modifier = Modifier.padding(innerPadding)
+                        .consumeWindowInsets(innerPadding)
                 )
             }
         } else {
             Splash(
                 modifier = Modifier.padding(innerPadding)
+                    .consumeWindowInsets(innerPadding)
             )
         }
     }
@@ -195,7 +205,6 @@ fun AwayTimezone(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(0.dp)
             .pointerInput(Unit) {
                 detectTapGestures { focusManager.clearFocus() }
             }
@@ -205,17 +214,21 @@ fun AwayTimezone(
             fontSize = AppConstants.titleSize,
         )
 
-        OutlinedTextField(
+        BasicTextField(
             readOnly = !editing,
             value = if (editing) tz else tzWatch,
             onValueChange = { tz = it },
+            singleLine = true,
             modifier = Modifier
                 .weight(1f)
-                .padding(AppConstants.padSize)
-                .focusProperties { canFocus = editing }
+                .padding(horizontal = 20.dp)
                 .focusRequester(focusRequester)
-                .onFocusChanged { editing = it.hasFocus },
-            textStyle = TextStyle(fontSize = AppConstants.titleSize),
+                .focusProperties { canFocus = editing }
+                .onFocusChanged { editing = it.hasFocus || it.isFocused },
+            textStyle = TextStyle(
+                fontSize = AppConstants.titleSize,
+                lineHeight = AppConstants.titleSize
+            ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         )
 
@@ -251,30 +264,36 @@ val PreviewWatchInfo = WatchInfo(
 @Preview
 @Composable
 fun TopBarPreview() {
-    TopBar(
-        isConnected = true,
-        watchInfo = PreviewWatchInfo
-    ) {}
+    PebbleTheme {
+        TopBar(
+            isConnected = true,
+            watchInfo = PreviewWatchInfo
+        ) {}
+    }
 }
 
 @Preview
 @Composable
 fun TopBarDisconnected() {
-    TopBar(
-        isConnected = false,
-        watchInfo = WatchInfo()
-    ) {}
+    PebbleTheme {
+        TopBar(
+            isConnected = false,
+            watchInfo = WatchInfo()
+        ) {}
+    }
 }
 
 @Preview
 @Composable
 fun MainPagePreview() {
-    MainPage(
-        context = LocalContext.current,
-        activeList = PreviewActiveList,
-        allList = PreviewAllList,
-        isConnected = true,
-        indicators = PreviewIndicators,
-        tzWatch = "+8.0",
-    )
+    PebbleTheme {
+        MainPage(
+            context = LocalContext.current,
+            activeList = PreviewActiveList,
+            allList = PreviewAllList,
+            isConnected = true,
+            indicators = PreviewIndicators,
+            tzWatch = "+8.0",
+        )
+    }
 }

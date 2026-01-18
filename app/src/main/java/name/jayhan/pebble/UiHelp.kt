@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
+import name.jayhan.pebble.ui.theme.PebbleTheme
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -292,24 +293,30 @@ val PreviewHistoryData = HistoryData(
 @Preview
 @Composable
 fun HelpDialogBattery() {
-    HelpDialog(
-        watchInfo = PreviewWatchInfo,
-        lastReceived = Clock.System.now(),
-        historyData = PreviewHistoryData,
-    ) {}
+    PebbleTheme {
+        HelpDialog(
+            watchInfo = PreviewWatchInfo,
+            lastReceived = Clock.System.now(),
+            historyData = PreviewHistoryData,
+        ) {}
+    }
 }
 
 @Preview
 @Composable
 fun ConfirmClearPreview() {
-    ClearBatteryDialog(
-        historyData = PreviewHistoryData,
-        onConfirm = {}
-    ) { }
+    PebbleTheme {
+        ClearBatteryDialog(
+            historyData = PreviewHistoryData,
+            onConfirm = {}
+        ) { }
+    }
 }
 
 @Preview
 @Composable
 fun SplashPreview() {
-    Splash()
+    PebbleTheme {
+        Splash()
+    }
 }

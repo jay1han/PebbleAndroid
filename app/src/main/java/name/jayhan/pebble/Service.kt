@@ -13,9 +13,7 @@ import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.IBinder
 import android.util.Log
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.core.app.NotificationCompat
-import androidx.core.graphics.drawable.toBitmap
 import com.getpebble.android.kit.util.PebbleDictionary
 
 class PebbleService: Service()

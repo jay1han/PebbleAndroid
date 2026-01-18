@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import name.jayhan.pebble.ui.theme.PebbleTheme
 
 @Composable
 fun UiPermissions(
@@ -143,19 +144,21 @@ fun Rationale(
 @Preview
 @Composable
 fun UiPermissionsPreview() {
-    val missingList = AllPermissionGroups
-
-    UiPermissions(
-        missingList,
-        Modifier
-    )
+    PebbleTheme {
+        UiPermissions(
+            AllPermissionGroups,
+            Modifier
+        )
+    }
 }
 
 @Preview
 @Composable
 fun RationalePreview() {
-    Rationale(
-        AllPermissionGroups[3],
-        onClick = {}
-    ) {}
+    PebbleTheme {
+        Rationale(
+            AllPermissionGroups[3],
+            onClick = {}
+        ) {}
+    }
 }
