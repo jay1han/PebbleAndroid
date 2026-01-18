@@ -15,16 +15,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 import java.util.UUID
 import kotlin.time.Duration
 import kotlin.time.Instant
 import kotlin.time.toJavaInstant
 
-// TODO: Prettify this
+fun Instant.formatDateTime(): String {
+    return SimpleDateFormat("yyyy.MM.dd HH:mm:ss")
+        .format(Date.from(this.toJavaInstant()))
+}
+
 fun Instant.formatDate(): String {
-    val jInstant = this.toJavaInstant()
-    val jdate = Date.from(jInstant)
-    return AppConstants.dateFormat.format(jdate)
+    return SimpleDateFormat("yyyy/MM/dd")
+        .format(Date.from(this.toJavaInstant()))
+}
+
+fun Instant.formatTime(): String {
+    return SimpleDateFormat("MM/dd HH:mm")
+        .format(Date.from(this.toJavaInstant()))
+}
+
+fun Instant.formatTimeSecond(): String {
+    return SimpleDateFormat("HH:mm:ss")
+        .format(Date.from(this.toJavaInstant()))
 }
 
 fun Duration.formatDuration(): String {
@@ -45,10 +59,9 @@ object AppConstants {
     const val TAG = "Dolbom"
     const val GITHUB_ANDROID = "https://github.com/jay1han/PebbleAndroid"
     const val GITHUB_PEBBLE = "https://github.com/jay1han/Pebble"
-    val dateFormat = SimpleDateFormat("yyyy/MM/dd-HH:mm:ss")
     val buildDateTime = Instant
         .fromEpochMilliseconds(BuildConfig.BUILDTIME)
-        .formatDate()
+        .formatDateTime()
 
     val titleSize = 28.sp
     val textSize = 20.sp

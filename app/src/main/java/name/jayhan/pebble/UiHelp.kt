@@ -34,7 +34,6 @@ import kotlin.time.Clock
 @Composable
 fun HelpDialog(
     watchInfo: WatchInfo,
-    isConnected: Boolean,
     lastReceived: String,
     historyData: HistoryData,
     onClose: () -> Unit
@@ -91,7 +90,7 @@ fun HelpDialog(
                 val historyText = if (historyData.isValid()) {
                     StringBuilder()
                         .append(stringResource(R.string.this_cycle))
-                        .append(historyData.lastUnplug.formatDate())
+                        .append(historyData.lastUnplug.formatTime())
                         .append("\n")
                         .append(stringResource(R.string.format_cycle_since)
                             .format(historyData.numberOfCycles))
@@ -104,7 +103,7 @@ fun HelpDialog(
                             ))
                         .append("\n")
                         .append(stringResource(R.string.format_estimate)
-                            .format(watchInfo.battery / historyData.dischargeRate))
+                            .format((watchInfo.battery.toFloat() - 10f) / historyData.dischargeRate))
                         .toString()
                 } else {
                     stringResource(R.string.battery_invalid)
@@ -285,8 +284,7 @@ val PreviewHistoryData = HistoryData(
 fun HelpDialogBattery() {
     HelpDialog(
         watchInfo = PreviewWatchInfo,
-        isConnected = true,
-        lastReceived = "Now",
+        lastReceived = Clock.System.now().formatTimeSecond(),
         historyData = PreviewHistoryData,
     ) {}
 }

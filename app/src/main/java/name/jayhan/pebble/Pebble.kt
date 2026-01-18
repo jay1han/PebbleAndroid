@@ -289,7 +289,7 @@ object Pebble
     }
 
     fun received(isAcked: Boolean) {
-        lastReceived.value = clock.now().formatDate()
+        lastReceived.value = clock.now().formatTimeSecond()
         doRefresh = isAcked && !isConnected.value
         isConnected.value = isAcked
     }

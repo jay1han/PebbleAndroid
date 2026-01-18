@@ -3,6 +3,8 @@
 - Main UI
     - [x] Permission description text
     - [x] Splash screen
+    - [x] Prettier date/time
+    - [ ] Use LaunchEffect to count seconds since lastReceived
     - [ ] Nicer icon
 
 - Service
@@ -16,6 +18,10 @@
     
 - Clean code
     - [ ] Remove hard-coded dimensions
+
+- Feature
+    - [ ] SIM indicator
+    - [ ] PLMN connected
 
 - Future: DND
 

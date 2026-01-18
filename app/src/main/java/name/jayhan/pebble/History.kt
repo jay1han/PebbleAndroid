@@ -51,7 +51,7 @@ object History {
         Log.v(
             AppConstants.TAG,
             "History init $numberOfCycles since ${initDate.formatDate()} rate=$dischargeRate, " +
-                    "unplugged ${lastUnplug.formatDate()}"
+                    "unplugged ${lastUnplug.formatDateTime()}"
         )
 
         if (numberOfCycles > 0) {

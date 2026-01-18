@@ -72,7 +72,6 @@ fun AppScaffold(
                 if (showHelp) {
                     HelpDialog(
                         watchInfo = watchInfo,
-                        isConnected = isConnected,
                         lastReceived = lastReceived,
                         historyData = historyData,
                     ) {
