@@ -11,11 +11,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -62,65 +63,20 @@ fun EditIndicator(
             onDismissRequest = onClose,
         ) {
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(0.dp),
+                modifier = Modifier.fillMaxWidth().padding(0.dp),
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
                 ) {
                     Row(
-                        verticalAlignment = Alignment.Top,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 10.dp)
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(
-                            verticalArrangement = Arrangement.Top,
-                            modifier = Modifier
-                                .fillMaxWidth(.5f)
-                                .padding(end = 10.dp)
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxWidth(.4f)
                         ) {
-                            Text(
-                                text = stringResource(R.string.indicator),
-                                fontSize = AppConst.textSize,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 10.dp)
-                            )
-                            OutlinedTextField(
-                                value = newLetter.toString(),
-                                onValueChange = { newLetter = acceptLetter(it) },
-                                singleLine = true,
-                                textStyle = TextStyle(
-                                    fontSize = AppConst.titleSize,
-                                    textAlign = TextAlign.Center,
-                                ),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Uri,
-                                    autoCorrectEnabled = false,
-                                ),
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp)
-                            )
-                        }
-
-                        Column(
-                            verticalArrangement = Arrangement.Top,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text(
-                                text = stringResource(R.string.application),
-                                fontSize = AppConst.textSize,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 10.dp)
-                            )
-                            val icon =
+                            val icon: ImageBitmap? =
                                 if (activeList == PreviewActiveList) null
                                 else getApplicationIcon(LocalContext.current, newPackage)
                             if (icon != null) {
@@ -128,18 +84,73 @@ fun EditIndicator(
                                     bitmap = icon,
                                     contentDescription = newPackage,
                                     alignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
+                                    modifier = Modifier.fillMaxWidth()
                                         .clickable { showPackageList = true }
                                 )
                             } else {
                                 TextButton(
+                                    modifier = Modifier.fillMaxWidth(),
                                     onClick = { showPackageList = true }
                                 ) {
                                     Text(
                                         text = stringResource(R.string.select_package),
                                         fontSize = AppConst.textSize,
+                                        lineHeight = AppConst.titleSize,
                                         textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                        ) {
+                            Text(
+                                text = "Indicator",
+                                fontSize = AppConst.titleSize,
+                                maxLines = 1,
+                                modifier = Modifier.padding(top = 10.dp)
+                            )
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                            ) {
+                                var ignore by remember { mutableStateOf(false) }
+                                OutlinedTextField(
+                                    enabled = !ignore,
+                                    value = if (ignore) "" else newLetter.toString(),
+                                    onValueChange = {
+                                        if (!ignore) newLetter = acceptLetter(it)
+                                    },
+                                    singleLine = true,
+                                    textStyle = TextStyle(
+                                        fontSize = AppConst.titleSize,
+                                        textAlign = TextAlign.Center,
+                                    ),
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Uri,
+                                        autoCorrectEnabled = false,
+                                    ),
+                                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+                                )
+
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.padding(8.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.ignore_indication),
+                                        fontSize = AppConst.textSize,
+                                        maxLines = 1,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Switch(
+                                        checked = ignore,
+                                        onCheckedChange = { state ->
+                                            ignore = state
+                                        }
                                     )
                                 }
                             }
@@ -147,66 +158,41 @@ fun EditIndicator(
                     }
 
                     // PackageName
-                    Text(
-                        text = stringResource(R.string.package_name),
-                        fontSize = AppConst.textSize,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp)
+                    var editPackageName by remember { mutableStateOf(false) }
+                    OutlinedTextField(
+                        value =
+                            if (newPackage.isEmpty() && !editPackageName)
+                                stringResource(R.string.package_name)
+                            else newPackage,
+                        onValueChange = { newPackage = it },
+                        textStyle = TextStyle(
+                            fontSize = AppConst.textSize,
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Uri,
+                            autoCorrectEnabled = false,
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                            .onFocusChanged { editPackageName = it.isFocused },
                     )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        var editPackageName by remember { mutableStateOf(false) }
-                        BasicTextField(
-                            value = newPackage,
-                            onValueChange = { newPackage = it },
-                            textStyle = TextStyle(
-                                fontSize = AppConst.textSize,
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Uri,
-                                autoCorrectEnabled = false,
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp)
-                                .onFocusChanged { editPackageName = it.hasFocus },
-                            decorationBox = { inner ->
-                                Box {
-                                    if (newPackage.isEmpty() && !editPackageName)
-                                        Text(
-                                            text = stringResource(R.string.package_name_empty),
-                                            fontSize = AppConst.textSize,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(10.dp)
-                                        )
-                                    inner()
-                                }
-                            }
-                        )
-                    }
 
                     // Channel
                     Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = stringResource(R.string.channel_filter),
-                        fontSize = AppConst.textSize,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Text(
+                            text = stringResource(R.string.channel_filter),
+                            fontSize = AppConst.textSize,
+                            modifier = Modifier.padding(end = 10.dp)
+                        )
+
                         var editChannel by remember { mutableStateOf(false) }
-                        BasicTextField(
-                            value = newChannel,
+                        OutlinedTextField(
+                            value =
+                                if (newChannel.isEmpty() && !editChannel)
+                                    stringResource(R.string.filter_empty)
+                                else newChannel,
                             onValueChange = { newChannel = it },
                             textStyle = TextStyle(
                                 fontSize = AppConst.textSize,
@@ -216,41 +202,29 @@ fun EditIndicator(
                                 keyboardType = KeyboardType.Uri,
                                 autoCorrectEnabled = false,
                             ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp)
-                                .onFocusChanged { editChannel = it.hasFocus },
-                            decorationBox = { inner ->
-                                if (newChannel.isEmpty() && !editChannel)
-                                    Text(
-                                        text = stringResource(R.string.filter_empty),
-                                        fontSize = AppConst.textSize,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                    )
-                                inner()
-                            }
+                            modifier = Modifier.fillMaxWidth()
+                                .onFocusChanged { editChannel = it.isFocused },
+                            maxLines = 1,
                         )
                     }
 
-                    // Ticker
+                    // Text
                     Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = stringResource(R.string.other_filter),
-                        fontSize = AppConst.textSize,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Text(
+                            text = stringResource(R.string.other_filter),
+                            fontSize = AppConst.textSize,
+                            modifier = Modifier.padding(end = 10.dp)
+                        )
+
                         var editTicker by remember { mutableStateOf(false) }
-                        BasicTextField(
-                            value = newTicker,
+                        OutlinedTextField(
+                            value =
+                                if (newTicker.isEmpty() && !editTicker)
+                                    stringResource(R.string.filter_empty)
+                                else newTicker,
                             onValueChange = { newTicker = it },
                             textStyle = TextStyle(
                                 fontSize = AppConst.textSize,
@@ -259,29 +233,15 @@ fun EditIndicator(
                             keyboardOptions = KeyboardOptions(
                                 autoCorrectEnabled = false,
                             ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp)
-                                .onFocusChanged { editTicker = it.hasFocus },
-                            decorationBox = { inner ->
-                                if (newTicker.isEmpty() && !editTicker)
-                                    Text(
-                                        text = stringResource(R.string.filter_empty),
-                                        fontSize = AppConst.textSize,
-                                        fontStyle = FontStyle.Italic,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                    )
-                                inner()
-                            }
+                            modifier = Modifier.fillMaxWidth()
+                                .onFocusChanged { editTicker = it.isFocused },
+                            maxLines = 1,
                         )
                     }
 
                     // Buttons
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 10.dp),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         Button(

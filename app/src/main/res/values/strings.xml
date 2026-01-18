@@ -18,11 +18,11 @@
     <string name="reset_yes">Reset!</string>
 
     <string name="application">Application</string>
-    <string name="select_package">Choose application</string>
-    <string name="package_name">Package name</string>
-    <string name="package_name_empty">Enter package name</string>
-    <string name="channel_filter">Channel filter</string>
-    <string name="other_filter">Other filter</string>
+    <string name="select_package">Choose app</string>
+    <string name="package_name">(package name)</string>
+    <string name="package_name_empty">(or choose application)</string>
+    <string name="channel_filter">Channel:</string>
+    <string name="other_filter">Text:</string>
     <string name="filter_empty">(optional)</string>
     <string name="save">Save</string>
     <string name="remove">Remove</string>
@@ -100,5 +100,6 @@
     <string name="zen_rule">Create and manage a Zen rule</string>
     <string name="zen_rule_2">In order to control the phone\'s Do-not-disturb feature,
         a Zen rule must be registered and toggled on or off.</string>
+    <string name="ignore_indication">Ignore</string>
 
 </resources>

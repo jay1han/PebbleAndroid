@@ -15,7 +15,7 @@
     - [x] Sort indicators by age
     - [x] SIM indicator
     - [x] PLMN connected
-    - [ ] Indicator to ignore notification
+    - [ ] Indicator setting to ignore notification (`-`)
 
 - Pebble
     - [x] Manage Pebble battery (history)
@@ -24,8 +24,7 @@
     
 - Clean code
     - [ ] Remove hard-coded dimensions
-
-- Feature
+    - [ ] Merge projects
 
 - Future: DND
 
