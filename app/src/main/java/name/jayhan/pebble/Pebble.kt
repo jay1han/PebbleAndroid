@@ -176,7 +176,7 @@ object Pebble
     val infoFlow = MutableStateFlow(WatchInfo())
     val isConnected = MutableStateFlow(false)
     private val clock = Clock.System
-    val lastReceived = MutableStateFlow("")
+    val lastReceived = MutableStateFlow(Clock.System.now())
     private var lastSent = clock.now()
 
     fun init(
@@ -289,7 +289,7 @@ object Pebble
     }
 
     fun received(isAcked: Boolean) {
-        lastReceived.value = clock.now().formatTimeSecond()
+        lastReceived.value = clock.now()
         doRefresh = isAcked && !isConnected.value
         isConnected.value = isAcked
     }

@@ -42,6 +42,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @Composable
 fun AppScaffold(
@@ -49,7 +51,7 @@ fun AppScaffold(
 ) {
     val watchInfo: WatchInfo by Pebble.infoFlow.collectAsState(WatchInfo())
     val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
-    val lastReceived: String by Pebble.lastReceived.collectAsState("")
+    val lastReceived: Instant by Pebble.lastReceived.collectAsState(Clock.System.now())
     val permissionsGranted by Permissions.grantFlow.collectAsState(Permissions.allGranted)
     val serverUp by Permissions.initFlow.collectAsState(false)
     val activeList by Notifications.activeFlow.collectAsState(emptyList())

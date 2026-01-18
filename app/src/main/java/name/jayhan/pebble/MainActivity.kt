@@ -50,9 +50,25 @@ fun Duration.formatDuration(): String {
         if (hours >= 24) {
             val days = hours / 24
             hours %= 24
-            return "${days}d ${hours}h"
-        } else return "${hours}h ${minutes}m"
-    } else return "${minutes}m"
+            return "%d days %d hours".format(days, hours)
+        } else return "%d hours %02d minutes".format(hours, minutes)
+    } else return "%d minutes".format(minutes)
+}
+
+fun Duration.formatDurationSeconds(): String {
+    var seconds = this.inWholeSeconds.toInt()
+    var minutes = 0
+    var hours = 0
+
+    if (seconds >= 60) {
+        minutes = seconds / 60
+        seconds %= 60
+        if (minutes >= 60) {
+            hours = minutes / 60
+            minutes %= 60
+        }
+    }
+    return "%dh%02dm%02ds".format(hours, minutes, seconds)
 }
 
 object AppConstants {

@@ -99,5 +99,6 @@
     <string name="zen_rule_2">In order to control the phone\'s Do-not-disturb feature,
         a Zen rule must be registered and toggled on or off.</string>
     <string name="format_cycle_since">"%d cycles since "</string>
+    <string name="format_data_since">Since %s\nData for %s</string>
 
 </resources>

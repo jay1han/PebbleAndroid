@@ -4,7 +4,7 @@
     - [x] Permission description text
     - [x] Splash screen
     - [x] Prettier date/time
-    - [ ] Use LaunchEffect to count seconds since lastReceived
+    - [x] Use LaunchEffect to count seconds since lastReceived
     - [ ] Nicer icon
 
 - Service
