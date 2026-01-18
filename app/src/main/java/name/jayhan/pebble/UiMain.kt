@@ -3,6 +3,7 @@
 package name.jayhan.pebble
 
 import android.content.Context
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,12 +19,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -34,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
@@ -200,6 +204,10 @@ fun AwayTimezone(
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
+    BackHandler(editing) {
+        focusManager.clearFocus()
+    }
+
     Row (
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -214,23 +222,41 @@ fun AwayTimezone(
             fontSize = AppConstants.titleSize,
         )
 
-        BasicTextField(
-            readOnly = !editing,
-            value = if (editing) tz else tzWatch,
-            onValueChange = { tz = it },
-            singleLine = true,
+        Box(
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = 20.dp)
-                .focusRequester(focusRequester)
-                .focusProperties { canFocus = editing }
-                .onFocusChanged { editing = it.hasFocus || it.isFocused },
-            textStyle = TextStyle(
-                fontSize = AppConstants.titleSize,
-                lineHeight = AppConstants.titleSize
-            ),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        )
+        ) {
+            BasicTextField(
+                readOnly = !editing,
+                value = if (editing) tz else tzWatch,
+                onValueChange = { tz = it },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
+                    .focusRequester(focusRequester)
+                    .focusProperties { canFocus = editing }
+                    .onFocusChanged { editing = it.hasFocus || it.isFocused },
+                textStyle = TextStyle(
+                    fontSize = AppConstants.titleSize,
+                    lineHeight = AppConstants.titleSize
+                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            )
+
+            if (!editing) {
+                Text(
+                    text = "",
+                    fontSize = AppConstants.titleSize,
+                    lineHeight = AppConstants.titleSize,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
+                        .alpha(0f)
+                        .clickable {
+                            editing = true
+                            tz = ""
+                            focusRequester.requestFocus()
+                        }
+                )
+            }
+        }
 
         if (isConnected) {
             Button(

@@ -77,7 +77,7 @@ fun IndicatorList(
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
         ) {
             Button(
                 onClick = { resetDialog = true },
@@ -188,30 +188,26 @@ fun IndicatorItem(
                 lineHeight = AppConstants.subSize,
                 modifier = Modifier.fillMaxWidth()
             )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                if (indicator.channel.isNotEmpty()) {
-                    Text(
-                        text = indicator.channel,
-                        fontSize = AppConstants.subSize,
-                        lineHeight = AppConstants.subSize,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Start,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-                if (indicator.filterText.isNotEmpty()) {
-                    Text(
-                        text = indicator.filterText,
-                        fontSize = AppConstants.subSize,
-                        lineHeight = AppConstants.subSize,
-                        fontStyle = FontStyle.Italic,
-                        textAlign = TextAlign.End,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+
+            if (indicator.channel.isNotEmpty()) {
+                Text(
+                    text = indicator.channel,
+                    fontSize = AppConstants.subSize,
+                    lineHeight = AppConstants.subSize,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            if (indicator.filterText.isNotEmpty()) {
+                Text(
+                    text = indicator.filterText,
+                    fontSize = AppConstants.subSize,
+                    lineHeight = AppConstants.subSize,
+                    fontStyle = FontStyle.Italic,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
 
@@ -252,6 +248,7 @@ fun ResetDialog(
                 Text(
                     text = stringResource(R.string.reset_question),
                     fontSize = AppConstants.titleSize,
+                    lineHeight = AppConstants.titleSize * 1.2f,
                     modifier = Modifier.padding(10.dp)
                 )
                 Row(
