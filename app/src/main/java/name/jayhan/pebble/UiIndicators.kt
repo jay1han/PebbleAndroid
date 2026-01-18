@@ -108,15 +108,12 @@ fun IndicatorList(
                 text = stringResource(R.string.no_indicators),
                 textAlign = TextAlign.Center,
                 fontSize = AppConst.titleSize,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
+                modifier = Modifier.fillMaxWidth().padding(10.dp)
             )
         } else {
             Column(
-                modifier = Modifier
-                    .verticalScroll(scrollState)
-                    .fillMaxWidth().padding(0.dp)
+                modifier = Modifier.fillMaxWidth().padding(0.dp)
+                    .verticalScroll(scrollState),
             ) {
                 HorizontalDivider(thickness = 1.dp)
 
@@ -145,9 +142,7 @@ fun IndicatorItem(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth(.1f)
-                .padding(4.dp)
+            modifier = Modifier.fillMaxWidth(.1f).padding(4.dp)
         ) {
             val icon = getApplicationIcon(LocalContext.current, indicator.packageName)
             if (icon != null) {
@@ -167,10 +162,7 @@ fun IndicatorItem(
         }
 
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp)
-                .weight(1f)
+            modifier = Modifier.padding(horizontal = 8.dp).weight(1f)
         ) {
             val appName = Notifications.getApplicationName(indicator.packageName)
             if (appName != "") {
@@ -213,9 +205,7 @@ fun IndicatorItem(
         Text(
             text = indicator.letter.toString(),
             fontSize = AppConst.titleSize,
-            modifier = Modifier
-                .fillMaxWidth(.1f)
-                .padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxWidth(.1f).padding(horizontal = 16.dp),
             textAlign = TextAlign.Center,
         )
 
@@ -240,9 +230,7 @@ fun ResetDialog(
     ) {
         Card {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
+                modifier = Modifier.fillMaxWidth().padding(10.dp)
             ) {
                 Text(
                     text = stringResource(R.string.reset_question),
@@ -251,9 +239,7 @@ fun ResetDialog(
                     modifier = Modifier.padding(10.dp)
                 )
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp),
+                    modifier = Modifier.fillMaxWidth().padding(10.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(

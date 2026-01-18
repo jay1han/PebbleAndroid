@@ -122,8 +122,7 @@ fun TopBar(
     onHelp: () -> Unit
 ) {
     TopAppBar(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
             .clickable {
                 if (isConnected) onHelp()
                 else Pebble.askInfo()
@@ -203,8 +202,7 @@ fun AwayTimezone(
     Row (
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
             .pointerInput(Unit) {
                 detectTapGestures { focusManager.clearFocus() }
             }
@@ -215,8 +213,7 @@ fun AwayTimezone(
         )
 
         Box(
-            modifier = Modifier
-                .weight(1f)
+            modifier = Modifier.weight(1f)
         ) {
             BasicTextField(
                 readOnly = !editing,

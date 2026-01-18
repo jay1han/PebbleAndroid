@@ -52,9 +52,7 @@ fun SelectPackage(
         ) {
             LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
+                modifier = Modifier.fillMaxWidth().padding(10.dp)
             ) {
                 if (!showAllActual) {
                     item {
@@ -79,13 +77,11 @@ fun SelectPackage(
                         items = listShown,
                     ) { packageName ->
                         ListItem(
-                            modifier = Modifier
+                            modifier = Modifier.padding(0.dp).fillMaxWidth()
                                 .clickable {
                                     onSelect(packageName)
                                     onClose()
-                                }
-                                .padding(0.dp)
-                                .fillMaxWidth(),
+                                },
                             leadingContent = {
                                 val appIcon = getApplicationIcon(LocalContext.current, packageName)
                                 if (appIcon != null) {

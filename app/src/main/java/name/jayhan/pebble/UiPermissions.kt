@@ -55,11 +55,10 @@ fun UiPermissions(
 
             for (permissionGroup in missingList) {
                 ListItem(
-                    modifier = Modifier
+                    modifier = Modifier.fillMaxWidth()
                         .clickable {
                             showDetails = permissionGroup
-                        }
-                        .fillMaxWidth(),
+                        },
                     headlineContent = {
                         Text(
                             text = stringResource(permissionGroup.title),
@@ -70,9 +69,7 @@ fun UiPermissions(
                     supportingContent = {
                         Text(
                             text = stringResource(permissionGroup.description),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                             fontSize = AppConst.smallSize,
                         )
                     },
@@ -101,9 +98,7 @@ fun Rationale(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
+                modifier = Modifier.fillMaxWidth().padding(10.dp)
             ) {
                 Text(
                     text = stringResource(permissionGroup.title),

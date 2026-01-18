@@ -59,10 +59,8 @@ fun HelpDialog(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier
-                    .verticalScroll(scrollState)
-                    .fillMaxWidth()
-                    .padding(10.dp),
+                modifier = Modifier.fillMaxWidth().padding(10.dp)
+                    .verticalScroll(scrollState),
             ) {
                 Text(
                     text = "${watchInfo.modelString()} (${watchInfo.versionString()})",
@@ -75,9 +73,7 @@ fun HelpDialog(
                             " (%s)".format((clockNow - lastReceived).formatDurationSeconds()),
                     fontSize = AppConst.textSize,
                     textAlign = TextAlign.End,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                 )
                 LaunchedEffect(clockNow) {
                     delay(1000)
@@ -87,7 +83,6 @@ fun HelpDialog(
                 val batteryText = StringBuilder()
                     .append(stringResource(R.string.format_battery)
                         .format(watchInfo.battery))
-                    .append("\n")
                 if (watchInfo.plugged) {
                     batteryText.append(stringResource(R.string.plugged))
                     if (watchInfo.charging)
