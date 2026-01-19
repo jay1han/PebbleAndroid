@@ -12,9 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -48,7 +52,8 @@ fun EditIndicator(
 ) {
     var newPackage by remember { mutableStateOf(indicator.packageName) }
     var newChannel by remember { mutableStateOf(indicator.channel) }
-    var newTicker by remember { mutableStateOf(indicator.filterText) }
+    var newText by remember { mutableStateOf(indicator.filterText) }
+    var newType by remember { mutableStateOf(indicator.filterType) }
     var newLetter by remember { mutableStateOf(indicator.letter) }
     var showPackageList by remember { mutableStateOf(false) }
     var ignore by remember { mutableStateOf(false) }
@@ -75,7 +80,7 @@ fun EditIndicator(
                     ) {
                         Box(
                             contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxWidth(.4f)
+                            modifier = Modifier.fillMaxWidth(.33f)
                         ) {
                             val icon: ImageBitmap? =
                                 if (activeList == PreviewActiveList) null
@@ -162,7 +167,7 @@ fun EditIndicator(
                     OutlinedTextField(
                         value =
                             if (newPackage.isEmpty() && !editPackageName)
-                                stringResource(R.string.package_name)
+                                stringResource(R.string.package_empty)
                             else newPackage,
                         onValueChange = { newPackage = it },
                         textStyle = TextStyle(
@@ -210,34 +215,47 @@ fun EditIndicator(
 
                     // Text
                     Spacer(Modifier.height(8.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(R.string.other_filter),
-                            fontSize = AppConst.textSize,
-                            modifier = Modifier.padding(end = 10.dp)
-                        )
+                    var editFilter by remember { mutableStateOf(false) }
 
-                        var editTicker by remember { mutableStateOf(false) }
-                        OutlinedTextField(
-                            value =
-                                if (newTicker.isEmpty() && !editTicker)
-                                    stringResource(R.string.filter_empty)
-                                else newTicker,
-                            onValueChange = { newTicker = it },
-                            textStyle = TextStyle(
-                                fontSize = AppConst.textSize,
-                                fontStyle = FontStyle.Italic,
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                autoCorrectEnabled = false,
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                                .onFocusChanged { editTicker = it.isFocused },
-                            maxLines = 1,
-                        )
+                    val labels = FilterTypeStringIdList
+                    SingleChoiceSegmentedButtonRow(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        labels.forEachIndexed { index, label ->
+                            SegmentedButton(
+                                onClick = { newType = getFilterType(index) },
+                                selected = index == newType.ordinal,
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = index,
+                                    count = labels.size
+                                )
+                            ) {
+                                Text(
+                                    text = stringResource(label),
+                                    maxLines = 1,
+                                    autoSize = TextAutoSize.StepBased()
+                                )
+                            }
+                        }
                     }
+
+                    OutlinedTextField(
+                        value =
+                            if (newText.isEmpty() && !editFilter)
+                                stringResource(R.string.filter_empty)
+                            else newText,
+                        onValueChange = { newText = it },
+                        textStyle = TextStyle(
+                            fontSize = AppConst.textSize,
+                            fontStyle = FontStyle.Italic,
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            autoCorrectEnabled = false,
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                            .onFocusChanged { editFilter = it.isFocused },
+                        maxLines = 1,
+                    )
 
                     // Buttons
                     Row(
@@ -252,7 +270,8 @@ fun EditIndicator(
                                         SingleIndicator(
                                             packageName = newPackage,
                                             channel = newChannel,
-                                            filterText = newTicker,
+                                            filterText = newText,
+                                            filterType = newType,
                                             letter = if (ignore) ' ' else newLetter,
                                         )
                                     )
@@ -306,7 +325,8 @@ fun EditIndicatorPreview() {
         indicator = SingleIndicator(
             packageName = "com.android.google.apps.messaging",
             channel = "jayhan.dev",
-            filterText = "",
+            filterText = "text",
+            filterType = FilterType.Text,
             letter = 'S'),
         activeList = PreviewActiveList,
         allList = listOf()

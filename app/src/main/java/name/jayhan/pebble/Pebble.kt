@@ -25,43 +25,46 @@ val WatchModels = listOf(
     "Core Time 2"
 )
 
-enum class DictKey(val code: Int) {
-    MSG_TYPE(1),
-    TZ_MIN(2),
-    PHONE_DND(3),
-    PHONE_BATT(4),
-    PHONE_CHG(5),
-    NET(6),
-    WIFI(7),
-    BTID(8),
-    BTC(9),
-    NOTI(10),
-    ACTION(11),
-    MODEL(12),
-    FW_VERSION(13),
-    WATCH_BATT(14),
-    WATCH_PLUG(15),
-    WATCH_CHG(16),
-    SIM(17),
-    CARRIER(18)
+enum class DictKey {
+    NONE,
+    MSG_TYPE,
+    TZ_MIN,
+    PHONE_DND,
+    PHONE_BATT,
+    PHONE_CHG,
+    NET,
+    WIFI,
+    BTID,
+    BTC,
+    NOTI,
+    ACTION,
+    MODEL,
+    FW_VERSION,
+    WATCH_BATT,
+    WATCH_PLUG,
+    WATCH_CHG,
+    SIM,
+    CARRIER,
 }
-enum class MsgType(val code: Int) {
-    INFO(1),
-    TZ(2),
-    PHONE_DND(3),
-    PHONE_CHG(4),
-    NET(5),
-    WIFI(6),
-    BT(7),
-    NOTI(8),
-    WBATT(9),
-    ACTION(10),
-    FRESH(11),
+enum class MsgType {
+    NONE,
+    INFO,
+    TZ,
+    PHONE_DND,
+    PHONE_CHG,
+    NET,
+    WIFI,
+    BT,
+    NOTI,
+    WBATT,
+    ACTION,
+    FRESH,
 }
 
-enum class ActionType(val code: Int) {
-    FIND_PHONE(1),
-    DND_TOGGLE(2)
+enum class ActionType {
+    NONE,
+    FIND_PHONE,
+    DND_TOGGLE,
 }
 
 class WatchInfo(
@@ -121,18 +124,18 @@ private object DataReceiver:
         PebbleKit.sendAckToPebble(context, transactionId)
 
         if (data != null) {
-            val msgType = data.getInteger(DictKey.MSG_TYPE.code)?.toInt() ?: 0
+            val msgType = data.getInteger(DictKey.MSG_TYPE.ordinal)?.toInt() ?: 0
             when (msgType) {
-                MsgType.INFO.code,
-                MsgType.FRESH.code -> {
-                    val watchModel = data.getInteger(DictKey.MODEL.code)?.toInt() ?: 0
-                    val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.code)?.toInt() ?: 0
+                MsgType.INFO.ordinal,
+                MsgType.FRESH.ordinal -> {
+                    val watchModel = data.getInteger(DictKey.MODEL.ordinal)?.toInt() ?: 0
+                    val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.ordinal)?.toInt() ?: 0
                     if (watchModel != 0 && watchFwVersion != 0)
                         Pebble.setWatchInfo(watchModel, watchFwVersion)
-                    val tzMinutes = data.getInteger(DictKey.TZ_MIN.code)
+                    val tzMinutes = data.getInteger(DictKey.TZ_MIN.ordinal)
                     if (tzMinutes != null)
                         Pebble.fromMinutes(tzMinutes.toInt())
-                    if (msgType == MsgType.FRESH.code) {
+                    if (msgType == MsgType.FRESH.ordinal) {
                         Pebble.doRefresh = true
                     } else {
                         if (context != null)
@@ -140,10 +143,10 @@ private object DataReceiver:
                     }
                 }
 
-                MsgType.WBATT.code -> {
-                    val watchBattery = data.getInteger(DictKey.WATCH_BATT.code)?.toInt() ?: 0
-                    val watchPlugged = data.getInteger(DictKey.WATCH_PLUG.code)?.toInt() ?: 0
-                    val watchCharging = data.getInteger(DictKey.WATCH_CHG.code)?.toInt() ?: 0
+                MsgType.WBATT.ordinal -> {
+                    val watchBattery = data.getInteger(DictKey.WATCH_BATT.ordinal)?.toInt() ?: 0
+                    val watchPlugged = data.getInteger(DictKey.WATCH_PLUG.ordinal)?.toInt() ?: 0
+                    val watchCharging = data.getInteger(DictKey.WATCH_CHG.ordinal)?.toInt() ?: 0
                     Pebble.setBattery(watchBattery, watchPlugged != 0, watchCharging != 0)
                     if (!Pebble.watchInfo.isValid()) {
                         if (context != null)
@@ -151,12 +154,12 @@ private object DataReceiver:
                     }
                 }
 
-                MsgType.ACTION.code -> {
+                MsgType.ACTION.ordinal -> {
                     // TODO: perform action
-                    val action = data.getInteger(DictKey.ACTION.code)?.toInt() ?: 0
+                    val action = data.getInteger(DictKey.ACTION.ordinal)?.toInt() ?: 0
                     when (action) {
-                        ActionType.FIND_PHONE.code -> {}
-                        ActionType.DND_TOGGLE.code -> {}
+                        ActionType.FIND_PHONE.ordinal -> {}
+                        ActionType.DND_TOGGLE.ordinal -> {}
                     }
                 }
             }
@@ -216,7 +219,7 @@ object Pebble
         extra: Intent.() -> Unit
     ) {
         val intent = Intent(AppConst.INTENT_SEND_PEBBLE).apply {
-            putExtra(AppConst.EXTRA_MSG_TYPE, msgType.code)
+            putExtra(AppConst.EXTRA_MSG_TYPE, msgType.ordinal)
             extra()
         }
         context.sendBroadcast(intent)

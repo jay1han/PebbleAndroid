@@ -132,49 +132,49 @@ class PebbleService: Service()
                     val msgType = intent.getIntExtra(AppConst.EXTRA_MSG_TYPE, 0)
 
                     val pebbleDict = PebbleDictionary()
-                    pebbleDict.addInt8(DictKey.MSG_TYPE.code, msgType.toByte())
+                    pebbleDict.addInt8(DictKey.MSG_TYPE.ordinal, msgType.toByte())
 
                     when(msgType) {
-                        MsgType.INFO.code,
-                        MsgType.WBATT.code -> {
+                        MsgType.INFO.ordinal,
+                        MsgType.WBATT.ordinal -> {
                         }
 
-                        MsgType.TZ.code -> {
+                        MsgType.TZ.ordinal -> {
                             val minutes = intent.getIntExtra(AppConst.EXTRA_TZ_MIN, 0)
-                            pebbleDict.addInt16(DictKey.TZ_MIN.code, minutes.toShort())
+                            pebbleDict.addInt16(DictKey.TZ_MIN.ordinal, minutes.toShort())
                         }
 
-                        MsgType.PHONE_CHG.code -> {
+                        MsgType.PHONE_CHG.ordinal -> {
                             val isCharging = intent.getIntExtra(AppConst.EXTRA_PHONE_CHG, 0)
-                            pebbleDict.addInt8(DictKey.PHONE_CHG.code, isCharging.toByte())
+                            pebbleDict.addInt8(DictKey.PHONE_CHG.ordinal, isCharging.toByte())
                             val percent = intent.getIntExtra(AppConst.EXTRA_PHONE_BATT, 0)
-                            pebbleDict.addInt8(DictKey.PHONE_BATT.code, percent.toByte())
+                            pebbleDict.addInt8(DictKey.PHONE_BATT.ordinal, percent.toByte())
                         }
 
-                        MsgType.WIFI.code -> {
+                        MsgType.WIFI.ordinal -> {
                             val ssid = intent.getStringExtra(AppConst.EXTRA_WIFI) ?: ""
-                            pebbleDict.addString(DictKey.WIFI.code, ssid.take(AppConst.MAX_LEN_ID))
+                            pebbleDict.addString(DictKey.WIFI.ordinal, ssid.take(AppConst.MAX_LEN_ID))
                         }
 
-                        MsgType.NET.code -> {
+                        MsgType.NET.ordinal -> {
                             val gen = intent.getIntExtra(AppConst.EXTRA_NET, 0)
-                            pebbleDict.addInt8(DictKey.NET.code, gen.toByte())
+                            pebbleDict.addInt8(DictKey.NET.ordinal, gen.toByte())
                             val sim = intent.getIntExtra(AppConst.EXTRA_SIM, 0)
-                            pebbleDict.addInt8(DictKey.SIM.code, sim.toByte())
+                            pebbleDict.addInt8(DictKey.SIM.ordinal, sim.toByte())
                             val carrier = intent.getStringExtra(AppConst.EXTRA_CARRIER) ?: ""
-                            pebbleDict.addString(DictKey.CARRIER.code, carrier.take(AppConst.MAX_LEN_ID))
+                            pebbleDict.addString(DictKey.CARRIER.ordinal, carrier.take(AppConst.MAX_LEN_ID))
                         }
 
-                        MsgType.NOTI.code -> {
+                        MsgType.NOTI.ordinal -> {
                             val noti = intent.getStringExtra(AppConst.EXTRA_NOTI) ?: ""
-                            pebbleDict.addString(DictKey.NOTI.code, noti.take(AppConst.MAX_NOTI_INDICATORS))
+                            pebbleDict.addString(DictKey.NOTI.ordinal, noti.take(AppConst.MAX_NOTI_INDICATORS))
                         }
 
-                        MsgType.BT.code -> {
+                        MsgType.BT.ordinal -> {
                             val btid = intent.getStringExtra(AppConst.EXTRA_BTID) ?: ""
-                            pebbleDict.addString(DictKey.BTID.code, btid.take(AppConst.MAX_LEN_ID))
+                            pebbleDict.addString(DictKey.BTID.ordinal, btid.take(AppConst.MAX_LEN_ID))
                             val btc = intent.getIntExtra(AppConst.EXTRA_BTC, 0)
-                            pebbleDict.addInt8(DictKey.BTC.code, btc.toByte())
+                            pebbleDict.addInt8(DictKey.BTC.ordinal, btc.toByte())
 
                         }
                     }

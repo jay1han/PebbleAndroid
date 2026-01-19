@@ -11,10 +11,11 @@ class SingleIndicator(
     var packageName: String = "",
     var channel: String = "",
     var filterText: String = "",
+    var filterType: FilterType = FilterType.Title,
     var letter: Char = ' '
 ) {
     override fun toString(): String {
-        return "$letter\n$packageName\n$channel\n$filterText"
+        return "$letter\n$packageName\n$channel\n$filterText\n${filterType.name}"
     }
 
     fun equalTo(
@@ -22,18 +23,26 @@ class SingleIndicator(
     ): Boolean {
         return packageName == other.packageName &&
                 channel == other.channel &&
-                filterText == other.filterText
+                filterText == other.filterText &&
+                filterType == other.filterType
     }
 
     companion object {
         fun fromString(
             string: String
         ): SingleIndicator {
-            val elements = string.split('\n', limit = 4)
+            val elements = string.split('\n', limit = 5)
+            val filterType = try {
+                if (elements.size > 4) FilterType.valueOf(elements[4])
+                else FilterType.Title
+            } catch (_: IllegalArgumentException) {
+                FilterType.Title
+            }
             return SingleIndicator(
                 packageName = elements[1],
                 channel = elements[2],
                 filterText = elements[3],
+                filterType = filterType,
                 letter = elements[0][0],
             )
         }
@@ -66,14 +75,6 @@ object Indicators
         val packageName = sbn.packageName
         val notification = sbn.notification
         val channel = notification.channelId
-        val text = notification.tickerText.toString() +
-                listOf(
-                    Notification.EXTRA_TEXT,
-                    Notification.EXTRA_BIG_TEXT,
-                    Notification.EXTRA_TITLE
-                ).joinToString("") {
-                    notification.extras.getCharSequence(it, "")
-                }
 
         var provision = '-'
         var match = 0
@@ -91,7 +92,7 @@ object Indicators
                             match = 10
                         }
                     } else {
-                        if (text.contains(indicator.filterText)) {
+                        if (notification.matches(indicator)) {
                             if (match < 20) {
                                 provision = indicator.letter
                                 match = 20
@@ -106,7 +107,7 @@ object Indicators
                                 match = 50
                             }
                         } else {
-                            if (text.contains(indicator.filterText)) {
+                            if (notification.matches(indicator)) {
                                 provision = indicator.letter
                                 match = 100
                             }
@@ -157,13 +158,34 @@ object Indicators
     }
 }
 
+fun Notification.matches(
+    indicator: SingleIndicator
+): Boolean {
+    return indicator.filterText.isNotEmpty() &&
+            this.extras.getCharSequence(FilterTypeExtra[indicator.filterType.ordinal], "")
+                .contains(indicator.filterText)
+}
+
 val PreviewIndicators = listOf(
-    SingleIndicator("com.android.google.apps.dialer", "", "", 'C'),
-    SingleIndicator("com.android.google.apps.messaging", "", "", 'T'),
-    SingleIndicator("com.android.google.apps.gm", "jay", "", 'j'),
-    SingleIndicator("com.android.google.apps.gm", "pebble","", 'p'),
-    SingleIndicator("com.android.google.apps.gm", "", "", 'G'),
-    SingleIndicator("com.whatsapp", "", "", 'W'),
-    SingleIndicator("com.kakao.talk", "",  "", 'K'),
-    SingleIndicator("com.kakao.talk", "", "Bob", 'b')
+    SingleIndicator("com.android.google.apps.dialer", "", "", FilterType.Title,'C'),
+    SingleIndicator("com.android.google.apps.messaging", "", "", FilterType.Title,'T'),
+    SingleIndicator("com.android.google.apps.gm", "jay", "", FilterType.Title,'j'),
+    SingleIndicator("com.android.google.apps.gm", "pebble","", FilterType.Title,'p'),
+    SingleIndicator("com.android.google.apps.gm", "", "", FilterType.Title,'G'),
+    SingleIndicator("com.whatsapp", "", "", FilterType.Title,'W'),
+    SingleIndicator("com.kakao.talk", "",  "", FilterType.Title,'K'),
+    SingleIndicator("com.kakao.talk", "", "Bob", FilterType.Title,'b'),
+    SingleIndicator("com.kakao.talk", "talk", "Alice", FilterType.Subject,'b'),
+)
+
+val PreviewActiveList = listOf(
+    "com.android.google.apps.messaging",
+    "com.android.google.apps.messaging",
+    "com.whatsapp"
+)
+
+val PreviewAllList = listOf(
+    "com.android.google.apps.messaging",
+    "com.android.google.apps.gm",
+    "com.whatsapp"
 )

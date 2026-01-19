@@ -1,5 +1,6 @@
 package name.jayhan.pebble
 
+import android.app.Notification
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.UUID
@@ -17,7 +18,6 @@ object AppConst {
     val textSize = 20.sp
     val smallSize = 16.sp
     val subSize = 12.sp
-    val padSize = 8.dp
 
     const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE"
 
@@ -48,4 +48,30 @@ object AppConst {
     val APP_UUID: UUID? = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
     const val MAX_NOTI_INDICATORS = 15
     const val MAX_LEN_ID = 19
+}
+
+enum class FilterType {
+    Title { override val r = R.string.filter_title },
+    Text { override val r = R.string.filter_text },
+    Subject { override val r = R.string.filter_subject };
+    
+    abstract val r: Int
+}
+
+val FilterTypeStringIdList = FilterType.entries.map { it.r }
+
+val FilterTypeExtra = listOf(
+    Notification.EXTRA_TITLE,
+    Notification.EXTRA_TEXT,
+    Notification.EXTRA_CONVERSATION_TITLE,
+)
+
+fun getFilterType(
+    index: Int
+): FilterType {
+    val values = listOf(FilterType.Title, FilterType.Text, FilterType.Subject)
+    return (
+            if (index in 0..< FilterType.entries.size) values[index]
+            else FilterType.Title
+            )
 }

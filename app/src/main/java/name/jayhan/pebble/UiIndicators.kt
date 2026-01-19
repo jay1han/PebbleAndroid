@@ -191,8 +191,9 @@ fun IndicatorItem(
                 )
             }
             if (indicator.filterText.isNotEmpty()) {
+                val filterName = stringResource(indicator.filterType.r)
                 Text(
-                    text = indicator.filterText,
+                    text = "[$filterName] ${indicator.filterText}",
                     fontSize = AppConst.subSize,
                     lineHeight = AppConst.subSize,
                     fontStyle = FontStyle.Italic,
@@ -267,18 +268,6 @@ fun ResetDialog(
     }
 }
 
-val PreviewActiveList = listOf(
-    "com.android.google.apps.messaging",
-    "com.android.google.apps.messaging",
-    "com.whatsapp"
-)
-
-val PreviewAllList = listOf(
-    "com.android.google.apps.messaging",
-    "com.android.google.apps.gm",
-    "com.whatsapp"
-)
-
 @Preview
 @Composable
 fun IndicatorItemPreview() {
@@ -287,7 +276,8 @@ fun IndicatorItemPreview() {
             SingleIndicator(
                 "com.google.android.apps.messaging",
                 "jayhan.dev",
-                "",
+                "text",
+                FilterType.Title,
                 'S'
             ),
         ) { }

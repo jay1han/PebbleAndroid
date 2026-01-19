@@ -11,26 +11,23 @@
     <string name="reset">Reset</string>
     <string name="add">Add</string>
 
-    <string name="indicator">Indicator</string>
     <string name="no_indicators">Nothing!</string>
+    <string name="filter_title">Title</string>
+    <string name="filter_text">Text</string>
+    <string name="filter_subject">Subject</string>
     <string name="reset_question">Do you want to clear all indicators?</string>
     <string name="reset_no">No</string>
     <string name="reset_yes">Reset!</string>
 
-    <string name="application">Application</string>
     <string name="select_package">Choose app</string>
-    <string name="package_name">(package name)</string>
-    <string name="package_name_empty">(or choose application)</string>
     <string name="channel_filter">Channel:</string>
-    <string name="other_filter">Text:</string>
-    <string name="filter_empty">(optional)</string>
+    <string name="package_empty">(choose app)</string>
+    <string name="filter_empty">(empty)</string>
     <string name="save">Save</string>
     <string name="remove">Remove</string>
 
     <string name="no_active">No active notification</string>
     <string name="list_all">List all</string>
-
-    <string name="connected">Connected</string>
 
     <string name="battery_invalid">Battery info not available</string>
     <string name="format_battery">"%d%% "</string>
@@ -42,6 +39,9 @@
     <string name="format_cycle">"%d%% at %s (%s)"</string>
     <string name="format_history_since">"%d cycles since %s"</string>
     <string name="format_data_since">Since %s\nHistory %s</string>
+    <string name="ignore_indication">Ignore</string>
+    <string name="clear_battery_history">Clear battery history?</string>
+    <string name="no_history">No history</string>
 
     <string name="android_github">Android</string>
     <string name="pebble_github">Pebble</string>
@@ -49,6 +49,7 @@
 
     <string name="pg_title">Required permissions</string>
     <string name="accept">Accept</string>
+    <string name="permissions_help">Permissions blabla</string>
 
     <string name="pg_foreground_service">Foreground service</string>
     <string name="foreground_service">Allow uninterrupted service</string>
@@ -99,9 +100,5 @@
     <string name="zen_rule">Create and manage a Zen rule</string>
     <string name="zen_rule_2">In order to control the phone\'s Do-not-disturb feature,
         a Zen rule must be registered and toggled on or off.</string>
-    <string name="ignore_indication">Ignore</string>
-    <string name="clear_battery_history">Clear battery history?</string>
-    <string name="no_history">No history</string>
-    <string name="permissions_help">Permissions blabla</string>
 
 </resources>
