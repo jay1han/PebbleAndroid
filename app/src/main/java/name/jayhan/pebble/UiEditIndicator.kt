@@ -51,6 +51,7 @@ fun EditIndicator(
     var newTicker by remember { mutableStateOf(indicator.filterText) }
     var newLetter by remember { mutableStateOf(indicator.letter) }
     var showPackageList by remember { mutableStateOf(false) }
+    var ignore by remember { mutableStateOf(false) }
 
     if (showPackageList) {
         SelectPackage(
@@ -117,7 +118,6 @@ fun EditIndicator(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                             ) {
-                                var ignore by remember { mutableStateOf(false) }
                                 OutlinedTextField(
                                     enabled = !ignore,
                                     value = if (ignore) "" else newLetter.toString(),
@@ -246,14 +246,14 @@ fun EditIndicator(
                     ) {
                         Button(
                             onClick = {
-                                if (newLetter != ' ' && newPackage.isNotEmpty()) {
+                                if ((ignore || newLetter != ' ') && newPackage.isNotEmpty()) {
                                     Indicators.remove(indicator)
                                     Indicators.add(
                                         SingleIndicator(
                                             packageName = newPackage,
                                             channel = newChannel,
                                             filterText = newTicker,
-                                            letter = newLetter
+                                            letter = if (ignore) ' ' else newLetter,
                                         )
                                     )
                                     Notifications.refresh(context)
