@@ -82,7 +82,7 @@ fun AppScaffold(
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
                 topBar = {
-                    MainTopBar(isConnected, watchInfo) {
+                    MainTopBar(context, isConnected, watchInfo) {
                         showHelp = true
                     }
                 },
@@ -114,6 +114,7 @@ fun AppScaffold(
 
 @Composable
 fun MainTopBar(
+    context: Context,
     isConnected: Boolean,
     watchInfo: WatchInfo,
     onHelp: () -> Unit
@@ -122,7 +123,7 @@ fun MainTopBar(
         modifier = Modifier.fillMaxWidth()
             .clickable {
                 if (isConnected) onHelp()
-                else Pebble.doRefresh = true
+                else Pebble.restartService(context)
             },
         navigationIcon = {
             Image(
@@ -278,6 +279,7 @@ val PreviewWatchInfo = WatchInfo(
 fun MainTopBarPreview() {
     PebbleTheme {
         MainTopBar(
+            LocalContext.current,
             isConnected = true,
             watchInfo = PreviewWatchInfo
         ) {}
@@ -289,6 +291,7 @@ fun MainTopBarPreview() {
 fun MainTopBarDisconnected() {
     PebbleTheme {
         MainTopBar(
+            LocalContext.current,
             isConnected = false,
             watchInfo = WatchInfo()
         ) {}

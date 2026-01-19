@@ -120,14 +120,17 @@ private object DataReceiver:
     PebbleKit.PebbleDataReceiver(AppConst.APP_UUID)
 {
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
-        Pebble.received(true)
+        Pebble.received(context, true)
         PebbleKit.sendAckToPebble(context, transactionId)
 
         if (data != null) {
             val msgType = data.getInteger(DictKey.MSG_TYPE.ordinal)?.toInt() ?: 0
             when (msgType) {
-                MsgType.INFO.ordinal,
                 MsgType.FRESH.ordinal -> {
+                    Pebble.restartService(context)
+                }
+                
+                MsgType.INFO.ordinal -> {
                     val watchModel = data.getInteger(DictKey.MODEL.ordinal)?.toInt() ?: 0
                     val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.ordinal)?.toInt() ?: 0
                     if (watchModel != 0 && watchFwVersion != 0)
@@ -135,12 +138,8 @@ private object DataReceiver:
                     val tzMinutes = data.getInteger(DictKey.TZ_MIN.ordinal)
                     if (tzMinutes != null)
                         Pebble.fromMinutes(tzMinutes.toInt())
-                    if (msgType == MsgType.FRESH.ordinal) {
-                        Pebble.doRefresh = true
-                    } else {
-                        if (context != null)
-                            Pebble.sendIntent(context, MsgType.WBATT) {}
-                    }
+                    if (context != null)
+                        Pebble.sendIntent(context, MsgType.WBATT) {}
                 }
 
                 MsgType.WBATT.ordinal -> {
@@ -149,9 +148,9 @@ private object DataReceiver:
                     val watchCharging = data.getInteger(DictKey.WATCH_CHG.ordinal)?.toInt() ?: 0
                     Pebble.setBattery(watchBattery, watchPlugged != 0, watchCharging != 0)
                     if (!Pebble.watchInfo.isValid()) {
-                        if (context != null)
-                            Pebble.sendIntent(context, MsgType.INFO) {}
-                    }
+                        Pebble.restartService(context)
+                    } else
+                        Pebble.updateService(context)
                 }
 
                 MsgType.ACTION.ordinal -> {
@@ -171,7 +170,7 @@ private object AckReceiver:
     PebbleKit.PebbleAckReceiver(AppConst.APP_UUID)
 {
     override fun receiveAck(context: Context?, transactionId: Int) {
-        Pebble.received(true)
+        Pebble.received(context, true)
     }
 }
 
@@ -179,7 +178,7 @@ private object NackReceiver:
     PebbleKit.PebbleNackReceiver(AppConst.APP_UUID)
 {
     override fun receiveNack(context: Context?, transactionId: Int) {
-        Pebble.received(false)
+        Pebble.received(context, false)
     }
 }
 
@@ -301,19 +300,31 @@ object Pebble
         return string
     }
 
-    fun received(isAcked: Boolean) {
-        lastReceived.value = clock.now()
-        doRefresh = isAcked && !isConnected.value
+    fun received(
+        context: Context?,
+        isAcked: Boolean
+    ) {
+        if (isAcked) {
+            lastReceived.value = clock.now()
+        } else {
+            updateService(context)
+        }
         isConnected.value = isAcked
     }
 
-    var doRefresh = false
-
-    fun askInfo() {
-        // TODO: Re-ask WatchInfo
+    fun updateService(
+        context: Context?
+    ) {
+        if (context != null) {
+            context.sendBroadcast(Intent(AppConst.INTENT_UPDATE))
+        }
     }
-
-    fun askBattery() {
-        // TODO: Re-ask Battery
+    
+    fun restartService(
+        context: Context?
+    ) {
+        if (context != null) {
+            context.sendBroadcast(Intent(AppConst.INTENT_RESTART))
+        }
     }
 }

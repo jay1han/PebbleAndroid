@@ -1,7 +1,6 @@
 package name.jayhan.pebble
 
 import android.app.Notification
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.UUID
 import kotlin.time.Instant
@@ -19,7 +18,9 @@ object AppConst {
     val smallSize = 16.sp
     val subSize = 12.sp
 
-    const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE"
+    const val INTENT_RESTART = "name.jayhan.pebble.RESTART_SERVICE"
+    const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE_SERVICE"
+    const val INTENT_UPDATE = "name.jayhan.pebble.UPDATE_SERVICE"
 
     const val INTENT_SEND_PEBBLE = "name.jayhan.pebble.SEND_PEBBLE"
     const val EXTRA_MSG_TYPE = "msg_type"

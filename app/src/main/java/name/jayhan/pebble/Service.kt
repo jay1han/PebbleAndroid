@@ -32,7 +32,7 @@ class PebbleService: Service()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.v(AppConst.TAG, "Service starting")
+        Log.v(AppConst.TAG, "Service starting Id=$startId")
         context = applicationContext
         val activityIntent = Intent(context, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -45,11 +45,13 @@ class PebbleService: Service()
         reviveIntent = getBroadcast(
             context,
             1,
-            Intent(AppConst.INTENT_REVIVE),
+            Intent(AppConst.INTENT_RESTART),
             PendingIntent.FLAG_IMMUTABLE
         )
 
         val filter = IntentFilter().apply {
+            addAction(AppConst.INTENT_RESTART)
+            addAction(AppConst.INTENT_UPDATE)
             addAction(AppConst.INTENT_REVIVE)
             addAction(AppConst.INTENT_SEND_PEBBLE)
         }
@@ -71,7 +73,8 @@ class PebbleService: Service()
             }
             notiMan.createNotificationChannel(channel)
 
-            setupForeground()
+            restartService()
+            updateService()
         } catch (e: Exception) {
             println(e)
         }
@@ -79,7 +82,8 @@ class PebbleService: Service()
         return super.onStartCommand(intent, flags, startId)
     }
 
-    fun restartForeground() {
+    fun updateService() {
+        Log.v(AppConst.TAG, "UpdateService")
         val notification = Notification.Builder(
             context,
             AppConst.CHANNEL_ID
@@ -98,12 +102,9 @@ class PebbleService: Service()
             ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         )
     }
-
-    private fun setupForeground() {
-        Log.v(AppConst.TAG, "Running foreground")
-
-        restartForeground()
-
+    
+    fun restartService() {
+        Log.v(AppConst.TAG, "RestartService")
         if (Permissions.allGranted) {
             Pebble.init(context)
             Notifications.init(context)
@@ -123,9 +124,19 @@ class PebbleService: Service()
 
         override fun onReceive(context: Context, intent: Intent) {
             when(intent.action) {
+                AppConst.INTENT_RESTART -> {
+                    Log.v(AppConst.TAG, "Intent: Restart service")
+                    restartService()
+                }
+
+                AppConst.INTENT_UPDATE -> {
+                    Log.v(AppConst.TAG, "Intent: Update service")
+                    updateService()
+                }
+
                 AppConst.INTENT_REVIVE -> {
-                    Log.v(AppConst.TAG, "Restart service")
-                    setupForeground()
+                    Log.v(AppConst.TAG, "Intent: Revive service")
+                    restartService()
                 }
 
                 AppConst.INTENT_SEND_PEBBLE -> {
@@ -182,19 +193,6 @@ class PebbleService: Service()
                     Pebble.sendData(context, pebbleDict)
                 }
             }
-            if (Pebble.doRefresh) {
-                Pebble.doRefresh = false
-                Pebble.sendIntent(context, MsgType.WBATT) {}
-                Notifications.refresh(context)
-
-                batteryReceiver.refresh()
-                bluetoothReceiver.refresh()
-
-                wifiCallback.refresh()
-                phoneCallback.refresh()
-            }
-
-            restartForeground()
         }
     }
 }
