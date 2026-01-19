@@ -30,7 +30,7 @@ class AppStart:
         if (context == null || intent == null) return
         when (intent.action) {
             Intent.ACTION_BOOT_COMPLETED -> {
-                Log.v(AppConst.TAG, "Boot completed")
+                Log.v(Const.TAG, "Boot completed")
                 val intent = Intent(context, PebbleService::class.java)
                 context.startForegroundService(intent)
             }
@@ -43,7 +43,7 @@ class MainActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.v(AppConst.TAG, "Start activity")
+        Log.v(Const.TAG, "Start activity")
 
         val context = applicationContext
         Permissions.initActivity(mainActivity = this)

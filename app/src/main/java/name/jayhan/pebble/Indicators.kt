@@ -57,7 +57,7 @@ object Indicators
 
     fun init(context: Context) {
         savedSettings = context.getSharedPreferences(
-            AppConst.PREF_INDIC,
+            Const.PREF_INDIC,
             Context.MODE_PRIVATE
         )
 
@@ -156,6 +156,32 @@ object Indicators
     fun reset() {
         saveList(listOf())
     }
+}
+
+enum class FilterType {
+    Title { override val r = R.string.filter_title },
+    Text { override val r = R.string.filter_text },
+    Subject { override val r = R.string.filter_subject };
+    
+    abstract val r: Int
+}
+
+val FilterTypeStringIdList = FilterType.entries.map { it.r }
+
+val FilterTypeExtra = listOf(
+    Notification.EXTRA_TITLE,
+    Notification.EXTRA_TEXT,
+    Notification.EXTRA_CONVERSATION_TITLE,
+)
+
+fun getFilterType(
+    index: Int
+): FilterType {
+    val values = listOf(FilterType.Title, FilterType.Text, FilterType.Subject)
+    return (
+            if (index in 0..< FilterType.entries.size) values[index]
+            else FilterType.Title
+            )
 }
 
 fun Notification.matches(

@@ -90,13 +90,13 @@ fun PermissionsTopBar(
         title = {
             Text(
                 text = "Permissions",
-                fontSize = AppConst.titleSize
+                fontSize = Const.titleSize
             )
         },
         actions = {
                 Text(
                     text = "?",
-                    fontSize = AppConst.titleSize,
+                    fontSize = Const.titleSize,
                 )
         }
     )
@@ -116,8 +116,8 @@ fun PermissionHelp(
     ) {
         Text(
             text = stringResource(R.string.permissions_help),
-            fontSize = AppConst.textSize,
-            lineHeight = AppConst.titleSize,
+            fontSize = Const.textSize,
+            lineHeight = Const.titleSize,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -127,7 +127,7 @@ fun PermissionHelp(
             modifier = Modifier.align(Alignment.CenterHorizontally)) {
             Text(
                 text = "OK",
-                fontSize = AppConst.titleSize,
+                fontSize = Const.titleSize,
                 textAlign = TextAlign.Center
             )
         }
@@ -158,7 +158,7 @@ fun UiPermissions(
         ) {
             Text(
                 text = stringResource(R.string.pg_title),
-                fontSize = AppConst.titleSize
+                fontSize = Const.titleSize
             )
 
             for (permissionGroup in missingList) {
@@ -172,7 +172,7 @@ fun UiPermissions(
                         Text(
                             text = stringResource(permissionGroup.title),
                             modifier = Modifier.fillMaxWidth(),
-                            fontSize = AppConst.textSize
+                            fontSize = Const.textSize
                         )
                     },
                     supportingContent = {
@@ -181,7 +181,7 @@ fun UiPermissions(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 20.dp),
-                            fontSize = AppConst.smallSize,
+                            fontSize = Const.smallSize,
                         )
                     },
                     trailingContent = {
@@ -213,17 +213,17 @@ fun Rationale(
             ) {
                 Text(
                     text = stringResource(permissionGroup.title),
-                    fontSize = AppConst.titleSize,
+                    fontSize = Const.titleSize,
                     modifier = Modifier.padding(10.dp)
                 )
                 Text(
                     text = stringResource(permissionGroup.description),
-                    fontSize = AppConst.textSize,
+                    fontSize = Const.textSize,
                     modifier = Modifier.padding(8.dp)
                 )
                 Text(
                     text = stringResource(permissionGroup.rationale),
-                    fontSize = AppConst.smallSize,
+                    fontSize = Const.smallSize,
                     modifier = Modifier.padding(4.dp)
                 )
                 Row(
@@ -240,7 +240,7 @@ fun Rationale(
                     ) {
                         Text(
                             text = stringResource(R.string.accept),
-                            fontSize = AppConst.textSize
+                            fontSize = Const.textSize
                         )
                     }
                 }

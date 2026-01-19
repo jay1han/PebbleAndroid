@@ -64,14 +64,14 @@ fun HelpDialog(
             ) {
                 Text(
                     text = "${watchInfo.modelString()} (${watchInfo.versionString()})",
-                    fontSize = AppConst.titleSize,
+                    fontSize = Const.titleSize,
                 )
 
                 var clockNow by remember { mutableStateOf(Clock.System.now()) }
                 Text (
                     text = lastReceived.formatTimeSecond() +
                             " (${(clockNow - lastReceived).formatDurationSeconds()})",
-                    fontSize = AppConst.textSize,
+                    fontSize = Const.textSize,
                     textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                 )
@@ -91,7 +91,7 @@ fun HelpDialog(
 
                 Text(
                     text = batteryText.toString(),
-                    fontSize = AppConst.textSize,
+                    fontSize = Const.textSize,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -132,7 +132,7 @@ fun HelpDialog(
 
                 Text(
                     text = historyText,
-                    fontSize = AppConst.smallSize,
+                    fontSize = Const.smallSize,
                     modifier = Modifier.padding(top = 8.dp)
                 )
 
@@ -146,40 +146,40 @@ fun HelpDialog(
                     ) {
                         Text(
                             text = "Clear history",
-                            fontSize = AppConst.textSize,
+                            fontSize = Const.textSize,
                         )
                     }
                 }
 
                 Text(
                     text = stringResource(R.string.android_github),
-                    fontSize = AppConst.smallSize,
+                    fontSize = Const.smallSize,
                 )
                 Text(
                     textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxSize(),
-                    fontSize = AppConst.smallSize,
+                    fontSize = Const.smallSize,
                     text = buildAnnotatedString {
                         withLink(
-                            LinkAnnotation.Url(AppConst.GITHUB_ANDROID)
+                            LinkAnnotation.Url(Const.GITHUB_ANDROID)
                         ) {
-                            append(AppConst.GITHUB_ANDROID)
+                            append(Const.GITHUB_ANDROID)
                         }
                     }
                 )
                 Text(
                     text = stringResource(R.string.pebble_github),
-                    fontSize = AppConst.smallSize,
+                    fontSize = Const.smallSize,
                 )
                 Text(
                     textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxSize(),
-                    fontSize = AppConst.smallSize,
+                    fontSize = Const.smallSize,
                     text = buildAnnotatedString {
                         withLink(
-                            LinkAnnotation.Url(AppConst.GITHUB_PEBBLE)
+                            LinkAnnotation.Url(Const.GITHUB_PEBBLE)
                         ) {
-                            append(AppConst.GITHUB_PEBBLE)
+                            append(Const.GITHUB_PEBBLE)
                         }
                     }
                 )
@@ -187,8 +187,8 @@ fun HelpDialog(
                 Text(
                     modifier = Modifier.padding(vertical = 10.dp),
                     text = stringResource(R.string.built) +
-                            AppConst.buildDateTime,
-                    fontSize = AppConst.smallSize
+                            Const.buildDateTime,
+                    fontSize = Const.smallSize
                 )
             }
         }
@@ -219,21 +219,21 @@ fun ClearBatteryDialog(
                         )
                     Text(
                         text = historyText,
-                        fontSize = AppConst.textSize,
+                        fontSize = Const.textSize,
                         modifier = Modifier.fillMaxWidth().padding(10.dp)
                     )
                 } else {
                     Text(
                         text = stringResource(R.string.no_history),
-                        fontSize = AppConst.textSize,
+                        fontSize = Const.textSize,
                         modifier = Modifier.fillMaxWidth().padding(10.dp)
                     )
                 }
 
                 Text(
                     text = stringResource(R.string.clear_battery_history),
-                    fontSize = AppConst.titleSize,
-                    lineHeight = AppConst.titleSize * 1.2,
+                    fontSize = Const.titleSize,
+                    lineHeight = Const.titleSize * 1.2,
                     modifier = Modifier.fillMaxWidth().padding(10.dp)
                 )
 
@@ -249,7 +249,7 @@ fun ClearBatteryDialog(
                     ) {
                         Text(
                             text = "Yes",
-                            fontSize = AppConst.textSize
+                            fontSize = Const.textSize
                         )
                     }
                     Button(
@@ -257,7 +257,7 @@ fun ClearBatteryDialog(
                     ) {
                         Text(
                             text = "No",
-                            fontSize = AppConst.textSize
+                            fontSize = Const.textSize
                         )
                     }
                 }

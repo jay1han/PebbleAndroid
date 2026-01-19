@@ -100,8 +100,8 @@ fun EditIndicator(
                                 ) {
                                     Text(
                                         text = stringResource(R.string.select_package),
-                                        fontSize = AppConst.textSize,
-                                        lineHeight = AppConst.titleSize,
+                                        fontSize = Const.textSize,
+                                        lineHeight = Const.titleSize,
                                         textAlign = TextAlign.Center
                                     )
                                 }
@@ -114,7 +114,7 @@ fun EditIndicator(
                         ) {
                             Text(
                                 text = "Indicator",
-                                fontSize = AppConst.titleSize,
+                                fontSize = Const.titleSize,
                                 maxLines = 1,
                                 modifier = Modifier.padding(top = 10.dp)
                             )
@@ -131,7 +131,7 @@ fun EditIndicator(
                                     },
                                     singleLine = true,
                                     textStyle = TextStyle(
-                                        fontSize = AppConst.titleSize,
+                                        fontSize = Const.titleSize,
                                         textAlign = TextAlign.Center,
                                     ),
                                     keyboardOptions = KeyboardOptions(
@@ -147,7 +147,7 @@ fun EditIndicator(
                                 ) {
                                     Text(
                                         text = stringResource(R.string.ignore_indication),
-                                        fontSize = AppConst.textSize,
+                                        fontSize = Const.textSize,
                                         maxLines = 1,
                                         textAlign = TextAlign.Center
                                     )
@@ -171,7 +171,7 @@ fun EditIndicator(
                             else newPackage,
                         onValueChange = { newPackage = it },
                         textStyle = TextStyle(
-                            fontSize = AppConst.textSize,
+                            fontSize = Const.textSize,
                         ),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Uri,
@@ -188,7 +188,7 @@ fun EditIndicator(
                     ) {
                         Text(
                             text = stringResource(R.string.channel_filter),
-                            fontSize = AppConst.textSize,
+                            fontSize = Const.textSize,
                             modifier = Modifier.padding(end = 10.dp)
                         )
 
@@ -200,7 +200,7 @@ fun EditIndicator(
                                 else newChannel,
                             onValueChange = { newChannel = it },
                             textStyle = TextStyle(
-                                fontSize = AppConst.textSize,
+                                fontSize = Const.textSize,
                                 fontWeight = FontWeight.Bold,
                             ),
                             keyboardOptions = KeyboardOptions(
@@ -246,7 +246,7 @@ fun EditIndicator(
                             else newText,
                         onValueChange = { newText = it },
                         textStyle = TextStyle(
-                            fontSize = AppConst.textSize,
+                            fontSize = Const.textSize,
                             fontStyle = FontStyle.Italic,
                         ),
                         keyboardOptions = KeyboardOptions(
@@ -282,7 +282,7 @@ fun EditIndicator(
                         ) {
                             Text(
                                 text = stringResource(R.string.save),
-                                fontSize = AppConst.textSize
+                                fontSize = Const.textSize
                             )
                         }
                         Button(
@@ -294,7 +294,7 @@ fun EditIndicator(
                         ) {
                             Text(
                                 text = stringResource(R.string.remove),
-                                fontSize = AppConst.textSize
+                                fontSize = Const.textSize
                             )
                         }
                     }

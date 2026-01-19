@@ -61,7 +61,7 @@ fun AppScaffold(
     val permissionsInit by Permissions.initFlow.collectAsState(false)
     val activeList by Notifications.activeFlow.collectAsState(emptyList())
     val allList by Notifications.allFlow.collectAsState(emptyList())
-    val tzWatch: String by Pebble.tzFlow.collectAsState("")
+    val tzWatch: String by Timezone.tzFlow.collectAsState("")
     val indicators by Indicators.allFlow.collectAsState(listOf())
     val historyData: HistoryData by History.historyFlow.collectAsState(HistoryData())
     var showHelp by remember { mutableStateOf(false) }
@@ -135,14 +135,14 @@ fun MainTopBar(
         title = {
             Text(
                 text = watchInfo.modelString().ifEmpty { "Disconnected" },
-                fontSize = AppConst.titleSize
+                fontSize = Const.titleSize
             )
         },
         actions = {
             if (isConnected) {
                 Text(
                     text = "${watchInfo.battery}%",
-                    fontSize = AppConst.titleSize,
+                    fontSize = Const.titleSize,
                 )
             } else {
                 Icon(
@@ -171,7 +171,7 @@ fun MainPage(
             isConnected = isConnected,
             tzWatch = tzWatch
         ) { tz ->
-            Pebble.fromString(context, tz)
+            Timezone.fromString(context, tz)
         }
         IndicatorList(
             context = context,
@@ -207,7 +207,7 @@ fun AwayTimezone(
     ) {
         Text(
             text = stringResource(R.string.timezone),
-            fontSize = AppConst.titleSize,
+            fontSize = Const.titleSize,
         )
 
         Box(
@@ -223,8 +223,8 @@ fun AwayTimezone(
                     .focusProperties { canFocus = editing }
                     .onFocusChanged { editing = it.hasFocus || it.isFocused },
                 textStyle = TextStyle(
-                    fontSize = AppConst.titleSize,
-                    lineHeight = AppConst.titleSize
+                    fontSize = Const.titleSize,
+                    lineHeight = Const.titleSize
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             )
@@ -232,8 +232,8 @@ fun AwayTimezone(
             if (!editing) {
                 Text(
                     text = "",
-                    fontSize = AppConst.titleSize,
-                    lineHeight = AppConst.titleSize,
+                    fontSize = Const.titleSize,
+                    lineHeight = Const.titleSize,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
                         .alpha(0f)
                         .clickable {
@@ -262,7 +262,7 @@ fun AwayTimezone(
                     text =
                         if (editing) stringResource(R.string.apply)
                         else stringResource(R.string.edit),
-                    fontSize = AppConst.textSize,
+                    fontSize = Const.textSize,
                 )
             }
         }

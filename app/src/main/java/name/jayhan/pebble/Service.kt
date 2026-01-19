@@ -32,7 +32,7 @@ class PebbleService: Service()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.v(AppConst.TAG, "Service starting Id=$startId")
+        Log.v(Const.TAG, "Service starting Id=$startId")
         context = applicationContext
         val activityIntent = Intent(context, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -45,15 +45,15 @@ class PebbleService: Service()
         reviveIntent = getBroadcast(
             context,
             1,
-            Intent(AppConst.INTENT_RESTART),
+            Intent(Const.INTENT_RESTART),
             PendingIntent.FLAG_IMMUTABLE
         )
 
         val filter = IntentFilter().apply {
-            addAction(AppConst.INTENT_RESTART)
-            addAction(AppConst.INTENT_UPDATE)
-            addAction(AppConst.INTENT_REVIVE)
-            addAction(AppConst.INTENT_SEND_PEBBLE)
+            addAction(Const.INTENT_RESTART)
+            addAction(Const.INTENT_UPDATE)
+            addAction(Const.INTENT_REVIVE)
+            addAction(Const.INTENT_SEND_PEBBLE)
         }
         context.registerReceiver(receiver, filter,RECEIVER_EXPORTED)
 
@@ -63,7 +63,7 @@ class PebbleService: Service()
             val notiMan = context.getSystemService(NOTIFICATION_SERVICE)
                     as NotificationManager
             val channel = NotificationChannel(
-                AppConst.CHANNEL_ID,
+                Const.CHANNEL_ID,
                 getString(R.string.app_title),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
@@ -83,10 +83,10 @@ class PebbleService: Service()
     }
 
     fun updateService() {
-        Log.v(AppConst.TAG, "UpdateService")
+        Log.v(Const.TAG, "UpdateService")
         val notification = Notification.Builder(
             context,
-            AppConst.CHANNEL_ID
+            Const.CHANNEL_ID
         ).apply {
             setDeleteIntent(reviveIntent)
             setContentIntent(launchIntent)
@@ -104,7 +104,7 @@ class PebbleService: Service()
     }
     
     fun restartService() {
-        Log.v(AppConst.TAG, "RestartService")
+        Log.v(Const.TAG, "RestartService")
         if (Permissions.allGranted) {
             Pebble.init(context)
             Notifications.init(context)
@@ -116,7 +116,7 @@ class PebbleService: Service()
             wifiCallback = WifiCallback(context)
             phoneCallback = PhoneCallback(context)
         } else {
-            Log.v(AppConst.TAG, "Permissions missing")
+            Log.v(Const.TAG, "Permissions missing")
         }
     }
 
@@ -124,23 +124,23 @@ class PebbleService: Service()
 
         override fun onReceive(context: Context, intent: Intent) {
             when(intent.action) {
-                AppConst.INTENT_RESTART -> {
-                    Log.v(AppConst.TAG, "Intent: Restart service")
+                Const.INTENT_RESTART -> {
+                    Log.v(Const.TAG, "Intent: Restart service")
                     restartService()
                 }
 
-                AppConst.INTENT_UPDATE -> {
-                    Log.v(AppConst.TAG, "Intent: Update service")
+                Const.INTENT_UPDATE -> {
+                    Log.v(Const.TAG, "Intent: Update service")
                     updateService()
                 }
 
-                AppConst.INTENT_REVIVE -> {
-                    Log.v(AppConst.TAG, "Intent: Revive service")
+                Const.INTENT_REVIVE -> {
+                    Log.v(Const.TAG, "Intent: Revive service")
                     restartService()
                 }
 
-                AppConst.INTENT_SEND_PEBBLE -> {
-                    val msgType = intent.getIntExtra(AppConst.EXTRA_MSG_TYPE, 0)
+                Const.INTENT_SEND_PEBBLE -> {
+                    val msgType = intent.getIntExtra(Const.EXTRA_MSG_TYPE, 0)
 
                     val pebbleDict = PebbleDictionary()
                     pebbleDict.addInt8(DictKey.MSG_TYPE.ordinal, msgType.toByte())
@@ -151,40 +151,40 @@ class PebbleService: Service()
                         }
 
                         MsgType.TZ.ordinal -> {
-                            val minutes = intent.getIntExtra(AppConst.EXTRA_TZ_MIN, 0)
+                            val minutes = intent.getIntExtra(Const.EXTRA_TZ_MIN, 0)
                             pebbleDict.addInt16(DictKey.TZ_MIN.ordinal, minutes.toShort())
                         }
 
                         MsgType.PHONE_CHG.ordinal -> {
-                            val isCharging = intent.getIntExtra(AppConst.EXTRA_PHONE_CHG, 0)
+                            val isCharging = intent.getIntExtra(Const.EXTRA_PHONE_CHG, 0)
                             pebbleDict.addInt8(DictKey.PHONE_CHG.ordinal, isCharging.toByte())
-                            val percent = intent.getIntExtra(AppConst.EXTRA_PHONE_BATT, 0)
+                            val percent = intent.getIntExtra(Const.EXTRA_PHONE_BATT, 0)
                             pebbleDict.addInt8(DictKey.PHONE_BATT.ordinal, percent.toByte())
                         }
 
                         MsgType.WIFI.ordinal -> {
-                            val ssid = intent.getStringExtra(AppConst.EXTRA_WIFI) ?: ""
-                            pebbleDict.addString(DictKey.WIFI.ordinal, ssid.take(AppConst.MAX_LEN_ID))
+                            val ssid = intent.getStringExtra(Const.EXTRA_WIFI) ?: ""
+                            pebbleDict.addString(DictKey.WIFI.ordinal, ssid.take(Const.MAX_LEN_ID))
                         }
 
                         MsgType.NET.ordinal -> {
-                            val gen = intent.getIntExtra(AppConst.EXTRA_NET, 0)
+                            val gen = intent.getIntExtra(Const.EXTRA_NET, 0)
                             pebbleDict.addInt8(DictKey.NET.ordinal, gen.toByte())
-                            val sim = intent.getIntExtra(AppConst.EXTRA_SIM, 0)
+                            val sim = intent.getIntExtra(Const.EXTRA_SIM, 0)
                             pebbleDict.addInt8(DictKey.SIM.ordinal, sim.toByte())
-                            val carrier = intent.getStringExtra(AppConst.EXTRA_CARRIER) ?: ""
-                            pebbleDict.addString(DictKey.CARRIER.ordinal, carrier.take(AppConst.MAX_LEN_ID))
+                            val carrier = intent.getStringExtra(Const.EXTRA_CARRIER) ?: ""
+                            pebbleDict.addString(DictKey.CARRIER.ordinal, carrier.take(Const.MAX_LEN_ID))
                         }
 
                         MsgType.NOTI.ordinal -> {
-                            val noti = intent.getStringExtra(AppConst.EXTRA_NOTI) ?: ""
-                            pebbleDict.addString(DictKey.NOTI.ordinal, noti.take(AppConst.MAX_NOTI_INDICATORS))
+                            val noti = intent.getStringExtra(Const.EXTRA_NOTI) ?: ""
+                            pebbleDict.addString(DictKey.NOTI.ordinal, noti.take(Const.MAX_NOTI_INDICATORS))
                         }
 
                         MsgType.BT.ordinal -> {
-                            val btid = intent.getStringExtra(AppConst.EXTRA_BTID) ?: ""
-                            pebbleDict.addString(DictKey.BTID.ordinal, btid.take(AppConst.MAX_LEN_ID))
-                            val btc = intent.getIntExtra(AppConst.EXTRA_BTC, 0)
+                            val btid = intent.getStringExtra(Const.EXTRA_BTID) ?: ""
+                            pebbleDict.addString(DictKey.BTID.ordinal, btid.take(Const.MAX_LEN_ID))
+                            val btc = intent.getIntExtra(Const.EXTRA_BTC, 0)
                             pebbleDict.addInt8(DictKey.BTC.ordinal, btc.toByte())
 
                         }

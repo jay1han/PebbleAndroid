@@ -7,7 +7,6 @@ import android.util.Log
 import com.getpebble.android.kit.PebbleKit
 import com.getpebble.android.kit.util.PebbleDictionary
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlin.math.absoluteValue
 import kotlin.time.Clock
 
 val WatchModels = listOf(
@@ -117,7 +116,7 @@ private val Receivers = mapOf(
 )
 
 private object DataReceiver:
-    PebbleKit.PebbleDataReceiver(AppConst.APP_UUID)
+    PebbleKit.PebbleDataReceiver(Const.APP_UUID)
 {
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
         Pebble.received(context, true)
@@ -137,7 +136,7 @@ private object DataReceiver:
                         Pebble.setWatchInfo(watchModel, watchFwVersion)
                     val tzMinutes = data.getInteger(DictKey.TZ_MIN.ordinal)
                     if (tzMinutes != null)
-                        Pebble.fromMinutes(tzMinutes.toInt())
+                        Timezone.fromMinutes(tzMinutes.toInt())
                     if (context != null)
                         Pebble.sendIntent(context, MsgType.WBATT) {}
                 }
@@ -146,11 +145,9 @@ private object DataReceiver:
                     val watchBattery = data.getInteger(DictKey.WATCH_BATT.ordinal)?.toInt() ?: 0
                     val watchPlugged = data.getInteger(DictKey.WATCH_PLUG.ordinal)?.toInt() ?: 0
                     val watchCharging = data.getInteger(DictKey.WATCH_CHG.ordinal)?.toInt() ?: 0
-                    Pebble.setBattery(watchBattery, watchPlugged != 0, watchCharging != 0)
-                    if (!Pebble.watchInfo.isValid()) {
+                    Pebble.setBattery(context, watchBattery, watchPlugged != 0, watchCharging != 0)
+                    if (!Pebble.watchInfo.isValid())
                         Pebble.restartService(context)
-                    } else
-                        Pebble.updateService(context)
                 }
 
                 MsgType.ACTION.ordinal -> {
@@ -167,7 +164,7 @@ private object DataReceiver:
 }
 
 private object AckReceiver:
-    PebbleKit.PebbleAckReceiver(AppConst.APP_UUID)
+    PebbleKit.PebbleAckReceiver(Const.APP_UUID)
 {
     override fun receiveAck(context: Context?, transactionId: Int) {
         Pebble.received(context, true)
@@ -175,7 +172,7 @@ private object AckReceiver:
 }
 
 private object NackReceiver:
-    PebbleKit.PebbleNackReceiver(AppConst.APP_UUID)
+    PebbleKit.PebbleNackReceiver(Const.APP_UUID)
 {
     override fun receiveNack(context: Context?, transactionId: Int) {
         Pebble.received(context, false)
@@ -194,7 +191,7 @@ object Pebble
     fun init(
         context: Context
     ) {
-        Log.v(AppConst.TAG, "Pebble object init")
+        Log.v(Const.TAG, "Pebble object init")
         Receivers.forEach {
             val filter = IntentFilter(it.key)
             context.registerReceiver(it.value, filter, Context.RECEIVER_EXPORTED)
@@ -217,8 +214,8 @@ object Pebble
         msgType: MsgType,
         extra: Intent.() -> Unit
     ) {
-        val intent = Intent(AppConst.INTENT_SEND_PEBBLE).apply {
-            putExtra(AppConst.EXTRA_MSG_TYPE, msgType.ordinal)
+        val intent = Intent(Const.INTENT_SEND_PEBBLE).apply {
+            putExtra(Const.EXTRA_MSG_TYPE, msgType.ordinal)
             extra()
         }
         context.sendBroadcast(intent)
@@ -228,7 +225,7 @@ object Pebble
         context: Context,
         data: PebbleDictionary
     ) {
-        PebbleKit.sendDataToPebble(context, AppConst.APP_UUID, data)
+        PebbleKit.sendDataToPebble(context, Const.APP_UUID, data)
         lastSent = clock.now()
     }
 
@@ -241,6 +238,7 @@ object Pebble
     }
 
     fun setBattery(
+        context: Context?,
         battery: Int,
         plugged: Boolean,
         charging: Boolean
@@ -248,56 +246,7 @@ object Pebble
         watchInfo = watchInfo.setBattery(battery, plugged, charging)
         infoFlow.value = watchInfo
         History.event(battery, plugged)
-    }
-
-    private var minutes: Int = 0
-    val tzFlow = MutableStateFlow("")
-
-    fun fromString(
-        context: Context,
-        text: String
-    ): String {
-        if (text.isEmpty()) return makeString()
-        val negative = (text[0] == '-')
-        val split = (if (negative) text.substring(1) else text)
-            .split('.')
-
-        if (split.isNotEmpty()) {
-            minutes =
-                try {
-                    if (split[0].isNotEmpty()) (split[0].toInt() * 60) else 0
-                } catch (_: NumberFormatException) { 0 }
-        }
-        if (split.size >= 2) {
-            if (split[1].isNotEmpty()) {
-                try {
-                    val decimal = split[1].toFloat() / 100f
-                    minutes += (decimal * 60).toInt()
-                } catch (_: NumberFormatException) {}
-            }
-        }
-        if (minutes >= 60 * 24) minutes = 0
-        if (negative) minutes = -minutes
-
-        sendIntent(context, MsgType.TZ) {
-            putExtra(AppConst.EXTRA_TZ_MIN, minutes)
-        }
-
-        return makeString()
-    }
-
-    fun fromMinutes(tzMinutes: Int) {
-        minutes = tzMinutes
-        makeString()
-    }
-
-    private fun makeString(): String {
-        val sign = if (minutes < 0) "-" else "+"
-        val hours = minutes.absoluteValue / 60
-        val frac = 100 * (minutes.absoluteValue - hours * 60) / 60
-        val string = "$sign${hours}.$frac"
-        tzFlow.value = string
-        return string
+        updateService(context)
     }
 
     fun received(
@@ -316,7 +265,7 @@ object Pebble
         context: Context?
     ) {
         if (context != null) {
-            context.sendBroadcast(Intent(AppConst.INTENT_UPDATE))
+            context.sendBroadcast(Intent(Const.INTENT_UPDATE))
         }
     }
     
@@ -324,7 +273,7 @@ object Pebble
         context: Context?
     ) {
         if (context != null) {
-            context.sendBroadcast(Intent(AppConst.INTENT_RESTART))
+            context.sendBroadcast(Intent(Const.INTENT_RESTART))
         }
     }
 }

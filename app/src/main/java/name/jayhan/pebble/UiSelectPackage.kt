@@ -58,7 +58,7 @@ fun SelectPackage(
                     item {
                         Text(
                             text = stringResource(R.string.select_package),
-                            fontSize = AppConst.titleSize,
+                            fontSize = Const.titleSize,
                             modifier = Modifier.padding(10.dp)
                         )
                     }
@@ -67,7 +67,7 @@ fun SelectPackage(
                     item {
                         Text(
                             text = stringResource(R.string.no_active),
-                            fontSize = AppConst.textSize,
+                            fontSize = Const.textSize,
                             modifier = Modifier.fillMaxWidth().padding(10.dp)
                         )
                     }
@@ -97,14 +97,14 @@ fun SelectPackage(
                                 if (appName != "") {
                                     Text(
                                         text = appName,
-                                        fontSize = AppConst.smallSize
+                                        fontSize = Const.smallSize
                                     )
                                 }
                             },
                             supportingContent = {
                                 Text(
                                     text = packageName,
-                                    fontSize = AppConst.subSize,
+                                    fontSize = Const.subSize,
                                     modifier = Modifier.fillMaxWidth().padding(0.dp),
                                 )
                             }
@@ -120,7 +120,7 @@ fun SelectPackage(
                         ) {
                             Text(
                                 text = stringResource(R.string.list_all),
-                                fontSize = AppConst.textSize
+                                fontSize = Const.textSize
                             )
                         }
                     }

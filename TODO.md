@@ -6,12 +6,12 @@
 - [x] Pebble.doRefresh from DataReceiver send intent to Service
 - [x] askInfo and other refreshing from UI, has context
 - [x] Test disconnection
-- [ ] Watchface saves state
+- [x] Watchface saves state
+- [ ] Multiple BT devices, only one active
 - [ ] Notification icon has circle
 - [ ] Use theme
 - [ ] Remove hard-coded dimensions
 - [ ] Merge projects
-- [ ] Save watchface when destroyed?
 
 ## Future: Watch-app
 

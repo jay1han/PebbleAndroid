@@ -207,7 +207,7 @@ object Permissions
             initFlow.value = true
         }
         updateAll()
-        Log.v(AppConst.TAG, "Permissions allGranted=$allGranted")
+        Log.v(Const.TAG, "Permissions allGranted=$allGranted")
     }
 
     fun initActivity(
