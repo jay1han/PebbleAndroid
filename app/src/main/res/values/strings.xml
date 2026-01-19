@@ -33,20 +33,19 @@
     <string name="connected">Connected</string>
 
     <string name="battery_invalid">Battery info not available</string>
-    <string name="format_battery">%d%%</string>
-    <string name="unplugged">\u0020Unplugged</string>
-    <string name="plugged">\u0020Plugged</string>
-    <string name="and_charging">\u0020\u0026 Charging</string>
-    <string name="format_cycles_since">%d cycles since </string>
+    <string name="format_battery">"%d%% "</string>
+    <string name="unplugged">Unplugged</string>
+    <string name="plugged">Plugged</string>
+    <string name="and_charging">" &amp; Charging"</string>
     <string name="format_rate">%.1f%%/day, %.1f days/chg</string>
     <string name="format_estimate">%.1f days remaining</string>
-    <string name="this_cycle">"Cycle "</string>
-    <string name="format_cycle_since">"%d cycles since "</string>
+    <string name="format_cycle">"%d%% at %s (%s)"</string>
+    <string name="format_history_since">"%d cycles since %s"</string>
     <string name="format_data_since">Since %s\nHistory %s</string>
 
     <string name="android_github">Android</string>
     <string name="pebble_github">Pebble</string>
-    <string name="built">"App build"</string>
+    <string name="built">"Build "</string>
 
     <string name="pg_title">Required permissions</string>
     <string name="accept">Accept</string>

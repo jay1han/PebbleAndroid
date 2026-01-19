@@ -59,9 +59,7 @@ fun HelpDialog(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
+                modifier = Modifier.fillMaxWidth().padding(10.dp)
                     .verticalScroll(scrollState),
             ) {
                 Text(
@@ -72,12 +70,10 @@ fun HelpDialog(
                 var clockNow by remember { mutableStateOf(Clock.System.now()) }
                 Text (
                     text = lastReceived.formatTimeSecond() +
-                            " (%s)".format((clockNow - lastReceived).formatDurationSeconds()),
+                            " (${(clockNow - lastReceived).formatDurationSeconds()})",
                     fontSize = AppConst.textSize,
                     textAlign = TextAlign.End,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                 )
                 LaunchedEffect(clockNow) {
                     delay(1000)
@@ -99,29 +95,40 @@ fun HelpDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                val historyText = if (historyData.isValid()) {
-                    StringBuilder()
-                        .append(stringResource(R.string.this_cycle))
-                        .append(historyData.lastUnplug.formatTime())
-                        .append(" (%s)"
-                            .format((clockNow - historyData.lastUnplug).formatDurationShort()))
-                        .append("\n")
-                        .append(stringResource(R.string.format_cycle_since)
-                            .format(historyData.numberOfCycles))
-                        .append(historyData.initDate.formatDate())
-                        .append("\n")
-                        .append(stringResource(R.string.format_rate)
-                            .format(
-                                historyData.dischargeRate,
-                                100f / historyData.dischargeRate
-                            ))
-                        .append("\n")
-                        .append(stringResource(R.string.format_estimate)
-                            .format((watchInfo.battery.toFloat() - 10f) / historyData.dischargeRate))
-                        .toString()
-                } else {
-                    stringResource(R.string.battery_invalid)
-                }
+                val historyText =
+                    if (historyData.isValid()) {
+                        val stringBuilder = StringBuilder()
+                        stringBuilder.apply {
+                            append(stringResource(R.string.format_cycle)
+                                .format(historyData.unpluggedLevel,
+                                    historyData.lastUnplug.formatTime(),
+                                    (clockNow - historyData.lastUnplug).formatDurationShort()
+                                ))
+                            append("\n")
+                            append(stringResource(R.string.format_history_since)
+                                .format(
+                                    historyData.numberOfCycles,
+                                    historyData.initDate.formatDate(),
+                                ))
+                            append("\n")
+                            append(stringResource(R.string.format_rate)
+                                .format(
+                                    historyData.dischargeRate,
+                                    100f / historyData.dischargeRate
+                                ))
+                            append("\n")
+
+                            val estimate = (watchInfo.battery.toFloat() - 10f) / historyData.dischargeRate
+                            if (estimate > 0) {
+                                append(stringResource(R.string.format_estimate).format(estimate))
+                            } else {
+                                append("Please recharge")
+                            }
+                        }
+                        stringBuilder.toString()
+                    } else {
+                        stringResource(R.string.battery_invalid)
+                    }
 
                 Text(
                     text = historyText,
@@ -179,7 +186,7 @@ fun HelpDialog(
 
                 Text(
                     modifier = Modifier.padding(vertical = 10.dp),
-                    text = stringResource(R.string.built) + ": " +
+                    text = stringResource(R.string.built) +
                             AppConst.buildDateTime,
                     fontSize = AppConst.smallSize
                 )
@@ -278,6 +285,7 @@ fun Splash(
 val PreviewHistoryData = HistoryData(
     Clock.System.now(),
     Clock.System.now(),
+    80,
     10,
     4.5f
 )

@@ -12,6 +12,7 @@ import kotlin.time.isDistantPast
 class HistoryData(
     val initDate: Instant = Instant.DISTANT_PAST,
     val lastUnplug: Instant = Instant.DISTANT_PAST,
+    val unpluggedLevel: Int = 0,
     val numberOfCycles: Int = 0,
     val dischargeRate: Float = 1.0f,
 ) {
@@ -22,12 +23,14 @@ class HistoryData(
     fun set(
         initDate: Instant? = null,
         lastUnplug: Instant? = null,
+        unpluggedLevel: Int? = null,
         numberOfCycles: Int? = null,
         dischargeRate: Float? = null
     ): HistoryData {
         return HistoryData(
             initDate ?: this.initDate,
             lastUnplug ?:this.lastUnplug,
+            unpluggedLevel ?: this.unpluggedLevel,
             numberOfCycles ?: this.numberOfCycles,
             dischargeRate ?: this.dischargeRate
         )
@@ -48,10 +51,11 @@ object History {
         val dischargeRate = savedHistory.getFloat(AppConst.HIST_DISCHG_RATE, 0f)
         val initDate = longToDate(savedHistory.getLong(AppConst.HIST_INIT_DATE, 0))
         val lastUnplug = longToDate(savedHistory.getLong(AppConst.HIST_UNPLUG_TIME, 0L))
+        val unpluggedLevel = savedHistory.getInt(AppConst.HIST_UNPLUG_LEVEL, 0)
         Log.v(
             AppConst.TAG,
             "History init $numberOfCycles since ${initDate.formatDate()} rate=$dischargeRate, " +
-                    "unplugged ${lastUnplug.formatDateTime()}"
+                    "unplugged ${lastUnplug.formatDateTime()} at $unpluggedLevel%"
         )
 
         if (numberOfCycles > 0) {
@@ -59,6 +63,7 @@ object History {
                 historyFlow.value = HistoryData(
                     initDate,
                     lastUnplug,
+                    unpluggedLevel,
                     numberOfCycles,
                     dischargeRate
                 )
@@ -89,7 +94,7 @@ object History {
                 val discharge = unpluggedLevel - level
                 val duration = Clock.System.now() - lastUnplug
                 Log.v(AppConst.TAG, "History cycle $discharge% in ${duration.inWholeSeconds}s")
-                if (discharge > 0 && duration.inWholeSeconds > 3600) {
+                if (discharge >= 10 && duration.inWholeSeconds > 3600) {
                     val inDays = duration.inWholeSeconds.toFloat() / (3600 * 24)
                     val dischargeRate = discharge.toFloat() / inDays
                     val numberOfCycles = historyFlow.value.numberOfCycles

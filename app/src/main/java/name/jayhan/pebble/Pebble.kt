@@ -101,6 +101,10 @@ class WatchInfo(
             ""
         }
     }
+
+    fun isValid(): Boolean {
+        return (model != 0 && version != 0)
+    }
 }
 
 private val Receivers = mapOf(
@@ -141,6 +145,10 @@ private object DataReceiver:
                     val watchPlugged = data.getInteger(DictKey.WATCH_PLUG.code)?.toInt() ?: 0
                     val watchCharging = data.getInteger(DictKey.WATCH_CHG.code)?.toInt() ?: 0
                     Pebble.setBattery(watchBattery, watchPlugged != 0, watchCharging != 0)
+                    if (!Pebble.watchInfo.isValid()) {
+                        if (context != null)
+                            Pebble.sendIntent(context, MsgType.INFO) {}
+                    }
                 }
 
                 MsgType.ACTION.code -> {

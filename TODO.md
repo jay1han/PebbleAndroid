@@ -1,35 +1,18 @@
 # TODO
 
-- Main UI
-    - [x] Permission description text
-    - [x] Splash screen
-    - [x] Prettier date/time
-    - [x] Use LaunchEffect to count seconds since lastReceived
-    - [x] Nicer icon
-    - [ ] Notification icon has circle
-    - [ ] Use theme
+- [ ] Notification icon has circle
+- [ ] Use theme
+- [ ] Indicator setting to ignore notification (`-`)
+- [ ] askInfo and other refreshing from UI, has context
+- [ ] Remove hard-coded dimensions
+- [ ] Merge projects
+- [ ] Choose field (title, text, big_text)
+- [ ] Battery history only if drop > 10%
+- [ ] Pebble.doRefresh from DataReceiver send intent to Service
+- [ ] Test disconnection
+- [ ] Save watchface when destroyed?
 
-- Service
-    - [x] Resend ALL info at reconnect (BT)
-    - [x] Reinit at watchface reload
-    - [x] Sort indicators by age
-    - [x] SIM indicator
-    - [x] PLMN connected
-    - [x] Indicator setting to ignore notification (`-`)
+## Future: Watch-app
 
-- Pebble
-    - [x] Manage Pebble battery (history)
-    - [x] Blackout watchface when disconnected
-    - [x] Battery goes up after unplugging
-    
-- Clean code
-    - [ ] Remove hard-coded dimensions
-    - [ ] Merge projects
-    - [ ] Permission screen has TopAppBar
-
-- Future: DND
-
-- Future: Find Phone
-
-- Future: Watch-app
-  
+- [ ] DND
+- [ ] Find phone

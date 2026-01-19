@@ -122,7 +122,7 @@ fun MainTopBar(
         modifier = Modifier.fillMaxWidth()
             .clickable {
                 if (isConnected) onHelp()
-                else Pebble.askInfo()
+                else Pebble.doRefresh = true
             },
         navigationIcon = {
             Image(
