@@ -98,6 +98,11 @@
     <string name="boot_completed_2">When the phone reboots, it sends this broadcast
         so the background service may start automatically.</string>
 
+    <string name="pg_finder">Phone finder</string>
+    <string name="finder">Full screen notification</string>
+    <string name="finder_2">The phone finder shows a full-screen notification
+        that is displayed on top of the locked screen. This permission allows that.</string>
+
     <string name="pg_zen_rule">Zen mode</string>
     <string name="zen_rule">Create and manage a Zen rule</string>
     <string name="zen_rule_2">In order to control the phone\'s Do-not-disturb feature,

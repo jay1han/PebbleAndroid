@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.service.notification.Condition
 import android.service.notification.ZenPolicy
+import androidx.activity.ComponentActivity
 
 object ZenRuleActivity: Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {

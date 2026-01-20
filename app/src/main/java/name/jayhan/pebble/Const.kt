@@ -45,7 +45,9 @@ object Const {
     const val CHANNEL_FIND = "Dolbom Find"
     const val NOTI_FIND = 20
     const val FOUND_REQUEST = 21
-
+    const val FINDING_REQUEST = 22
+    const val INTENT_FINDING = "name.jayhan.pebble.FINDING_BIG"
+    
     const val PREF_INDIC = "name.jayhan.pebble.INDICATORS"
     const val PREF_HISTORY = "name.jayhan.pebble.HISTORY"
     const val HIST_DISCHG_RATE = "dischg_rate"

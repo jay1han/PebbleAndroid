@@ -11,8 +11,20 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.drawable.Icon
 import android.media.MediaPlayer
+import android.os.Bundle
 import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.flow.MutableStateFlow
+import name.jayhan.pebble.ui.theme.PebbleTheme
 
 class PhoneFinder(
     private val context: Context
@@ -26,9 +38,11 @@ class PhoneFinder(
             val channel = NotificationChannel(
                 Const.CHANNEL_FIND,
                 context.getString(R.string.find_phone),
-                NotificationManager.IMPORTANCE_HIGH
+                NotificationManager.IMPORTANCE_HIGH,
             ).apply {
                 setShowBadge(false)
+                enableVibration(true)
+                setBypassDnd(true)
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
                 description = context.getString(R.string.find_channel)
             }
@@ -62,6 +76,12 @@ class PhoneFinder(
             Intent(Const.INTENT_FOUND),
             PendingIntent.FLAG_IMMUTABLE
         )
+        val findingIntent = getBroadcast(
+            context,
+            Const.FINDING_REQUEST,
+            Intent(context, FinderActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
         val action = Notification.Action.Builder(
             R.mipmap.ic_noti,
             "Found",
@@ -78,6 +98,7 @@ class PhoneFinder(
             setSmallIcon(R.mipmap.ic_noti)
             setVisibility(Notification.VISIBILITY_PUBLIC)
             addAction(action)
+            setFullScreenIntent(findingIntent, true)
         }.build()
         notiMan.notify(Const.NOTI_FIND, notification)
         
@@ -94,6 +115,31 @@ class PhoneFinder(
         when (intent.action) {
             Const.INTENT_FIND -> start()
             Const.INTENT_FOUND -> stop()
+        }
+    }
+}
+
+class FinderActivity: ComponentActivity()
+{
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Log.v(Const.TAG, "Finding big")
+
+        val context = applicationContext
+
+        enableEdgeToEdge()
+        setContent {
+            PebbleTheme {
+                Scaffold(
+                    modifier = Modifier.fillMaxSize()
+                ) { innerPadding ->
+                    Card(
+                        modifier = Modifier.fillMaxSize().padding(innerPadding)
+                    ) {
+                        Text("Hello World")
+                    }
+                }
+            }
         }
     }
 }
