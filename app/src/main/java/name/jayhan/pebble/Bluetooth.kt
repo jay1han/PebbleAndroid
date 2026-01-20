@@ -59,7 +59,7 @@ class BluetoothReceiver(
                 battery == other.battery
     }
 
-    var lastDevice = ConnectedDevice()
+    var lastDevice = ConnectedDevice(battery = 200)
     private fun send(
         device: ConnectedDevice,
     ) {
