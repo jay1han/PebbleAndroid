@@ -56,7 +56,8 @@ fun EditIndicator(
     var newType by remember { mutableStateOf(indicator.filterType) }
     var newLetter by remember { mutableStateOf(indicator.letter) }
     var showPackageList by remember { mutableStateOf(false) }
-    var ignore by remember { mutableStateOf(false) }
+    var ignore by remember { mutableStateOf(indicator.letter == ' ') }
+    var indicatorError by remember { mutableStateOf(false) }
 
     if (showPackageList) {
         SelectPackage(
@@ -64,207 +65,216 @@ fun EditIndicator(
             allList = allList,
             onClose = { showPackageList = false }
         ) { name: String -> newPackage = name }
-    } else {
-        Dialog(
-            onDismissRequest = onClose,
+        return
+    }
+    
+    if (indicatorError) {
+        IndicatorError() { indicatorError = false }
+    }
+    
+    Dialog(
+        onDismissRequest = onClose,
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(0.dp),
         ) {
-            Card(
-                modifier = Modifier.fillMaxWidth().padding(0.dp),
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
             ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxWidth(.4f)
                     ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxWidth(.33f)
-                        ) {
-                            val icon: ImageBitmap? =
-                                if (activeList == PreviewActiveList) null
-                                else getApplicationIcon(LocalContext.current, newPackage)
-                            if (icon != null) {
-                                Image(
-                                    bitmap = icon,
-                                    contentDescription = newPackage,
-                                    alignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                        .clickable { showPackageList = true }
-                                )
-                            } else {
-                                TextButton(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    onClick = { showPackageList = true }
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.select_package),
-                                        fontSize = Const.textSize,
-                                        lineHeight = Const.titleSize,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-                            }
-                        }
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                        ) {
-                            Text(
-                                text = "Indicator",
-                                fontSize = Const.titleSize,
-                                maxLines = 1,
-                                modifier = Modifier.padding(top = 10.dp)
+                        val icon: ImageBitmap? =
+                            if (activeList == PreviewActiveList) null
+                            else getApplicationIcon(LocalContext.current, newPackage)
+                        if (icon != null) {
+                            Image(
+                                bitmap = icon,
+                                contentDescription = newPackage,
+                                alignment = Alignment.Center,
+                                modifier = Modifier.fillMaxWidth()
+                                    .clickable { showPackageList = true }
                             )
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
+                        } else {
+                            TextButton(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = { showPackageList = true }
                             ) {
-                                OutlinedTextField(
-                                    enabled = !ignore,
-                                    value = if (ignore) "" else newLetter.toString(),
-                                    onValueChange = {
-                                        if (!ignore) newLetter = acceptLetter(it)
-                                    },
-                                    singleLine = true,
-                                    textStyle = TextStyle(
-                                        fontSize = Const.titleSize,
-                                        textAlign = TextAlign.Center,
-                                    ),
-                                    keyboardOptions = KeyboardOptions(
-                                        keyboardType = KeyboardType.Uri,
-                                        autoCorrectEnabled = false,
-                                    ),
-                                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+                                Text(
+                                    text = stringResource(R.string.select_package),
+                                    fontSize = Const.textSize,
+                                    lineHeight = Const.titleSize,
+                                    textAlign = TextAlign.Center
                                 )
-
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    modifier = Modifier.padding(8.dp)
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.ignore_indication),
-                                        fontSize = Const.textSize,
-                                        maxLines = 1,
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Switch(
-                                        checked = ignore,
-                                        onCheckedChange = { state ->
-                                            ignore = state
-                                        }
-                                    )
-                                }
                             }
                         }
                     }
 
-                    // PackageName
-                    var editPackageName by remember { mutableStateOf(false) }
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                    ) {
+                        Text(
+                            text = "Indicator",
+                            fontSize = Const.titleSize,
+                            maxLines = 1,
+                            modifier = Modifier.padding(top = 10.dp)
+                        )
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                        ) {
+                            OutlinedTextField(
+                                enabled = !ignore,
+                                value = if (ignore) " " else newLetter.toString(),
+                                onValueChange = {
+                                    newLetter = if (ignore) ' ' else acceptLetter(it)
+                                },
+                                singleLine = true,
+                                textStyle = TextStyle(
+                                    fontSize = Const.titleSize,
+                                    textAlign = TextAlign.Center,
+                                ),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Uri,
+                                    autoCorrectEnabled = false,
+                                ),
+                                modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+                            )
+
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.padding(8.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.ignore_indication),
+                                    fontSize = Const.textSize,
+                                    maxLines = 1,
+                                    textAlign = TextAlign.Center
+                                )
+                                Switch(
+                                    checked = ignore,
+                                    onCheckedChange = { state ->
+                                        ignore = state
+                                        if (ignore) newLetter = ' '
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // PackageName
+                var editPackageName by remember { mutableStateOf(false) }
+                OutlinedTextField(
+                    value =
+                        if (newPackage.isEmpty() && !editPackageName)
+                            stringResource(R.string.package_empty)
+                        else newPackage,
+                    onValueChange = { newPackage = it },
+                    textStyle = TextStyle(
+                        fontSize = Const.textSize,
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Uri,
+                        autoCorrectEnabled = false,
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                        .onFocusChanged { editPackageName = it.isFocused },
+                )
+
+                // Channel
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.channel_filter),
+                        fontSize = Const.textSize,
+                        modifier = Modifier.padding(end = 10.dp)
+                    )
+
+                    var editChannel by remember { mutableStateOf(false) }
                     OutlinedTextField(
                         value =
-                            if (newPackage.isEmpty() && !editPackageName)
-                                stringResource(R.string.package_empty)
-                            else newPackage,
-                        onValueChange = { newPackage = it },
+                            if (newChannel.isEmpty() && !editChannel)
+                                stringResource(R.string.filter_empty)
+                            else newChannel,
+                        onValueChange = { newChannel = it },
                         textStyle = TextStyle(
                             fontSize = Const.textSize,
+                            fontWeight = FontWeight.Bold,
                         ),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Uri,
                             autoCorrectEnabled = false,
                         ),
                         modifier = Modifier.fillMaxWidth()
-                            .onFocusChanged { editPackageName = it.isFocused },
-                    )
-
-                    // Channel
-                    Spacer(Modifier.height(8.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(R.string.channel_filter),
-                            fontSize = Const.textSize,
-                            modifier = Modifier.padding(end = 10.dp)
-                        )
-
-                        var editChannel by remember { mutableStateOf(false) }
-                        OutlinedTextField(
-                            value =
-                                if (newChannel.isEmpty() && !editChannel)
-                                    stringResource(R.string.filter_empty)
-                                else newChannel,
-                            onValueChange = { newChannel = it },
-                            textStyle = TextStyle(
-                                fontSize = Const.textSize,
-                                fontWeight = FontWeight.Bold,
-                            ),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Uri,
-                                autoCorrectEnabled = false,
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                                .onFocusChanged { editChannel = it.isFocused },
-                            maxLines = 1,
-                        )
-                    }
-
-                    // Text
-                    Spacer(Modifier.height(8.dp))
-                    var editFilter by remember { mutableStateOf(false) }
-
-                    val labels = FilterTypeStringIdList
-                    SingleChoiceSegmentedButtonRow(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        labels.forEachIndexed { index, label ->
-                            SegmentedButton(
-                                onClick = { newType = getFilterType(index) },
-                                selected = index == newType.ordinal,
-                                shape = SegmentedButtonDefaults.itemShape(
-                                    index = index,
-                                    count = labels.size
-                                )
-                            ) {
-                                Text(
-                                    text = stringResource(label),
-                                    maxLines = 1,
-                                    autoSize = TextAutoSize.StepBased()
-                                )
-                            }
-                        }
-                    }
-
-                    OutlinedTextField(
-                        value =
-                            if (newText.isEmpty() && !editFilter)
-                                stringResource(R.string.filter_empty)
-                            else newText,
-                        onValueChange = { newText = it },
-                        textStyle = TextStyle(
-                            fontSize = Const.textSize,
-                            fontStyle = FontStyle.Italic,
-                        ),
-                        keyboardOptions = KeyboardOptions(
-                            autoCorrectEnabled = false,
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                            .onFocusChanged { editFilter = it.isFocused },
+                            .onFocusChanged { editChannel = it.isFocused },
                         maxLines = 1,
                     )
+                }
 
-                    // Buttons
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        Button(
-                            onClick = {
-                                if ((ignore || newLetter != ' ') && newPackage.isNotEmpty()) {
+                // Filters
+                Spacer(Modifier.height(8.dp))
+                var editFilter by remember { mutableStateOf(false) }
+
+                val labels = FilterTypeStringIdList
+                SingleChoiceSegmentedButtonRow(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    labels.forEachIndexed { index, label ->
+                        SegmentedButton(
+                            onClick = { newType = getFilterType(index) },
+                            selected = index == newType.ordinal,
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = index,
+                                count = labels.size
+                            )
+                        ) {
+                            Text(
+                                text = stringResource(label),
+                                maxLines = 1,
+                                autoSize = TextAutoSize.StepBased()
+                            )
+                        }
+                    }
+                }
+
+                OutlinedTextField(
+                    value =
+                        if (newText.isEmpty() && !editFilter)
+                            stringResource(R.string.filter_empty)
+                        else newText,
+                    onValueChange = { newText = it },
+                    textStyle = TextStyle(
+                        fontSize = Const.textSize,
+                        fontStyle = FontStyle.Italic,
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        autoCorrectEnabled = false,
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                        .onFocusChanged { editFilter = it.isFocused },
+                    maxLines = 1,
+                )
+
+                // Buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = {
+                            if (newLetter == ' ') indicatorError = true
+                            else {
+                                if (newPackage.isNotEmpty()) {
                                     Indicators.remove(indicator)
                                     Indicators.add(
                                         SingleIndicator(
@@ -273,31 +283,64 @@ fun EditIndicator(
                                             filterText = newText,
                                             filterType = newType,
                                             letter = if (ignore) ' ' else newLetter,
+                                            ignore = ignore,
                                         )
                                     )
                                     Notifications.refresh(context)
                                 }
                                 onClose()
-                            },
-                        ) {
-                            Text(
-                                text = stringResource(R.string.save),
-                                fontSize = Const.textSize
-                            )
-                        }
-                        Button(
-                            onClick = {
-                                Indicators.remove(indicator)
-                                Notifications.refresh(context)
-                                onClose()
                             }
-                        ) {
-                            Text(
-                                text = stringResource(R.string.remove),
-                                fontSize = Const.textSize
-                            )
-                        }
+                        },
+                    ) {
+                        Text(
+                            text = stringResource(R.string.save),
+                            fontSize = Const.textSize
+                        )
                     }
+                    Button(
+                        onClick = {
+                            Indicators.remove(indicator)
+                            Notifications.refresh(context)
+                            onClose()
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.remove),
+                            fontSize = Const.textSize
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun IndicatorError(
+    onExit: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = { onExit() }
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(0.dp),
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth().padding(10.dp),
+            ) {
+                Text(
+                    text = "Indicator must be a visible letter",
+                    fontSize = Const.textSize,
+                    modifier = Modifier.fillMaxWidth().padding(10.dp)
+                )
+                Button(
+                    onClick = onExit
+                ) {
+                    Text(
+                        text = "OK",
+                        fontSize = Const.textSize
+                    )
                 }
             }
         }
@@ -327,7 +370,23 @@ fun EditIndicatorPreview() {
             channel = "jayhan.dev",
             filterText = "text",
             filterType = FilterType.Text,
-            letter = 'S'),
+            letter = 'S',
+            ignore = false
+        ),
+        activeList = PreviewActiveList,
+        allList = listOf()
+    ) { }
+}
+
+@Preview
+@Composable
+fun EditIndicatorIgnore() {
+    EditIndicator(
+        context = LocalContext.current,
+        indicator = SingleIndicator(
+            packageName = "com.android.google.apps.messaging",
+            ignore = false
+        ),
         activeList = PreviewActiveList,
         allList = listOf()
     ) { }
@@ -338,8 +397,14 @@ fun EditIndicatorPreview() {
 fun EditIndicatorEmpty() {
     EditIndicator(
         context = LocalContext.current,
-        indicator = SingleIndicator(),
+        indicator = SingleIndicator(ignore = false),
         activeList = PreviewActiveList,
         allList = listOf()
     ) { }
+}
+
+@Preview
+@Composable
+fun IndicatorErrorPreview() {
+    IndicatorError() {}
 }

@@ -42,7 +42,7 @@ fun IndicatorList(
     indicators: List<SingleIndicator>
 ) {
     var editDialog by remember { mutableStateOf(false) }
-    var editIndicator by remember { mutableStateOf(SingleIndicator()) }
+    var editIndicator by remember { mutableStateOf(SingleIndicator(ignore = false)) }
     val scrollState = rememberScrollState()
     var resetDialog by remember { mutableStateOf(false) }
 
@@ -54,7 +54,7 @@ fun IndicatorList(
             allList = allList
         ) {
             editDialog = false
-            editIndicator = SingleIndicator()
+            editIndicator = SingleIndicator(ignore = false)
         }
     }
 
@@ -92,7 +92,7 @@ fun IndicatorList(
             )
             Button(
                 onClick = {
-                    editIndicator = SingleIndicator()
+                    editIndicator = SingleIndicator(ignore = false)
                     editDialog = true
                 },
             ) {
@@ -277,8 +277,8 @@ fun IndicatorItemPreview() {
                 "com.google.android.apps.messaging",
                 "jayhan.dev",
                 "text",
-                FilterType.Title,
-                'S'
+                letter = 'S',
+                ignore = false
             ),
         ) { }
     }

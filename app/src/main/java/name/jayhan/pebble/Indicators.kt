@@ -12,12 +12,9 @@ class SingleIndicator(
     var channel: String = "",
     var filterText: String = "",
     var filterType: FilterType = FilterType.Title,
-    var letter: Char = ' '
+    var letter: Char = ' ',
+    var ignore: Boolean = false,
 ) {
-    override fun toString(): String {
-        return "$letter\n$packageName\n$channel\n$filterText\n${filterType.name}"
-    }
-
     fun equalTo(
         other: SingleIndicator
     ): Boolean {
@@ -28,22 +25,18 @@ class SingleIndicator(
     }
 
     companion object {
-        fun fromString(
-            string: String
+        fun fromKeyValue(
+            key: String,
+            value: Boolean
         ): SingleIndicator {
-            val elements = string.split('\n', limit = 5)
-            val filterType = try {
-                if (elements.size > 4) FilterType.valueOf(elements[4])
-                else FilterType.Title
-            } catch (_: IllegalArgumentException) {
-                FilterType.Title
-            }
+            val elements = key.split('\n', limit = 5)
             return SingleIndicator(
                 packageName = elements[1],
                 channel = elements[2],
                 filterText = elements[3],
-                filterType = filterType,
+                filterType = FilterType.valueOf(elements[4]),
                 letter = elements[0][0],
+                ignore = value,
             )
         }
     }
@@ -63,7 +56,7 @@ object Indicators
 
         val newList = mutableListOf<SingleIndicator>()
         savedSettings.all.forEach {
-            newList.add(SingleIndicator.fromString(it.key))
+            newList.add(SingleIndicator.fromKeyValue(it.key, it.value as Boolean))
         }
 
         saveList(newList)
@@ -136,7 +129,10 @@ object Indicators
         savedSettings.edit {
             clear()
             for (item in allList) {
-                putBoolean(item.toString(), true)
+                val key = with (item) {
+                    "$letter\n$packageName\n$channel\n$filterText\n${filterType.name}"
+                }
+                putBoolean(key, item.ignore)
             }
             commit()
         }
@@ -193,15 +189,15 @@ fun Notification.matches(
 }
 
 val PreviewIndicators = listOf(
-    SingleIndicator("com.android.google.apps.dialer", "", "", FilterType.Title,'C'),
-    SingleIndicator("com.android.google.apps.messaging", "", "", FilterType.Title,'T'),
-    SingleIndicator("com.android.google.apps.gm", "jay", "", FilterType.Title,'j'),
-    SingleIndicator("com.android.google.apps.gm", "pebble","", FilterType.Title,'p'),
-    SingleIndicator("com.android.google.apps.gm", "", "", FilterType.Title,'G'),
-    SingleIndicator("com.whatsapp", "", "", FilterType.Title,'W'),
-    SingleIndicator("com.kakao.talk", "",  "", FilterType.Title,'K'),
-    SingleIndicator("com.kakao.talk", "", "Bob", FilterType.Title,'b'),
-    SingleIndicator("com.kakao.talk", "talk", "Alice", FilterType.Subject,'b'),
+    SingleIndicator("com.android.google.apps.dialer", letter = 'C'),
+    SingleIndicator("com.android.google.apps.messaging", letter = 'T'),
+    SingleIndicator("com.android.google.apps.gm", "jay", letter = 'j'),
+    SingleIndicator("com.android.google.apps.gm", "pebble", letter = 'p'),
+    SingleIndicator("com.android.google.apps.gm", letter = 'G'),
+    SingleIndicator("com.whatsapp", letter = 'W'),
+    SingleIndicator("com.kakao.talk", letter = 'K'),
+    SingleIndicator("com.kakao.talk", filterText = "Bob", letter = 'b'),
+    SingleIndicator("com.kakao.talk", "talk", "Alice", FilterType.Subject, 'b'),
 )
 
 val PreviewActiveList = listOf(
