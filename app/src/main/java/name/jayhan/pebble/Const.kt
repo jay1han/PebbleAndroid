@@ -47,7 +47,6 @@ object Const {
     const val HIST_UNPLUG_LEVEL = "unplug_level"
     const val HIST_INIT_DATE = "init_date"
 
-    val APP_UUID: UUID? = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
     const val MAX_NOTI_INDICATORS = 15
     const val MAX_LEN_ID = 19
 }

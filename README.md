@@ -17,7 +17,7 @@ and "bom", which means "seeing". Together, the word "dolbom" also means
 Limitations:
 
 - Only supports square watches
-- Requires Android 13 or above
+- Requires Android 15 or above
 - No color support (only Pebble 2 Duo)
 - Only English
 - Timezone adjustment is done "by hand"
@@ -84,12 +84,14 @@ If there are more than 15 indicators to show, the app clips the list arbitrarily
 - Phone's Do-not-disturb state and control
 - Find my phone
 
-Due to the recent changes in Android's DND functionality,
+Due to the recent changes in Android's DND functionality[^5],
 it's no longer possible to enable or disable a "Quiet mode".
 Instead, the app registers a normal, time-based, "Zen rule"
 that can be toggled from the watch-app.
 The enabled state of that mode is shown on the watch.
 This feature is independent of the watch's Quiet time.
+
+[^5]: This is the reason the app requires Android version 15 at least.
 
 *Find my phone* does everything it can to help you locate the phone:
 

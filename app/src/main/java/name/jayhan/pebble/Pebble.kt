@@ -7,7 +7,11 @@ import android.util.Log
 import com.getpebble.android.kit.PebbleKit
 import com.getpebble.android.kit.util.PebbleDictionary
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.util.UUID
 import kotlin.time.Clock
+
+val FACE_UUID: UUID? = UUID.fromString("aaaab139-d4d0-478f-81f4-4cbbe4992461")
+val APP_UUID: UUID? = UUID.fromString("6b4862e7-d32d-4f17-a3b8-09aefa729df1")
 
 val WatchModels = listOf(
     "Unknown",
@@ -111,14 +115,14 @@ class WatchInfo(
     }
 }
 
-private val Receivers = mapOf(
-    com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE to DataReceiver,
-    com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE_ACK to AckReceiver,
-    com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE_NACK to NackReceiver,
+private val FaceReceivers = mapOf(
+    com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE to FaceDataReceiver,
+    com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE_ACK to FaceAckReceiver,
+    com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE_NACK to FaceNackReceiver,
 )
 
-private object DataReceiver:
-    PebbleKit.PebbleDataReceiver(Const.APP_UUID)
+private object FaceDataReceiver:
+    PebbleKit.PebbleDataReceiver(FACE_UUID)
 {
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
         Pebble.received(context, true)
@@ -165,16 +169,63 @@ private object DataReceiver:
     }
 }
 
-private object AckReceiver:
-    PebbleKit.PebbleAckReceiver(Const.APP_UUID)
+private object FaceAckReceiver:
+    PebbleKit.PebbleAckReceiver(FACE_UUID)
 {
     override fun receiveAck(context: Context?, transactionId: Int) {
         Pebble.received(context, true)
     }
 }
 
-private object NackReceiver:
-    PebbleKit.PebbleNackReceiver(Const.APP_UUID)
+private object FaceNackReceiver:
+    PebbleKit.PebbleNackReceiver(FACE_UUID)
+{
+    override fun receiveNack(context: Context?, transactionId: Int) {
+        Pebble.received(context, false)
+    }
+}
+
+private val AppReceivers = mapOf(
+    com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE to AppDataReceiver,
+    com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE_ACK to AppAckReceiver,
+    com.getpebble.android.kit.Constants.INTENT_APP_RECEIVE_NACK to AppNackReceiver,
+)
+
+private object AppDataReceiver:
+    PebbleKit.PebbleDataReceiver(APP_UUID)
+{
+    override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
+        Pebble.received(context, true)
+        PebbleKit.sendAckToPebble(context, transactionId)
+
+        if (data != null) {
+            val msgType = data.getInteger(DictKey.MSG_TYPE.ordinal)?.toInt() ?: 0
+            when (msgType) {
+                MsgType.ACTION.ordinal -> {
+                    // TODO: perform action
+                    val action = data.getInteger(DictKey.ACTION.ordinal)?.toInt() ?: 0
+                    when (action) {
+                        ActionType.FIND_PHONE.ordinal -> {
+                        }
+                        ActionType.DND_TOGGLE.ordinal -> {
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private object AppAckReceiver:
+    PebbleKit.PebbleAckReceiver(APP_UUID)
+{
+    override fun receiveAck(context: Context?, transactionId: Int) {
+        Pebble.received(context, true)
+    }
+}
+
+private object AppNackReceiver:
+    PebbleKit.PebbleNackReceiver(APP_UUID)
 {
     override fun receiveNack(context: Context?, transactionId: Int) {
         Pebble.received(context, false)
@@ -194,7 +245,11 @@ object Pebble
         context: Context
     ) {
         Log.v(Const.TAG, "Pebble object init")
-        Receivers.forEach {
+        FaceReceivers.forEach {
+            val filter = IntentFilter(it.key)
+            context.registerReceiver(it.value, filter, Context.RECEIVER_EXPORTED)
+        }
+        AppReceivers.forEach {
             val filter = IntentFilter(it.key)
             context.registerReceiver(it.value, filter, Context.RECEIVER_EXPORTED)
         }
@@ -206,7 +261,10 @@ object Pebble
     fun deinit(
         context: Context
     ) {
-        Receivers.forEach {
+        FaceReceivers.forEach {
+            context.unregisterReceiver(it.value)
+        }
+        AppReceivers.forEach {
             context.unregisterReceiver(it.value)
         }
     }
@@ -227,7 +285,7 @@ object Pebble
         context: Context,
         data: PebbleDictionary
     ) {
-        PebbleKit.sendDataToPebble(context, Const.APP_UUID, data)
+        PebbleKit.sendDataToPebble(context, FACE_UUID, data)
         lastSent = clock.now()
     }
 
