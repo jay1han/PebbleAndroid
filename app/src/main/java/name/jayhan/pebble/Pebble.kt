@@ -155,15 +155,6 @@ private object FaceDataReceiver:
                     if (!Pebble.watchInfo.isValid())
                         Pebble.restartService(context)
                 }
-
-                MsgType.ACTION.ordinal -> {
-                    // TODO: perform action
-                    val action = data.getInteger(DictKey.ACTION.ordinal)?.toInt() ?: 0
-                    when (action) {
-                        ActionType.FIND_PHONE.ordinal -> {}
-                        ActionType.DND_TOGGLE.ordinal -> {}
-                    }
-                }
             }
         }
     }
@@ -206,6 +197,7 @@ private object AppDataReceiver:
                     val action = data.getInteger(DictKey.ACTION.ordinal)?.toInt() ?: 0
                     when (action) {
                         ActionType.FIND_PHONE.ordinal -> {
+                            context?.sendBroadcast(Intent(Const.INTENT_FIND))
                         }
                         ActionType.DND_TOGGLE.ordinal -> {
                         }
@@ -324,16 +316,12 @@ object Pebble
     fun updateService(
         context: Context?
     ) {
-        if (context != null) {
-            context.sendBroadcast(Intent(Const.INTENT_UPDATE))
-        }
+        context?.sendBroadcast(Intent(Const.INTENT_UPDATE))
     }
     
     fun restartService(
         context: Context?
     ) {
-        if (context != null) {
-            context.sendBroadcast(Intent(Const.INTENT_RESTART))
-        }
+        context?.sendBroadcast(Intent(Const.INTENT_RESTART))
     }
 }

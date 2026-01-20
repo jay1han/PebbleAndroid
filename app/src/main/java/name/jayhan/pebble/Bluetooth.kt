@@ -52,8 +52,8 @@ class BluetoothReceiver(
         var battery: Int = 0,
         var active: Boolean = false,
     ) {
-        fun isValid() = name.isNotEmpty()
-        fun isEqualTo(other: ConnectedDevice) =
+        fun isValid() = name.isNotEmpty() && battery > 0
+        fun isSameAs(other: ConnectedDevice) =
                 name == other.name &&
                 active == other.active &&
                 battery == other.battery
@@ -63,7 +63,7 @@ class BluetoothReceiver(
     private fun send(
         device: ConnectedDevice,
     ) {
-        if (!lastDevice.isEqualTo(device)) {
+        if (!lastDevice.isSameAs(device)) {
             Pebble.sendIntent(context, MsgType.BT) {
                 putExtra(Const.EXTRA_BTID, device.name)
                 putExtra(Const.EXTRA_BTC, device.battery)
@@ -119,6 +119,8 @@ class BluetoothReceiver(
                     a2dpDevice.active -> a2dpDevice
                     headsetDevice.isValid() -> headsetDevice
                     a2dpDevice.isValid() -> a2dpDevice
+                    headsetDevice.name.isNotEmpty() -> headsetDevice
+                    a2dpDevice.name.isNotEmpty() -> a2dpDevice
                     else -> ConnectedDevice()
                 }
             )

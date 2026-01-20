@@ -15,9 +15,11 @@ import android.os.IBinder
 import android.util.Log
 import com.getpebble.android.kit.util.PebbleDictionary
 
-class PebbleService: Service()
+class PebbleService:
+    Service()
 {
     private lateinit var context: Context
+    private lateinit var notiMan: NotificationManager
     private lateinit var batteryReceiver: BatteryReceiver
     private lateinit var bluetoothReceiver: BluetoothReceiver
     private lateinit var wifiCallback: WifiCallback
@@ -27,24 +29,33 @@ class PebbleService: Service()
     private lateinit var reviveIntent: PendingIntent
     private lateinit var launchIntent: PendingIntent
 
-    override fun onBind(intent: Intent?): IBinder? {
+    override fun onBind(intent: Intent): IBinder? {
         return null
     }
+    
+    override fun onUnbind(intent: Intent): Boolean {
+        return false
+    }
 
+    private lateinit var phoneFinder: PhoneFinder
+    
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.v(Const.TAG, "Service starting Id=$startId")
         context = applicationContext
-        val activityIntent = Intent(context, MainActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        }
+        notiMan = context.getSystemService(NOTIFICATION_SERVICE)
+                as NotificationManager
+        phoneFinder = PhoneFinder(context)
+        
         launchIntent = PendingIntent.getActivity(
-            context, 2,
-            activityIntent,
+            context, 2,  // TODO
+            Intent(context, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            },
             PendingIntent.FLAG_IMMUTABLE
-            )
+        )
         reviveIntent = getBroadcast(
             context,
-            1,
+            1,  // TODO
             Intent(Const.INTENT_RESTART),
             PendingIntent.FLAG_IMMUTABLE
         )
@@ -60,8 +71,6 @@ class PebbleService: Service()
         Permissions.initService(context)
 
         try {
-            val notiMan = context.getSystemService(NOTIFICATION_SERVICE)
-                    as NotificationManager
             val channel = NotificationChannel(
                 Const.CHANNEL_ID,
                 getString(R.string.app_title),
@@ -88,7 +97,7 @@ class PebbleService: Service()
         stopModules()
         super.onDestroy()
     }
-
+    
     fun updateService() {
         Log.v(Const.TAG, "UpdateService")
         val notification = Notification.Builder(
@@ -104,7 +113,7 @@ class PebbleService: Service()
         }.build()
 
         this.startForeground(
-            1,
+            1,  // TODO
             notification,
             ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         )
@@ -155,7 +164,7 @@ class PebbleService: Service()
                     Log.v(Const.TAG, "Intent: Revive service")
                     restartService()
                 }
-
+                
                 Const.INTENT_SEND_PEBBLE -> {
                     val msgType = intent.getIntExtra(Const.EXTRA_MSG_TYPE, 0)
 

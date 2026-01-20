@@ -20,6 +20,8 @@ object Const {
     const val INTENT_RESTART = "name.jayhan.pebble.RESTART_SERVICE"
     const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE_SERVICE"
     const val INTENT_UPDATE = "name.jayhan.pebble.UPDATE_SERVICE"
+    const val INTENT_FIND = "name.jayhan.pebble.FIND_PHONE"
+    const val INTENT_FOUND = "name.jayhan.pebble.FOUND"
 
     const val INTENT_SEND_PEBBLE = "name.jayhan.pebble.SEND_PEBBLE"
     const val EXTRA_MSG_TYPE = "msg_type"
