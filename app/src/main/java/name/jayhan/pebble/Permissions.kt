@@ -1,8 +1,6 @@
 package name.jayhan.pebble
 
-import android.app.NotificationManager
 import android.content.Context
-import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.provider.Settings
@@ -29,7 +27,6 @@ const val QUERY_ALL_PACKAGES = "android.permission.QUERY_ALL_PACKAGES"
 const val RECEIVE_BOOT_COMPLETED = "android.permission.RECEIVE_BOOT_COMPLETED"
 const val NOTIFICATION_POLICY = "android.permission.ACCESS_NOTIFICATION_POLICY"
 const val NOTIFICATION_LISTENER = "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
-const val FULLSCREEN_INTENT = "android.permission.USE_FULL_SCREEN_INTENT"
 
 val AllPermissionGroups = listOf(
     PermissionGroup(
@@ -77,11 +74,6 @@ val AllPermissionGroups = listOf(
         listOf(QUERY_ALL_PACKAGES),
         R.string.query_apps,
         R.string.query_apps_2),
-    PermissionGroup(
-        R.string.pg_finder,
-        listOf(FULLSCREEN_INTENT),
-        R.string.finder,
-        R.string.finder_2),
     PermissionGroup(
         R.string.pg_zen_rule,
         listOf(NOTIFICATION_POLICY),
@@ -146,10 +138,6 @@ class SinglePermission(
                 )
                     .contains(context.packageName)
             
-            FULLSCREEN_INTENT ->
-                (context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
-                    .canUseFullScreenIntent()
-            
             else ->
                 context.checkSelfPermission(permission) ==
                         PackageManager.PERMISSION_GRANTED
@@ -169,12 +157,6 @@ class SinglePermission(
                 return
             }
             
-            FULLSCREEN_INTENT -> {
-                mainActivity.startActivity(
-                    Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT))
-                return
-            }
-
             else ->
                 mainActivity.shouldShowRequestPermissionRationale(permission)
         }

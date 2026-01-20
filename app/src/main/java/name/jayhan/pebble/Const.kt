@@ -20,8 +20,6 @@ object Const {
     const val INTENT_RESTART = "name.jayhan.pebble.RESTART_SERVICE"
     const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE_SERVICE"
     const val INTENT_UPDATE = "name.jayhan.pebble.UPDATE_SERVICE"
-    const val INTENT_FIND = "name.jayhan.pebble.FIND_PHONE"
-    const val INTENT_FOUND = "name.jayhan.pebble.FOUND"
 
     const val INTENT_SEND_PEBBLE = "name.jayhan.pebble.SEND_PEBBLE"
     const val EXTRA_MSG_TYPE = "msg_type"
@@ -46,7 +44,9 @@ object Const {
     const val NOTI_FIND = 20
     const val FOUND_REQUEST = 21
     const val FINDING_REQUEST = 22
-    const val INTENT_FINDING = "name.jayhan.pebble.FINDING_BIG"
+    const val INTENT_FIND = "name.jayhan.pebble.FIND_PHONE"
+    const val INTENT_FINDING = "name.jayhan.pebble.FINDING"
+    const val INTENT_FOUND = "name.jayhan.pebble.FOUND"
     
     const val PREF_INDIC = "name.jayhan.pebble.INDICATORS"
     const val PREF_HISTORY = "name.jayhan.pebble.HISTORY"

@@ -9,7 +9,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.drawable.Icon
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
@@ -18,11 +17,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.MutableStateFlow
 import name.jayhan.pebble.ui.theme.PebbleTheme
 
@@ -76,17 +77,7 @@ class PhoneFinder(
             Intent(Const.INTENT_FOUND),
             PendingIntent.FLAG_IMMUTABLE
         )
-        val findingIntent = getBroadcast(
-            context,
-            Const.FINDING_REQUEST,
-            Intent(context, FinderActivity::class.java),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        val action = Notification.Action.Builder(
-            R.mipmap.ic_noti,
-            "Found",
-            foundIntent
-        ).build()
+
         val notification = Notification.Builder(
             context,
             Const.CHANNEL_FIND
@@ -97,11 +88,11 @@ class PhoneFinder(
             setContentText("Click to stop")
             setSmallIcon(R.mipmap.ic_noti)
             setVisibility(Notification.VISIBILITY_PUBLIC)
-            addAction(action)
-            setFullScreenIntent(findingIntent, true)
         }.build()
         notiMan.notify(Const.NOTI_FIND, notification)
         
+//        context.startActivity(Intent(context, FinderActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        context.startActivity(Intent(Const.INTENT_FINDING).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 //        mediaPlayer = MediaPlayer.create(context, 0)
     }
     
@@ -119,27 +110,57 @@ class PhoneFinder(
     }
 }
 
-class FinderActivity: ComponentActivity()
+class FinderActivity:
+    ComponentActivity()
 {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.v(Const.TAG, "Finding big")
-
+        Log.v(Const.TAG, "Start activity")
         val context = applicationContext
-
+        
         enableEdgeToEdge()
         setContent {
             PebbleTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize()
-                ) { innerPadding ->
-                    Card(
-                        modifier = Modifier.fillMaxSize().padding(innerPadding)
-                    ) {
-                        Text("Hello World")
-                    }
+                FindingScreen {
+                    context.sendBroadcast(Intent(Const.INTENT_FOUND))
+                    finish()
                 }
             }
         }
     }
+    
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.action == Const.INTENT_FOUND) {
+            finish()
+        }
+    }
+}
+
+@Composable
+fun FindingScreen(
+    onClick: () -> Unit
+) {
+    Scaffold() { innerPadding ->
+        Card (
+            modifier = Modifier.fillMaxSize().padding(innerPadding)
+        ) {
+            Text(
+                text = "Hello world"
+            )
+            Button(
+                onClick = onClick
+            ) {
+                Text(
+                    text = "OK"
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun FindingScreenPreview() {
+    FindingScreen( {} )
 }
