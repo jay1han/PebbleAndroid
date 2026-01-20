@@ -68,6 +68,8 @@ object Notifications : BroadcastReceiver()
                 for (notification in activeNotifications
                     .filter { !it.isOngoing && it.isClearable }
                 ) {
+                    if (notification.packageName.startsWith(BuildConfig.APPLICATION_ID))
+                        continue
                     add(notification.packageName)
                     val letter = Indicators.getLetter(notification)
                     if (letter != ' ') letters.add(letter, notification.postTime)
@@ -116,6 +118,7 @@ object Notifications : BroadcastReceiver()
                     .apply { addCategory(Intent.CATEGORY_LAUNCHER) },
                 0
             )
+            .filter { !it.activityInfo.packageName.startsWith(BuildConfig.APPLICATION_ID)}
             .map { it.activityInfo.packageName }
 
         val newPairs = mutableListOf<Pair<String, String>>()

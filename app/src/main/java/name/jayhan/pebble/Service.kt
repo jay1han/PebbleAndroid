@@ -80,8 +80,7 @@ class PebbleService:
 
             restartService()
             updateService()
-        } catch (e: Exception) {
-            println(e)
+        } catch (_: Exception) {
         }
 
         return super.onStartCommand(intent, flags, startId)
