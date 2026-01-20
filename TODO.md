@@ -1,6 +1,5 @@
 # TODO
 
-- Notification icon has circle
 - Use theme
 - Remove hard-coded dimensions
 - Merge projects

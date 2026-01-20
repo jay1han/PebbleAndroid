@@ -129,7 +129,7 @@ fun MainTopBar(
             Image(
                 painterResource(R.drawable.navicon),
                 contentDescription = "Logo",
-                modifier = Modifier.padding(4.dp).height(40.dp),
+                modifier = Modifier.padding(end = 10.dp).height(40.dp),
             )
         },
         title = {
