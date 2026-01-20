@@ -99,6 +99,7 @@ object History {
                     val numberOfCycles = historyFlow.value.numberOfCycles
                     val newRate = (historyFlow.value.dischargeRate * numberOfCycles + dischargeRate) /
                             (numberOfCycles + 1)
+
                     savedHistory.edit {
                         putInt(Const.HIST_N_CYCLES, numberOfCycles + 1)
                         putFloat(Const.HIST_DISCHG_RATE, newRate)
@@ -134,9 +135,11 @@ object History {
                 if (discharge >= 10 && duration.inWholeSeconds > 3600) {
                     val inDays = duration.inWholeSeconds.toFloat() / (3600 * 24)
                     val dischargeRate = discharge.toFloat() / inDays
-                    val newRate = (historyFlow.value.dischargeRate + dischargeRate) / 2f
                     historyFlow.value = historyFlow.value.set(
-                        dischargeRate = newRate
+                        dischargeRate =
+                            if (historyFlow.value.numberOfCycles > 0)
+                                (historyFlow.value.dischargeRate + dischargeRate) / 2f
+                            else dischargeRate
                     )
                 }
             }
