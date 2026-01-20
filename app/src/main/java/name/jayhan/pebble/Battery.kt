@@ -12,6 +12,7 @@ class BatteryReceiver(
     BroadcastReceiver() {
     private var isPlugged = false
     private var percent = 0
+    private var isCharging = false
 
     init {
         send()
@@ -20,6 +21,8 @@ class BatteryReceiver(
             addAction(Intent.ACTION_BATTERY_CHANGED)
             addAction(Intent.ACTION_POWER_CONNECTED)
             addAction(Intent.ACTION_POWER_DISCONNECTED)
+            addAction(BatteryManager.ACTION_CHARGING)
+            addAction(BatteryManager.ACTION_DISCHARGING)
         }
         context.registerReceiver(this, batteryFilter, Context.RECEIVER_EXPORTED)
     }
@@ -32,16 +35,15 @@ class BatteryReceiver(
         when(intent.action) {
             Intent.ACTION_BATTERY_CHANGED -> {
                 isPlugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0
+                isCharging = intent.getIntExtra(BatteryManager.EXTRA_CHARGING_STATUS, 0) != 0
                 val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0)
                 val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 0)
                 percent = (100.0 * level.toFloat() / scale).toInt()
             }
-            Intent.ACTION_POWER_CONNECTED -> {
-                isPlugged = true
-            }
-            Intent.ACTION_POWER_DISCONNECTED -> {
-                isPlugged = false
-            }
+            Intent.ACTION_POWER_CONNECTED -> isPlugged = true
+            Intent.ACTION_POWER_DISCONNECTED -> isPlugged = false
+            BatteryManager.ACTION_CHARGING -> isCharging = true
+            BatteryManager.ACTION_DISCHARGING -> isCharging = false
         }
         send()
     }
@@ -51,8 +53,9 @@ class BatteryReceiver(
             context,
             MsgType.PHONE_CHG
         ) {
-            putExtra(Const.EXTRA_PHONE_CHG, if (isPlugged) 1 else 0)
             putExtra(Const.EXTRA_PHONE_BATT, percent)
+            putExtra(Const.EXTRA_PHONE_CHG, if (isCharging) 1 else 0)
+            putExtra(Const.EXTRA_PHONE_PLUG, if (isPlugged) 1 else 0)
         }
     }
 }

@@ -24,6 +24,7 @@ object Const {
     const val INTENT_SEND_PEBBLE = "name.jayhan.pebble.SEND_PEBBLE"
     const val EXTRA_MSG_TYPE = "msg_type"
     const val EXTRA_PHONE_CHG = "phone_chg"
+    const val EXTRA_PHONE_PLUG = "phone_plug"
     const val EXTRA_PHONE_BATT = "phone_batt"
     const val EXTRA_TZ_MIN = "tz_min"
     const val EXTRA_WIFI = "wifi"

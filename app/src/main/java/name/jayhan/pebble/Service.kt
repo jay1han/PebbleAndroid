@@ -175,6 +175,8 @@ class PebbleService: Service()
                         MsgType.PHONE_CHG.ordinal -> {
                             val isCharging = intent.getIntExtra(Const.EXTRA_PHONE_CHG, 0)
                             pebbleDict.addInt8(DictKey.PHONE_CHG.ordinal, isCharging.toByte())
+                            val isPlugged = intent.getIntExtra(Const.EXTRA_PHONE_PLUG, 0)
+                            pebbleDict.addInt8(DictKey.PHONE_PLUG.ordinal, isPlugged.toByte())
                             val percent = intent.getIntExtra(Const.EXTRA_PHONE_BATT, 0)
                             pebbleDict.addInt8(DictKey.PHONE_BATT.ordinal, percent.toByte())
                         }
