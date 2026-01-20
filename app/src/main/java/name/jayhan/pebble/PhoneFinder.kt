@@ -1,5 +1,6 @@
 package name.jayhan.pebble
 
+import android.app.AlarmManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -40,7 +41,12 @@ import name.jayhan.pebble.ui.theme.PebbleTheme
 class PhoneFinder(
     private val context: Context
 ): BroadcastReceiver() {
-    private val notiMan = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    private val notiMan = context.getSystemService(Context.NOTIFICATION_SERVICE)
+            as NotificationManager
+    private val alarmMan = context.getSystemService(Context.ALARM_SERVICE)
+            as AlarmManager
+    private lateinit var repeatIntent: PendingIntent
+    
     private lateinit var mediaPlayer: MediaPlayer
     val available = MutableStateFlow(false)
     
@@ -64,9 +70,12 @@ class PhoneFinder(
         
         val filter = IntentFilter().apply {
             addAction(Const.INTENT_FIND)
+            addAction(Const.INTENT_REPEAT)
             addAction(Const.INTENT_FOUND)
         }
         context.registerReceiver(this, filter,Context.RECEIVER_EXPORTED)
+        
+        alarmListener = AlarmListener()
     }
     
     fun deinit() {
@@ -81,6 +90,28 @@ class PhoneFinder(
         }
         
         Log.v(Const.TAG, "Find phone")
+        postNotification()
+        
+        context.startActivity(Intent(Const.INTENT_FINDING).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+//        mediaPlayer = MediaPlayer.create(context, 0)
+    }
+    
+    fun stop() {
+        Log.v(Const.TAG, "Found!")
+        notiMan.cancel(Const.NOTI_FIND)
+        alarmMan.cancel(alarmListener)
+//        mediaPlayer.release()
+    }
+    
+    override fun onReceive(context: Context, intent: Intent) {
+        when (intent.action) {
+            Const.INTENT_FIND -> start()
+            Const.INTENT_FOUND -> stop()
+            Const.INTENT_REPEAT -> postNotification()
+        }
+    }
+    
+    fun postNotification() {
         val foundIntent = getBroadcast(
             context,
             Const.FOUND_REQUEST,
@@ -101,24 +132,28 @@ class PhoneFinder(
         }.build()
         notiMan.notify(Const.NOTI_FIND, notification)
         
-//        context.startActivity(Intent(context, FinderActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-        context.startActivity(Intent(Const.INTENT_FINDING).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-//        mediaPlayer = MediaPlayer.create(context, 0)
+        alarmMan.set(
+            AlarmManager.RTC_WAKEUP,
+            System.currentTimeMillis() + 15_000,
+            null,
+            alarmListener,
+            null
+        )
     }
     
-    fun stop() {
-        Log.v(Const.TAG, "Found!")
-        notiMan.cancel(Const.NOTI_FIND)
-//        mediaPlayer.release()
+    companion object {
+        lateinit var alarmListener: AlarmListener
     }
-    
-    override fun onReceive(context: Context, intent: Intent) {
-        when (intent.action) {
-            Const.INTENT_FIND -> start()
-            Const.INTENT_FOUND -> stop()
+
+    inner class AlarmListener:
+        AlarmManager.OnAlarmListener
+    {
+        override fun onAlarm() {
+            postNotification()
         }
     }
 }
+
 
 class FinderActivity:
     ComponentActivity()

@@ -44,9 +44,11 @@ object Const {
     const val NOTI_FIND = 20
     const val FOUND_REQUEST = 21
     const val FINDING_REQUEST = 22
+    const val REPEAT_REQUEST = 23
     const val INTENT_FIND = "name.jayhan.pebble.FIND_PHONE"
     const val INTENT_FINDING = "name.jayhan.pebble.FINDING"
     const val INTENT_FOUND = "name.jayhan.pebble.FOUND"
+    const val INTENT_REPEAT = "name.jayhan.pebble.REPEAT"
     
     const val PREF_INDIC = "name.jayhan.pebble.INDICATORS"
     const val PREF_HISTORY = "name.jayhan.pebble.HISTORY"
