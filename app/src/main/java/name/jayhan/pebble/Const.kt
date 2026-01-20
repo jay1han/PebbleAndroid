@@ -33,6 +33,7 @@ object Const {
     const val EXTRA_NOTI = "noti"
     const val EXTRA_BTID = "btid"
     const val EXTRA_BTC = "btc"
+    const val EXTRA_BTON = "bton"
 
     const val CHANNEL_ID = "Dolbom"
 

@@ -64,6 +64,10 @@ class PhoneCallback(
             println(e)
         }
     }
+    
+    fun deinit() {
+        teleMan.unregisterTelephonyCallback(this)
+    }
 
     override fun onServiceStateChanged(serviceState: ServiceState) {
         scan()

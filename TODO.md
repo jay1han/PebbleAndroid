@@ -8,6 +8,7 @@
 - [x] Test disconnection
 - [x] Watchface saves state
 - [ ] Multiple BT devices, only one active
+- [ ] Battery estimation based on current discharge
 - [ ] Notification icon has circle
 - [ ] Use theme
 - [ ] Remove hard-coded dimensions

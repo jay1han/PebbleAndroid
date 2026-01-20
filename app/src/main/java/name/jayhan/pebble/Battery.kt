@@ -23,6 +23,10 @@ class BatteryReceiver(
         }
         context.registerReceiver(this, batteryFilter, Context.RECEIVER_EXPORTED)
     }
+    
+    fun deinit() {
+        context.unregisterReceiver(this)
+    }
 
     override fun onReceive(context: Context, intent: Intent) {
         when(intent.action) {

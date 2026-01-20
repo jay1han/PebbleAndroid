@@ -24,6 +24,10 @@ class WifiCallback(
             .build()
         connMan.registerNetworkCallback(networkRequest, this)
     }
+    
+    fun deinit() {
+        connMan.unregisterNetworkCallback(this)
+    }
 
     override fun onAvailable(network: Network) {
         super.onAvailable(network)

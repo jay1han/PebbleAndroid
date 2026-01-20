@@ -44,6 +44,7 @@ enum class DictKey {
     WATCH_CHG,
     SIM,
     CARRIER,
+    BTON,
 }
 enum class MsgType {
     NONE,

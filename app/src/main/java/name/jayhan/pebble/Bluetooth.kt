@@ -13,33 +13,19 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.annotation.RequiresPermission
 
-private fun BluetoothDevice.getBatteryLevel(): Int {
-    try {
-        val method = this.javaClass.getMethod("getBatteryLevel")
-        var result = method.invoke(this) as Int
-        if (result < 0) result = 0
-        return result
-    } catch (e: Exception) {
-        println(e)
-        return 0
-    }
-}
-
 class BluetoothReceiver(
-    private val context: Context
-):
-    BroadcastReceiver() {
+    private val context: Context,
+) : BroadcastReceiver() {
     private var blueMan = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+    private val proxy = BluetoothProxy()
     
-    data class ConnectedDevice(
-        val name: String = "",
-        val profile: Int = 0,
-        var battery: Int = 0,
-        var active: Boolean = false,
-    )
-    var connectedDevices = mutableMapOf<String, ConnectedDevice>()
-
     init {
+        try {
+            blueMan.adapter.getProfileProxy(context, proxy, BluetoothProfile.A2DP)
+            blueMan.adapter.getProfileProxy(context, proxy, BluetoothProfile.HEADSET)
+        } catch (_: SecurityException) {
+        }
+        
         context.registerReceiver(
             this,
             IntentFilter().apply {
@@ -48,74 +34,108 @@ class BluetoothReceiver(
             },
             Context.RECEIVER_EXPORTED
         )
-
-        refresh()
+    }
+    
+    fun deinit() {
+        context.unregisterReceiver(this)
     }
     
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun onReceive(context: Context, intent: Intent) {
-        refresh()
+        proxy.refresh()
     }
-
-    inner class Listener:
-        BluetoothProfile.ServiceListener {
-
-        @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
-        override fun onServiceConnected(profile: Int, proxy: BluetoothProfile?) {
-            if (proxy != null) {
-                val startedWith = connectedDevices.size
-                connectedDevices = mutableMapOf<String, ConnectedDevice>()
-                val devices = proxy.connectedDevices
-                devices.forEach {
-                    if (it.name.isNotEmpty()) {
-                        val name = it.name.clean()
-                        val battery = it.getBatteryLevel()
-                        val isActive =
-                            if (profile == BluetoothProfile.A2DP) (proxy as BluetoothA2dp).isA2dpPlaying(it)
-                            else (proxy as BluetoothHeadset).isAudioConnected(it)
-                        connectedDevices[name] = ConnectedDevice(name, profile, battery, isActive)
-                    }
-                }
-                if (connectedDevices.size != startedWith)
-                    send(connectedDevices)
-            }
-        }
-
-        override fun onServiceDisconnected(profile: Int) {
-            val startedWith = connectedDevices.size
-            val deviceList = connectedDevices.keys
-            for (device in deviceList) {
-                if (connectedDevices[device]!!.profile == profile)
-                    connectedDevices.remove(device)
-            }
-            if (connectedDevices.size != startedWith)
-                send(connectedDevices)
-        }
-    }
-    val listener = Listener()
-
-    fun refresh() {
-        try {
-            blueMan.adapter.getProfileProxy(context, listener, BluetoothProfile.A2DP)
-            blueMan.adapter.getProfileProxy(context, listener, BluetoothProfile.HEADSET)
-        } catch(e: SecurityException) {
-            println(e)
-        }
-    }
-
-    private fun send(
-        connectedDevices: Map<String, ConnectedDevice>
+    
+    data class ConnectedDevice(
+        val name: String = "",
+        var battery: Int = 0,
+        var active: Boolean = false,
     ) {
-        for (device in connectedDevices.values) {
-            if (device.active) {
-                Pebble.sendIntent(context, MsgType.BT) {
+        fun isValid() = name.isNotEmpty()
+        fun isEqualTo(other: ConnectedDevice) =
+                name == other.name &&
+                active == other.active &&
+                battery == other.battery
+    }
+
+    var lastDevice = ConnectedDevice()
+    private fun send(
+        device: ConnectedDevice,
+    ) {
+        if (!lastDevice.isEqualTo(device)) {
+            Pebble.sendIntent(context, MsgType.BT) {
                 putExtra(Const.EXTRA_BTID, device.name)
                 putExtra(Const.EXTRA_BTC, device.battery)
-                }
+                putExtra(Const.EXTRA_BTON, device.active)
             }
+            lastDevice = device
         }
     }
-    private fun String.clean(): String {
+    
+    inner class BluetoothProxy :
+        BluetoothProfile.ServiceListener {
+        var a2dpProxy: BluetoothA2dp? = null
+        var headsetProxy: BluetoothHeadset? = null
+        
+        @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+        override fun onServiceConnected(profile: Int, proxy: BluetoothProfile?) {
+            if (profile == BluetoothProfile.A2DP) a2dpProxy = proxy as BluetoothA2dp
+            else headsetProxy = proxy as BluetoothHeadset
+            refresh()
+        }
+        
+        @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+        override fun onServiceDisconnected(profile: Int) {
+            if (profile == BluetoothProfile.A2DP) a2dpProxy = null
+            else headsetProxy = null
+            refresh()
+        }
+        
+        @RequiresPermission("android.permission.BLUETOOTH_CONNECT")
+        fun refresh() {
+            var headsetDevice = ConnectedDevice()
+            headsetProxy?.connectedDevices?.forEach {
+                headsetDevice = ConnectedDevice(
+                    it.name.cleanLE(),
+                    it.getBatteryLevel(),
+                    headsetProxy?.isAudioConnected(it) ?: false
+                )
+            }
+            
+            var a2dpDevice = ConnectedDevice()
+            a2dpProxy?.connectedDevices?.forEach {
+                a2dpDevice = ConnectedDevice(
+                    it.name.cleanLE(),
+                    it.getBatteryLevel(),
+                    a2dpProxy?.isA2dpPlaying(it) ?: false
+                )
+            }
+
+            // In order of priority
+            send(
+                device = when {
+                    headsetDevice.active -> headsetDevice
+                    a2dpDevice.active -> a2dpDevice
+                    headsetDevice.isValid() -> headsetDevice
+                    a2dpDevice.isValid() -> a2dpDevice
+                    else -> ConnectedDevice()
+                }
+            )
+        }
+    }
+    
+    private fun BluetoothDevice.getBatteryLevel(): Int {
+        try {
+            val method = this.javaClass.getMethod("getBatteryLevel")
+            var result = method.invoke(this) as Int
+            if (result < 0) result = 0
+            return result
+        } catch (e: Exception) {
+            println(e)
+            return 0
+        }
+    }
+    
+    private fun String.cleanLE(): String {
         return this.removePrefix("LE-")
     }
 }

@@ -81,6 +81,13 @@ class PebbleService: Service()
 
         return super.onStartCommand(intent, flags, startId)
     }
+    
+    override fun onDestroy() {
+        Log.v(Const.TAG, "Destroy Service")
+        context.unregisterReceiver(receiver)
+        stopModules()
+        super.onDestroy()
+    }
 
     fun updateService() {
         Log.v(Const.TAG, "UpdateService")
@@ -109,15 +116,25 @@ class PebbleService: Service()
             Pebble.init(context)
             Notifications.init(context)
             History.init(context)
-
+            
+            stopModules()
             batteryReceiver = BatteryReceiver(context)
             bluetoothReceiver = BluetoothReceiver(context)
-
             wifiCallback = WifiCallback(context)
             phoneCallback = PhoneCallback(context)
+            Log.v(Const.TAG, "Modules started")
+
         } else {
             Log.v(Const.TAG, "Permissions missing")
         }
+    }
+    
+    fun stopModules() {
+        if (this::batteryReceiver.isInitialized) batteryReceiver.deinit()
+        if (this::bluetoothReceiver.isInitialized) bluetoothReceiver.deinit()
+        if (this::wifiCallback.isInitialized) wifiCallback.deinit()
+        if (this::phoneCallback.isInitialized) phoneCallback.deinit()
+        Log.v(Const.TAG, "Modules stopped")
     }
 
     inner class Receiver: BroadcastReceiver() {
@@ -186,7 +203,8 @@ class PebbleService: Service()
                             pebbleDict.addString(DictKey.BTID.ordinal, btid.take(Const.MAX_LEN_ID))
                             val btc = intent.getIntExtra(Const.EXTRA_BTC, 0)
                             pebbleDict.addInt8(DictKey.BTC.ordinal, btc.toByte())
-
+                            val bton = intent.getBooleanExtra(Const.EXTRA_BTON, false)
+                            pebbleDict.addInt8(DictKey.BTON.ordinal, if (bton) 1.toByte() else 0.toByte())
                         }
                     }
 
