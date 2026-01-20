@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.drawable.Icon
 import android.media.MediaPlayer
 import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,10 +58,15 @@ class PhoneFinder(
         Log.v(Const.TAG, "Find phone")
         val foundIntent = getBroadcast(
             context,
-            3,  //
+            Const.FOUND_REQUEST,
             Intent(Const.INTENT_FOUND),
             PendingIntent.FLAG_IMMUTABLE
         )
+        val action = Notification.Action.Builder(
+            R.mipmap.ic_noti,
+            "Found",
+            foundIntent
+        ).build()
         val notification = Notification.Builder(
             context,
             Const.CHANNEL_FIND
@@ -71,18 +77,16 @@ class PhoneFinder(
             setContentText("Click to stop")
             setSmallIcon(R.mipmap.ic_noti)
             setVisibility(Notification.VISIBILITY_PUBLIC)
+            addAction(action)
         }.build()
-        notiMan.notify(
-            3,  // TODO
-            notification
-        )
+        notiMan.notify(Const.NOTI_FIND, notification)
         
 //        mediaPlayer = MediaPlayer.create(context, 0)
     }
     
     fun stop() {
         Log.v(Const.TAG, "Found!")
-        notiMan.cancel(3)
+        notiMan.cancel(Const.NOTI_FIND)
 //        mediaPlayer.release()
     }
     

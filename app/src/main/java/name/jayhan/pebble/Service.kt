@@ -43,15 +43,14 @@ class PebbleService:
                 as NotificationManager
         
         launchIntent = PendingIntent.getActivity(
-            context, 2,  // TODO
+            context, Const.LAUNCH_REQUEST,
             Intent(context, MainActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
             },
             PendingIntent.FLAG_IMMUTABLE
         )
         reviveIntent = getBroadcast(
-            context,
-            1,  // TODO
+            context, Const.REVIVE_REQUEST,
             Intent(Const.INTENT_RESTART),
             PendingIntent.FLAG_IMMUTABLE
         )
@@ -108,7 +107,7 @@ class PebbleService:
         }.build()
 
         this.startForeground(
-            1,  // TODO
+            Const.NOTI_SERVICE,
             notification,
             ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         )

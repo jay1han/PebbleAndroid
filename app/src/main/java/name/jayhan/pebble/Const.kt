@@ -39,7 +39,12 @@ object Const {
     const val EXTRA_BTON = "bton"
 
     const val CHANNEL_ID = "Dolbom"
+    const val NOTI_SERVICE = 10
+    const val LAUNCH_REQUEST = 11
+    const val REVIVE_REQUEST = 12
     const val CHANNEL_FIND = "Dolbom Find"
+    const val NOTI_FIND = 20
+    const val FOUND_REQUEST = 21
 
     const val PREF_INDIC = "name.jayhan.pebble.INDICATORS"
     const val PREF_HISTORY = "name.jayhan.pebble.HISTORY"
