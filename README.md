@@ -2,14 +2,15 @@
 
 This app, together with the related watchface and watchapp,
 is intended to replace the combination of Tasker, Canvas, and PebbleTasker
-that I personally used on the original Pebble (and Pebble Time).
+that I personally used on the original Pebble (and Pebble Time),
 
 Compared to the previous combination, this version has much fewer customizability
-(no Takser! no Canvas!) but corresponds to the specific configuration I used[^2].
+(no Takser! no Canvas!) but corresponds to the specific configuration I used[^2],
+add adds a few functions unavailable before.
 
-[^1]: The name comes from "dol", meaning "pebble" in Korean,
-and "bom", which means "to see". Together, the word "dolbom" also means
-"to care for".
+[^1]: The name comes from "dol", meaning "small rock" in Korean,
+and "bom", which means "seeing". Together, the word "dolbom" also means
+"caring for".
 
 [^2]: I *may* be convinced to add functionality at a later date.
 
@@ -37,8 +38,8 @@ while Kathmandu, Nepal (UTC+5:45), is at `+5.75` hours.
 
 ## Power management
 
-- Pebble battery level
-- Phone battery level and plugged status
+- Pebble battery level and estimate of remaining battery life
+- Phone battery level and plugged/charging status
 
 The "plugged" status means something is plugged that's capable of charging the phone.
 Depending on the phone's charging policy, it may or may not be actually charging the battery,
@@ -47,8 +48,10 @@ at any speed, so the battery level may go down while plugged.
 ## Phone status
 
 - Telephony mode (4G, 5G, no service)
+- SIM card (slot 1 or 2) and whether we're roaming
 - Connected Wifi SSID and Internet access indicator
 - Connected Bluetooth device name and battery level (if available)
+- Indicator when the BT device is actually producing audio (A2DP or Headset)
 
 When Wifi is connected to an access point (SSID shown),
 policy may prevent the phone from having access to the Internet.
@@ -64,6 +67,10 @@ The watch shows a one-letter indicator for any active (not cleared) notification
 This is useful when you forget there was a notification.
 You can assign a letter to each app you care about, so you know at a glance that 
 there's a pending notification for that app.
+Some filtering can be done according to the channel ID, as well as text fields of the notification.
+
+Any additional notification that's not in the indicator list is displayed as a `-`.
+This can further be filtered out by selectively ignoring apps.
 
 There's no limit to the number of apps (Android packages) you can register for this feature.
 Note that the watch face does have a limit of 15 simultaneous indicators,

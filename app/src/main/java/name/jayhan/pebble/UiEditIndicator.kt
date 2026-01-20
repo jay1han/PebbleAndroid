@@ -69,7 +69,7 @@ fun EditIndicator(
     }
     
     if (indicatorError) {
-        IndicatorError() { indicatorError = false }
+        IndicatorError { indicatorError = false }
     }
     
     Dialog(
@@ -406,5 +406,5 @@ fun EditIndicatorEmpty() {
 @Preview
 @Composable
 fun IndicatorErrorPreview() {
-    IndicatorError() {}
+    IndicatorError {}
 }

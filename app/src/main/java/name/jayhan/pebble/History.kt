@@ -25,14 +25,14 @@ class HistoryData(
         lastUnplug: Instant? = null,
         unpluggedLevel: Int? = null,
         numberOfCycles: Int? = null,
-        dischargeRate: Float? = null
+        dischargeRate: Float? = null,
     ): HistoryData {
         return HistoryData(
             initDate ?: this.initDate,
             lastUnplug ?:this.lastUnplug,
             unpluggedLevel ?: this.unpluggedLevel,
             numberOfCycles ?: this.numberOfCycles,
-            dischargeRate ?: this.dischargeRate
+            dischargeRate ?: this.dischargeRate,
         )
     }
 }
@@ -85,7 +85,6 @@ object History {
         var lastUnplug = longToDate(savedHistory.getLong(Const.HIST_UNPLUG_TIME, 0L))
         var currentlyPlugged = savedHistory.getBoolean(Const.HIST_PLUG_STATE, false)
         var unpluggedLevel = savedHistory.getInt(Const.HIST_UNPLUG_LEVEL, 0)
-        // TODO: Sanitation
         Log.v(Const.TAG, "History event ($level,$plugged)" +
                 " when ($unpluggedLevel,$currentlyPlugged,$lastUnplug)")
 
@@ -129,6 +128,17 @@ object History {
                 historyFlow.value = historyFlow.value.set(
                     lastUnplug = lastUnplug,
                 )
+            } else {
+                val discharge = unpluggedLevel - level
+                val duration = Clock.System.now() - lastUnplug
+                if (discharge >= 10 && duration.inWholeSeconds > 3600) {
+                    val inDays = duration.inWholeSeconds.toFloat() / (3600 * 24)
+                    val dischargeRate = discharge.toFloat() / inDays
+                    val newRate = (historyFlow.value.dischargeRate + dischargeRate) / 2f
+                    historyFlow.value = historyFlow.value.set(
+                        dischargeRate = newRate
+                    )
+                }
             }
         }
 
