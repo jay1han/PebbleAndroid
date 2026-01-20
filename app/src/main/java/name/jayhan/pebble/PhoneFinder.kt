@@ -15,15 +15,25 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.MutableStateFlow
 import name.jayhan.pebble.ui.theme.PebbleTheme
 
@@ -116,23 +126,30 @@ class FinderActivity:
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.v(Const.TAG, "Start activity")
-        val context = applicationContext
+
+        registerReceiver(
+            Receiver(),
+            IntentFilter(Const.INTENT_FOUND),
+            RECEIVER_EXPORTED
+        )
         
         enableEdgeToEdge()
         setContent {
             PebbleTheme {
                 FindingScreen {
-                    context.sendBroadcast(Intent(Const.INTENT_FOUND))
+                    sendBroadcast(Intent(Const.INTENT_FOUND))
                     finish()
                 }
             }
         }
     }
     
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        if (intent.action == Const.INTENT_FOUND) {
-            finish()
+    inner class Receiver: BroadcastReceiver()
+    {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == Const.INTENT_FOUND) {
+                this@FinderActivity.finish()
+            }
         }
     }
 }
@@ -141,18 +158,27 @@ class FinderActivity:
 fun FindingScreen(
     onClick: () -> Unit
 ) {
-    Scaffold() { innerPadding ->
-        Card (
+    Scaffold { innerPadding ->
+        Column (
             modifier = Modifier.fillMaxSize().padding(innerPadding)
+                .clickable { onClick() },
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "Hello world"
+                text = stringResource(R.string.found),
+                fontSize = 100.sp,
+                lineHeight = 120.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(20.dp)
             )
-            Button(
-                onClick = onClick
-            ) {
-                Text(
-                    text = "OK"
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ){
+                Image(
+                    painterResource(R.drawable.logo),
+                    contentDescription = "logo",
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }
@@ -162,5 +188,5 @@ fun FindingScreen(
 @Preview
 @Composable
 fun FindingScreenPreview() {
-    FindingScreen( {} )
+    FindingScreen {}
 }

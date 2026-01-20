@@ -102,7 +102,7 @@ fun HelpDialog(
                             append(stringResource(R.string.format_cycle)
                                 .format(historyData.unpluggedLevel,
                                     historyData.lastUnplug.formatTime(),
-                                    (clockNow - historyData.lastUnplug).formatDurationShort()
+                                    (clockNow - historyData.lastUnplug).formatDurationMinutes()
                                 ))
                             append("\n")
                             append(stringResource(R.string.format_history_since)
@@ -263,22 +263,6 @@ fun ClearBatteryDialog(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Splash(
-    modifier : Modifier = Modifier
-) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier.fillMaxSize()
-    ) {
-        Image(
-            painter = painterResource(R.drawable.logo),
-            contentDescription = "Logo",
-            modifier = Modifier.fillMaxSize(),
-        )
     }
 }
 

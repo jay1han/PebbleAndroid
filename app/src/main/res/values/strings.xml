@@ -4,6 +4,8 @@
     <string name="channel_description">Notification channel</string>
     <string name="find_phone">Dolbom Find</string>
     <string name="find_channel">Find my phone</string>
+    <string name="found">"It's here!"</string>
+    <string name="stop_finding">Yes</string>
 
     <string name="timezone">Timezone</string>
     <string name="edit">Edit</string>

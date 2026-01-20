@@ -269,6 +269,22 @@ fun AwayTimezone(
     }
 }
 
+@Composable
+fun Splash(
+    modifier : Modifier = Modifier
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier.fillMaxSize()
+    ) {
+        Image(
+            painter = painterResource(R.drawable.logo),
+            contentDescription = "Logo",
+            modifier = Modifier.fillMaxSize(),
+        )
+    }
+}
+
 val PreviewWatchInfo = WatchInfo(
     model = 1, version = 0x10000,
     battery = 100, plugged = true, charging = true

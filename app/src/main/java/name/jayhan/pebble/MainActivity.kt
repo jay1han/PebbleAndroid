@@ -94,7 +94,7 @@ fun Duration.formatDuration(): String {
     } else return "%d minutes".format(minutes)
 }
 
-fun Duration.formatDurationShort(): String {
+fun Duration.formatDurationMinutes(): String {
     var minutes = this.inWholeSeconds / 60
 
     if (minutes >= 60) {
@@ -103,7 +103,8 @@ fun Duration.formatDurationShort(): String {
         if (hours >= 24) {
             val days = hours / 24
             hours %= 24
-            return "%dd%dh".format(days, hours)
+            if (days > 30) return "%dd".format(days)
+            else return "%dd%dh".format(days, hours)
         } else return "%dh%02dm".format(hours, minutes)
     } else return "%dm".format(minutes)
 }
@@ -119,9 +120,14 @@ fun Duration.formatDurationSeconds(): String {
         if (minutes >= 60) {
             hours = minutes / 60
             minutes %= 60
-        }
-    }
-    return "%dh%02dm%02ds".format(hours, minutes, seconds)
+            if (hours >= 24) {
+                val days = hours / 24
+                hours %= 24
+                if (days > 30) return "%dd".format(days)
+                else return "%dd%dh".format(days, hours)
+            } else return "%dh%02dm".format(hours, minutes)
+        } else return "%dm%02ds".format(minutes, seconds)
+    } else return "%ds".format(seconds)
 }
 
 fun Drawable.toImageBitmap(): ImageBitmap {

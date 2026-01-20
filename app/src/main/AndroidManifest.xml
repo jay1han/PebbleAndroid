@@ -45,7 +45,6 @@
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
                 <action android:name="name.jayhan.pebble.FINDING" />
-                <action android:name="name.jayhan.pebble.FOUND" />
             </intent-filter>
         </activity>
 
