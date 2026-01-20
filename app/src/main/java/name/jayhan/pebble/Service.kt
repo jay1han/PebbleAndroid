@@ -11,6 +11,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
+import android.content.res.Configuration
 import android.os.IBinder
 import android.util.Log
 import com.getpebble.android.kit.util.PebbleDictionary
@@ -28,23 +29,18 @@ class PebbleService:
     private val receiver = Receiver()
     private lateinit var reviveIntent: PendingIntent
     private lateinit var launchIntent: PendingIntent
+    private lateinit var phoneFinder: PhoneFinder
 
     override fun onBind(intent: Intent): IBinder? {
         return null
     }
     
-    override fun onUnbind(intent: Intent): Boolean {
-        return false
-    }
-
-    private lateinit var phoneFinder: PhoneFinder
-    
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.v(Const.TAG, "Service starting Id=$startId")
+
         context = applicationContext
         notiMan = context.getSystemService(NOTIFICATION_SERVICE)
                 as NotificationManager
-        phoneFinder = PhoneFinder(context)
         
         launchIntent = PendingIntent.getActivity(
             context, 2,  // TODO
@@ -127,6 +123,7 @@ class PebbleService:
             History.init(context)
             
             stopModules()
+            phoneFinder = PhoneFinder(context)
             batteryReceiver = BatteryReceiver(context)
             bluetoothReceiver = BluetoothReceiver(context)
             wifiCallback = WifiCallback(context)
@@ -143,6 +140,7 @@ class PebbleService:
         if (this::bluetoothReceiver.isInitialized) bluetoothReceiver.deinit()
         if (this::wifiCallback.isInitialized) wifiCallback.deinit()
         if (this::phoneCallback.isInitialized) phoneCallback.deinit()
+        if (this::phoneFinder.isInitialized) phoneFinder.deinit()
         Log.v(Const.TAG, "Modules stopped")
     }
 

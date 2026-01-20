@@ -25,6 +25,10 @@ class PhoneFinder(
         context.registerReceiver(this, filter,Context.RECEIVER_EXPORTED)
     }
     
+    fun deinit() {
+        context.unregisterReceiver(this)
+    }
+    
     fun start() {
         Log.v(Const.TAG, "Find phone")
         val foundIntent = getBroadcast(

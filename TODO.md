@@ -2,9 +2,6 @@
 
 - Phone finder:
     - Separate notification channel
-- Service: 
-    - Detect restart
-    - Proper unbind
 - Centralize notification IDs
 - Use theme
 - Remove hard-coded dimensions
