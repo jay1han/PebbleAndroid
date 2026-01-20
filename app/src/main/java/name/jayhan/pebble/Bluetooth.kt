@@ -31,6 +31,8 @@ class BluetoothReceiver(
             IntentFilter().apply {
                 addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)
                 addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
+                addAction(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED)
+                addAction(BluetoothA2dp.ACTION_PLAYING_STATE_CHANGED)
             },
             Context.RECEIVER_EXPORTED
         )

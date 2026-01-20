@@ -7,7 +7,7 @@
 - [x] askInfo and other refreshing from UI, has context
 - [x] Test disconnection
 - [x] Watchface saves state
-- [ ] Multiple BT devices, only one active
+- [x] Multiple BT devices, only one active
 - [ ] Battery estimation based on current discharge
 - [ ] Notification icon has circle
 - [ ] Use theme
