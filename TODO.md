@@ -1,6 +1,6 @@
 # TODO
 
-- Find Phone: Play music
+- Play music to find phone
 - Change package name
 - Organize indicators in groups per app
 - Indicators list: make whole listitem touchable

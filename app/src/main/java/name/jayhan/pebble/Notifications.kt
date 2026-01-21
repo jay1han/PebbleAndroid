@@ -19,11 +19,6 @@ class NotificationListener:
         Notifications.onNotification(context, activeNotifications)
     }
 
-    override fun onListenerDisconnected() {
-        requestUnbind()
-        super.onListenerDisconnected()
-    }
-
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         super.onNotificationPosted(sbn)
         Notifications.onNotification(context, activeNotifications)

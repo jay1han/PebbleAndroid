@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.app.PendingIntent.getBroadcast
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
@@ -47,6 +48,11 @@ class PhoneFinder(
             as NotificationManager
     private val alarmMan = context.getSystemService(Context.ALARM_SERVICE)
             as AlarmManager
+    private val audioMan = context.getSystemService(AUDIO_SERVICE)
+            as AudioManager
+    private val alarmListener = AlarmListener()
+    private var currentVol = 0
+    private val mediaPlayer = MediaPlayer.create(context, Settings.System.DEFAULT_RINGTONE_URI)
     
     val available = MutableStateFlow(false)
     
@@ -74,8 +80,6 @@ class PhoneFinder(
             addAction(Const.INTENT_FOUND)
         }
         context.registerReceiver(this, filter,Context.RECEIVER_EXPORTED)
-        
-        alarmListener = AlarmListener()
     }
     
     fun deinit() {
@@ -92,11 +96,19 @@ class PhoneFinder(
         Log.v(Const.TAG, "Find phone")
         postNotification()
         
-        context.startActivity(Intent(Const.INTENT_FINDING).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+//        context.startActivity(Intent(Const.INTENT_FINDING).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+//        context.startActivity(Intent(context, FinderActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    
+        currentVol = audioMan.getStreamVolume(AudioManager.STREAM_MUSIC)
+        val maxVol = audioMan.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        audioMan.setStreamVolume(AudioManager.STREAM_MUSIC, maxVol, 0)
+        mediaPlayer.start()
     }
     
     fun stop() {
         Log.v(Const.TAG, "Found!")
+        mediaPlayer.stop()
+        audioMan.setStreamVolume(AudioManager.STREAM_MUSIC, currentVol, 0)
         notiMan.cancel(Const.NOTI_FIND)
         alarmMan.cancel(alarmListener)
     }
@@ -117,6 +129,15 @@ class PhoneFinder(
             PendingIntent.FLAG_IMMUTABLE
         )
 
+        val findingIntent = getBroadcast(
+            context,
+            Const.FINDING_REQUEST,
+//            Intent(Const.INTENT_FINDING).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            Intent(context, FinderActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        
         val notification = Notification.Builder(
             context,
             Const.CHANNEL_FIND
@@ -125,8 +146,10 @@ class PhoneFinder(
             setContentIntent(foundIntent)
             setContentTitle("Find phone")
             setContentText("Click to stop")
+            setCategory(Notification.CATEGORY_ALARM)
             setSmallIcon(R.mipmap.ic_noti)
             setVisibility(Notification.VISIBILITY_PUBLIC)
+//            setFullScreenIntent(findingIntent, true)
         }.build()
         notiMan.notify(Const.NOTI_FIND, notification)
         
@@ -139,10 +162,6 @@ class PhoneFinder(
         )
     }
     
-    companion object {
-        lateinit var alarmListener: AlarmListener
-    }
-
     inner class AlarmListener:
         AlarmManager.OnAlarmListener
     {
@@ -151,7 +170,6 @@ class PhoneFinder(
         }
     }
 }
-
 
 class FinderActivity:
     ComponentActivity()
@@ -163,7 +181,7 @@ class FinderActivity:
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.v(Const.TAG, "Start activity")
+        Log.v(Const.TAG, "Start Finder")
 
         registerReceiver(
             receiver,
@@ -236,6 +254,11 @@ fun FindingScreen(
             }
         }
     }
+}
+
+private fun startAlert(
+    context: Context
+) {
 }
 
 @Preview

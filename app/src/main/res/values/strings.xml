@@ -106,5 +106,8 @@
     <string name="pg_audio_settings">Modify volume</string>
     <string name="audio_settings">Set the media volume to maximum</string>
     <string name="audio_settings_2">When looking for the phone, the app must play the ringtone at maximum volume.</string>
+    <string name="fullscreen_2">A full-screen dialog is displayed when looking for the phone, in order to illuminate the screen and also make it easier to cut off the racket.</string>
+    <string name="pg_fullscreen">Full-screen alert</string>
+    <string name="fullscreen">Use full-screen dialog to find phone</string>
 
 </resources>

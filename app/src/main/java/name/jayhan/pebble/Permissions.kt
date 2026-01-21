@@ -1,8 +1,11 @@
 package name.jayhan.pebble
 
+import android.Manifest
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -10,6 +13,7 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import kotlinx.coroutines.flow.MutableStateFlow
+import androidx.core.net.toUri
 
 const val SETTINGS_ENABLED_LISTENERS = "enabled_notification_listeners"
 const val ACTION_LISTENER_SETTING = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"
@@ -28,6 +32,7 @@ const val RECEIVE_BOOT_COMPLETED = "android.permission.RECEIVE_BOOT_COMPLETED"
 const val NOTIFICATION_POLICY = "android.permission.ACCESS_NOTIFICATION_POLICY"
 const val NOTIFICATION_LISTENER = "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
 const val AUDIO_SETTINGS = "android.permission.MODIFY_AUDIO_SETTINGS"
+const val USE_FULLSCREEN = "android.permission.USE_FULL_SCREEN_INTENT"
 
 val AllPermissionGroups = listOf(
     PermissionGroup(
@@ -35,6 +40,11 @@ val AllPermissionGroups = listOf(
         listOf(AUDIO_SETTINGS),
         R.string.audio_settings,
         R.string.audio_settings_2),
+    PermissionGroup(
+        R.string.pg_fullscreen,
+        listOf(USE_FULLSCREEN),
+        R.string.fullscreen,
+        R.string.fullscreen_2),
     PermissionGroup(
         R.string.pg_boot_completed,
         listOf(RECEIVE_BOOT_COMPLETED),
@@ -91,13 +101,13 @@ class PermissionGroup(
     val title: Int,
     private val listOfNames: List<String>,
     val description: Int,
-    val rationale: Int
+    val rationale: Int,
 ) {
     private lateinit var listOfSingles: List<SinglePermission>
     var granted = false
 
     fun init(
-        context: Context
+        context: Context,
     ) {
         listOfSingles = listOfNames.map { SinglePermission(context, it) }
     }
@@ -131,7 +141,7 @@ class PermissionGroup(
 
 class SinglePermission(
     private val context: Context,
-    val permission: String
+    val permission: String,
 ) {
     var granted = update()
 
@@ -144,6 +154,11 @@ class SinglePermission(
                 )
                     .contains(context.packageName)
             
+            USE_FULLSCREEN -> (
+                    context.getSystemService(Context.NOTIFICATION_SERVICE)
+                            as NotificationManager
+                    ).canUseFullScreenIntent()
+            
             else ->
                 context.checkSelfPermission(permission) ==
                         PackageManager.PERMISSION_GRANTED
@@ -154,12 +169,20 @@ class SinglePermission(
 
     fun request(
         mainActivity: ComponentActivity,
-        permissionsLauncher: ActivityResultLauncher<Array<String>>
+        permissionsLauncher: ActivityResultLauncher<Array<String>>,
     ) {
         when (permission) {
             NOTIFICATION_LISTENER -> {
                 mainActivity.startActivity(
                     Intent(ACTION_LISTENER_SETTING))
+                return
+            }
+            
+            USE_FULLSCREEN -> {
+                mainActivity.startActivity(
+                    Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
+                        .setData("package:${context.packageName}".toUri())
+                )
                 return
             }
             
@@ -174,7 +197,7 @@ class PermissionsCallback():
     ActivityResultCallback<Map<String, Boolean>>
 {
     override fun onActivityResult(
-        result: Map<String, Boolean>
+        result: Map<String, Boolean>,
     ) {
         if (result.isNotEmpty()) {
             for (permission in result) {
@@ -228,13 +251,13 @@ object Permissions
     }
 
     fun requestGroup(
-        permissionGroup: PermissionGroup
+        permissionGroup: PermissionGroup,
     ) {
         permissionGroup.request()
     }
 
     fun requestSingle(
-        singlePermission: SinglePermission
+        singlePermission: SinglePermission,
     ) {
         singlePermission.request(mainActivity, permissionsLauncher)
     }
@@ -249,7 +272,7 @@ object Permissions
     }
 
     fun update(
-        name: String
+        name: String,
     ) {
         val singlePermission = findSinglePermission(name)
         if (singlePermission != null) {
@@ -259,7 +282,7 @@ object Permissions
     }
 
     fun restartService(
-        context: Context
+        context: Context,
     ) {
         if (allGranted) {
             val intent = Intent(context, PebbleService::class.java)
