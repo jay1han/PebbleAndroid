@@ -1,8 +1,6 @@
 package name.jayhan.pebble
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,9 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
@@ -95,43 +91,41 @@ fun HelpDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                val historyText =
-                    if (historyData.isValid()) {
-                        val stringBuilder = StringBuilder()
-                        stringBuilder.apply {
-                            append(stringResource(R.string.format_cycle)
-                                .format(historyData.unpluggedLevel,
-                                    historyData.lastUnplug.formatTime(),
-                                    (clockNow - historyData.lastUnplug).formatDurationMinutes()
-                                ))
-                            append("\n")
-                            append(stringResource(R.string.format_history_since)
-                                .format(
-                                    historyData.numberOfCycles,
-                                    historyData.initDate.formatDate(),
-                                ))
-                            append("\n")
-                            append(stringResource(R.string.format_rate)
-                                .format(
-                                    historyData.dischargeRate,
-                                    100f / historyData.dischargeRate
-                                ))
-                            append("\n")
-
-                            val estimate = (watchInfo.battery.toFloat() - 10f) / historyData.dischargeRate
-                            if (estimate > 0) {
-                                append(stringResource(R.string.format_estimate).format(estimate))
-                            } else {
-                                append("Please recharge")
-                            }
-                        }
-                        stringBuilder.toString()
-                    } else {
-                        stringResource(R.string.battery_invalid)
+                val historyText = StringBuilder()
+                historyText.append(stringResource(R.string.format_cycle)
+                    .format(historyData.unpluggedLevel,
+                        historyData.lastUnplug.formatTime(),
+                        (clockNow - historyData.lastUnplug).formatDurationMinutes()
+                    ))
+                if (historyData.numberOfCycles > 0)
+                    historyText.apply {
+                        append("\n")
+                        append(stringResource(R.string.format_history_since)
+                            .format(
+                                historyData.numberOfCycles,
+                                historyData.initDate.formatDate(),
+                        ))
                     }
+                if (historyData.dischargeRate > 0) {
+                    historyText.apply {
+                        append("\n")
+                        append(stringResource(R.string.format_rate)
+                            .format(
+                                historyData.dischargeRate,
+                                100f / historyData.dischargeRate
+                            ))
+                        append("\n")
+                    }
+                    val estimate = (watchInfo.battery.toFloat() - 10f) / historyData.dischargeRate
+                    if (estimate > 0) {
+                        historyText.append(stringResource(R.string.format_estimate).format(estimate))
+                    } else {
+                        historyText.append("Please recharge")
+                    }
+                }
 
                 Text(
-                    text = historyText,
+                    text = historyText.toString(),
                     fontSize = Const.smallSize,
                     modifier = Modifier.padding(top = 8.dp)
                 )
