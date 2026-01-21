@@ -30,6 +30,7 @@ import kotlinx.coroutines.delay
 import name.jayhan.pebble.ui.theme.PebbleTheme
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlin.time.isDistantPast
 
 @Composable
 fun HelpDialog(
@@ -97,7 +98,7 @@ fun HelpDialog(
                         historyData.lastUnplug.formatTime(),
                         (clockNow - historyData.lastUnplug).formatDurationMinutes()
                     ))
-                if (historyData.numberOfCycles > 0)
+                if (historyData.numberOfCycles > 0 && !historyData.initDate.isDistantPast)
                     historyText.apply {
                         append("\n")
                         append(stringResource(R.string.format_history_since)

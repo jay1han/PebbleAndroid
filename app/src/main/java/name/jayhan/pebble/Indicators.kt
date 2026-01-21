@@ -58,6 +58,9 @@ object Indicators
         savedSettings.all.forEach {
             newList.add(SingleIndicator.fromKeyValue(it.key, it.value as Boolean))
         }
+        newList.forEach {
+            if (it.ignore) it.letter = ' '
+        }
 
         saveList(newList)
     }
@@ -69,25 +72,25 @@ object Indicators
         val notification = sbn.notification
         val channel = notification.channelId
 
-        var provision = '-'
+        var provision: SingleIndicator? = null
         var match = 0
 
         for (indicator in allList) {
             if (indicator.packageName == packageName) {
                 if (match < 5) {
                     match = 5
-                    provision = '+'
+                    provision = indicator
                 }
                 if (indicator.channel.isEmpty()) {
                     if (indicator.filterText.isEmpty()) {
                         if (match < 10) {
-                            provision = indicator.letter
+                            provision = indicator
                             match = 10
                         }
                     } else {
                         if (notification.matches(indicator)) {
                             if (match < 20) {
-                                provision = indicator.letter
+                                provision = indicator
                                 match = 20
                             }
                         }
@@ -96,12 +99,12 @@ object Indicators
                     if (channel.contains(indicator.channel)) {
                         if (indicator.filterText.isEmpty()) {
                             if (match < 50) {
-                                provision = indicator.letter
+                                provision = indicator
                                 match = 50
                             }
                         } else {
                             if (notification.matches(indicator)) {
-                                provision = indicator.letter
+                                provision = indicator
                                 match = 100
                             }
                         }
@@ -109,7 +112,11 @@ object Indicators
                 }
             }
         }
-        return provision
+
+        if (match > 0 && provision != null) {
+            if (provision.ignore) return ' '
+            return provision.letter
+        } else return '+'
     }
 
     fun add(

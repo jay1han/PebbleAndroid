@@ -56,7 +56,7 @@ fun EditIndicator(
     var newType by remember { mutableStateOf(indicator.filterType) }
     var newLetter by remember { mutableStateOf(indicator.letter) }
     var showPackageList by remember { mutableStateOf(false) }
-    var ignore by remember { mutableStateOf(indicator.letter == ' ') }
+    var ignore by remember { mutableStateOf(indicator.ignore) }
     var indicatorError by remember { mutableStateOf(false) }
 
     if (showPackageList) {

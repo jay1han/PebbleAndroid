@@ -177,7 +177,7 @@ private class Letters {
     }
 
     fun getCompact(): String {
-        val apps = letters.filter { it.letter != '-' && it.letter != '+' }
+        val apps = letters.filter { it.letter != '-' && it.letter != '+' && it.letter != ' ' }
         val sorted = apps.sortedBy { it.ref }.reversed()
         val indicators = sorted.map { it.letter }.toMutableList()
         if (letters.find { it.letter == '+'} != null) indicators.add('+')

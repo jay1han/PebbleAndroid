@@ -117,17 +117,17 @@ object History {
 
             !plugged ->
                 if (hist.currentlyPlugged || level > hist.unpluggedLevel) {
-                    val lastUnplug = Clock.System.now()
+                    val nowUnplug = Clock.System.now()
                     Log.v(Const.TAG, "History aircharging at $level > ${hist.unpluggedLevel}")
                     
                     savedHistory.edit {
-                        putLong(Const.HIST_UNPLUG_TIME, lastUnplug.epochSeconds)
+                        putLong(Const.HIST_UNPLUG_TIME, nowUnplug.epochSeconds)
                         putInt(Const.HIST_UNPLUG_LEVEL, level)
                         putBoolean(Const.HIST_PLUG_STATE, plugged)
                     }
     
                     historyFlow.value = hist.set(
-                        lastUnplug = lastUnplug,
+                        lastUnplug = nowUnplug,
                         unpluggedLevel = level,
                         currentlyPlugged = plugged,
                     )
