@@ -27,8 +27,14 @@ const val QUERY_ALL_PACKAGES = "android.permission.QUERY_ALL_PACKAGES"
 const val RECEIVE_BOOT_COMPLETED = "android.permission.RECEIVE_BOOT_COMPLETED"
 const val NOTIFICATION_POLICY = "android.permission.ACCESS_NOTIFICATION_POLICY"
 const val NOTIFICATION_LISTENER = "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+const val AUDIO_SETTINGS = "android.permission.MODIFY_AUDIO_SETTINGS"
 
 val AllPermissionGroups = listOf(
+    PermissionGroup(
+        R.string.pg_audio_settings,
+        listOf(AUDIO_SETTINGS),
+        R.string.audio_settings,
+        R.string.audio_settings_2),
     PermissionGroup(
         R.string.pg_boot_completed,
         listOf(RECEIVE_BOOT_COMPLETED),

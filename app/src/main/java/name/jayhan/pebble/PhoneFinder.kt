@@ -10,8 +10,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -45,9 +47,7 @@ class PhoneFinder(
             as NotificationManager
     private val alarmMan = context.getSystemService(Context.ALARM_SERVICE)
             as AlarmManager
-    private lateinit var repeatIntent: PendingIntent
     
-    private lateinit var mediaPlayer: MediaPlayer
     val available = MutableStateFlow(false)
     
     init {
@@ -93,14 +93,12 @@ class PhoneFinder(
         postNotification()
         
         context.startActivity(Intent(Const.INTENT_FINDING).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-//        mediaPlayer = MediaPlayer.create(context, 0)
     }
     
     fun stop() {
         Log.v(Const.TAG, "Found!")
         notiMan.cancel(Const.NOTI_FIND)
         alarmMan.cancel(alarmListener)
-//        mediaPlayer.release()
     }
     
     override fun onReceive(context: Context, intent: Intent) {
@@ -158,16 +156,29 @@ class PhoneFinder(
 class FinderActivity:
     ComponentActivity()
 {
+    private val receiver = Receiver()
+    private lateinit var audioMan: AudioManager
+    private var currentVol = 0
+    private lateinit var mediaPlayer: MediaPlayer
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.v(Const.TAG, "Start activity")
 
         registerReceiver(
-            Receiver(),
+            receiver,
             IntentFilter(Const.INTENT_FOUND),
             RECEIVER_EXPORTED
         )
         
+        audioMan = applicationContext.getSystemService(AUDIO_SERVICE) as AudioManager
+        currentVol = audioMan.getStreamVolume(AudioManager.STREAM_MUSIC)
+        val maxVol = audioMan.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        audioMan.setStreamVolume(AudioManager.STREAM_MUSIC, maxVol, 0)
+        
+        mediaPlayer = MediaPlayer.create(applicationContext, Settings.System.DEFAULT_RINGTONE_URI)
+        mediaPlayer.start()
+
         enableEdgeToEdge()
         setContent {
             PebbleTheme {
@@ -179,11 +190,18 @@ class FinderActivity:
         }
     }
     
+    fun closeFinder() {
+        mediaPlayer.stop()
+        audioMan.setStreamVolume(AudioManager.STREAM_MUSIC, currentVol, 0)
+        unregisterReceiver(receiver)
+        finish()
+    }
+    
     inner class Receiver: BroadcastReceiver()
     {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == Const.INTENT_FOUND) {
-                this@FinderActivity.finish()
+                closeFinder()
             }
         }
     }

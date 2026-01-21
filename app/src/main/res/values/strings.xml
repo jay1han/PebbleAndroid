@@ -103,5 +103,8 @@
     <string name="zen_rule">Create and manage a Zen rule</string>
     <string name="zen_rule_2">In order to control the phone\'s Do-not-disturb feature,
         a Zen rule must be registered and toggled on or off.</string>
+    <string name="pg_audio_settings">Modify volume</string>
+    <string name="audio_settings">Set the media volume to maximum</string>
+    <string name="audio_settings_2">When looking for the phone, the app must play the ringtone at maximum volume.</string>
 
 </resources>
