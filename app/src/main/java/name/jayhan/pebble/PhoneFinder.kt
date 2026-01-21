@@ -8,9 +8,9 @@ import android.app.PendingIntent
 import android.app.PendingIntent.getBroadcast
 import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Context.AUDIO_SERVICE
 import android.content.Intent
 import android.content.IntentFilter
+import android.hardware.camera2.CameraManager
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Bundle
@@ -48,11 +48,14 @@ class PhoneFinder(
             as NotificationManager
     private val alarmMan = context.getSystemService(Context.ALARM_SERVICE)
             as AlarmManager
-    private val audioMan = context.getSystemService(AUDIO_SERVICE)
-            as AudioManager
     private val alarmListener = AlarmListener()
+    private val audioMan = context.getSystemService(Context.AUDIO_SERVICE)
+            as AudioManager
     private var currentVol = 0
     private val mediaPlayer = MediaPlayer.create(context, Settings.System.DEFAULT_RINGTONE_URI)
+    private val cameraManager = context.getSystemService(Context.CAMERA_SERVICE)
+            as CameraManager
+    private val cameraId = cameraManager.cameraIdList[0]
     
     val available = MutableStateFlow(false)
     
@@ -103,10 +106,13 @@ class PhoneFinder(
         val maxVol = audioMan.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
         audioMan.setStreamVolume(AudioManager.STREAM_MUSIC, maxVol, 0)
         mediaPlayer.start()
+        
+        cameraManager.setTorchMode(cameraId, true)
     }
     
     fun stop() {
         Log.v(Const.TAG, "Found!")
+        cameraManager.setTorchMode(cameraId, false)
         mediaPlayer.stop()
         audioMan.setStreamVolume(AudioManager.STREAM_MUSIC, currentVol, 0)
         notiMan.cancel(Const.NOTI_FIND)
