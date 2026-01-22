@@ -129,7 +129,6 @@ private object FaceDataReceiver:
     PebbleKit.PebbleDataReceiver(FACE_UUID)
 {
     override fun receiveData(context: Context?, transactionId: Int, data: PebbleDictionary?) {
-        Pebble.received(context, true)
         PebbleKit.sendAckToPebble(context, transactionId)
 
         if (data != null) {
@@ -137,7 +136,7 @@ private object FaceDataReceiver:
             when (msgType) {
                 MsgType.FRESH.ordinal -> {
                     Log.v(Const.TAG, "in Fresh")
-                    Pebble.refreshService(context)
+                    Pebble.refreshInformation(context)
                 }
                 
                 MsgType.INFO.ordinal -> {
@@ -150,6 +149,8 @@ private object FaceDataReceiver:
                         Pebble.setWatchInfo(watchModel, watchFwVersion)
                     if (tzMinutes != null)
                         Timezone.fromMinutes(tzMinutes.toInt())
+                    
+                    Pebble.updateNotification(context)
                     if (!Pebble.watchInfo.hasBatt())
                         if (context != null) Pebble.sendIntent(context, MsgType.WBATT) {}
                 }
@@ -161,10 +162,14 @@ private object FaceDataReceiver:
                     
                     Log.v(Const.TAG, "in WBAT $watchBattery% plugged $watchPlugged charging $watchCharging")
                     Pebble.setBattery(context, watchBattery, watchPlugged != 0, watchCharging != 0)
+                    
+                    Pebble.updateNotification(context)
                     if (!Pebble.watchInfo.hasInfo())
                         if (context != null) Pebble.sendIntent(context, MsgType.INFO) {}
                 }
             }
+            
+            Pebble.received(context, true)
         }
     }
 }
@@ -318,11 +323,11 @@ object Pebble
         if (isAcked) {
             lastReceived.value = clock.now()
         } else {
-            updateNotification(context)
+            restartService(context)
         }
     }
 
-    private fun updateNotification(
+    fun updateNotification(
         context: Context?
     ) {
         context?.sendBroadcast(Intent(Const.INTENT_UPDATE))
@@ -334,7 +339,7 @@ object Pebble
         context?.sendBroadcast(Intent(Const.INTENT_RESTART))
     }
     
-    fun refreshService(
+    fun refreshInformation(
         context: Context?
     ) {
         context?.sendBroadcast(Intent(Const.INTENT_REFRESH))

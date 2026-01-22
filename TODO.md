@@ -2,8 +2,6 @@
 
 ## Bugs
 
-- Telephony fails sometimes
-
 ## Features
 
 ## Non-functional
