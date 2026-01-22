@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.net.http.UrlRequest
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +31,27 @@ class NotificationListener:
     }
 }
 
+class NotificationDump (
+    sbn: StatusBarNotification
+)
+{
+    val packageName = sbn.packageName
+    val notification = sbn.notification
+    val channelId = notification.channelId
+    val extraMap = mutableMapOf<FilterType, Map<String, String>>()
+
+    init {
+        for (filterType in FilterType.entries) {
+            val filterMap = mutableMapOf<String, String>()
+            for (key in FilterTypeExtra[filterType.ordinal]) {
+                val value = notification.extras.getCharSequence(key, "")
+                if (value != "") filterMap[key] = value.toString()
+            }
+            extraMap[filterType] = filterMap
+        }
+    }
+}
+
 object Notifications : BroadcastReceiver()
 {
     private lateinit var packageManager: PackageManager
@@ -38,6 +60,8 @@ object Notifications : BroadcastReceiver()
     val allFlow = MutableStateFlow<List<String>>(mutableListOf())
     private var savedNotifications: Array<StatusBarNotification>? = null
     private var mapPackageToName = mapOf<String, String>()
+    
+    var dump = mutableListOf<NotificationDump>()
 
     fun onNotification(
         context: Context,
@@ -58,16 +82,20 @@ object Notifications : BroadcastReceiver()
         activeNotifications: Array<StatusBarNotification>
     ) {
         val letters = Letters()
+        dump = mutableListOf()
+        
         val activeList = mutableListOf<String>()
             .apply {
-                for (notification in activeNotifications
+                for (sbn in activeNotifications
                     .filter { !it.isOngoing && it.isClearable }
                 ) {
-                    if (notification.packageName.startsWith(BuildConfig.APPLICATION_ID))
+                    dump.add(NotificationDump(sbn))
+                    
+                    if (sbn.packageName.startsWith(BuildConfig.APPLICATION_ID))
                         continue
-                    add(notification.packageName)
-                    val letter = Indicators.getLetter(notification)
-                    if (letter != ' ') letters.add(letter, notification.postTime)
+                    add(sbn.packageName)
+                    val letter = Indicators.getLetter(sbn)
+                    if (letter != ' ') letters.add(letter, sbn.postTime)
                 }
             }
         activeFlow.value = activeList.dedup()

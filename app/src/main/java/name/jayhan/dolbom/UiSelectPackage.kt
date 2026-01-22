@@ -2,6 +2,9 @@ package name.jayhan.dolbom
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -37,21 +40,16 @@ fun SelectPackage(
     val listShown = if (showAllActual) allList else activeList
 
     Dialog(
-        properties = DialogProperties(
-            dismissOnBackPress = true,
-            dismissOnClickOutside = true,
-            usePlatformDefaultWidth = false
-        ),
+        properties = DialogProperties(usePlatformDefaultWidth = false),
         onDismissRequest = {
             if (showAllState) showAllState = false
             onClose()
         }
     ) {
         Card(
-            modifier = Modifier.fillMaxWidth().padding(0.dp)
+            modifier = Modifier.fillMaxSize().padding(0.dp)
         ) {
             LazyColumn(
-                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth().padding(10.dp)
             ) {
                 if (!showAllActual) {
@@ -112,17 +110,21 @@ fun SelectPackage(
                         HorizontalDivider(thickness = 1.dp)
                     }
                 }
-                if (!showAllActual) {
-                    item {
-                        Button(
-                            modifier = Modifier.padding(10.dp),
-                            onClick = { showAllState = true }
-                        ) {
-                            Text(
-                                text = stringResource(R.string.list_all),
-                                fontSize = Const.textSize
-                            )
-                        }
+            }
+            
+            if (!showAllActual) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Button(
+                        modifier = Modifier.padding(10.dp),
+                        onClick = { showAllState = true }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.list_all),
+                            fontSize = Const.textSize
+                        )
                     }
                 }
             }

@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
@@ -41,6 +42,13 @@ fun HelpDialog(
 ) {
     val scrollState = rememberScrollState()
     var confirmClear by remember { mutableStateOf(false) }
+    var showDump by remember { mutableStateOf(false) }
+    
+    if (showDump) {
+        DumpDialog() {
+            showDump =false
+        }
+    }
 
     if (confirmClear) {
         ClearBatteryDialog(
@@ -173,12 +181,25 @@ fun HelpDialog(
                     }
                 )
 
-                Text(
-                    modifier = Modifier.padding(vertical = 10.dp),
-                    text = stringResource(R.string.built) +
-                            Const.buildDateTime,
-                    fontSize = Const.smallSize
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        modifier = Modifier.padding(8.dp).weight(1f),
+                        text = stringResource(R.string.built) + Const.buildDateTime,
+                        fontSize = Const.smallSize
+                    )
+                    Button(
+                        onClick = { showDump = true }
+                    ) {
+                        Text(
+                            text = "Dump",
+                            fontSize = Const.smallSize
+                        )
+                    }
+                }
             }
         }
     }
