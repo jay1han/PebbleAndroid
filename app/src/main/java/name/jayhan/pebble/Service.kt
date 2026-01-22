@@ -33,19 +33,15 @@ class PebbleService:
         return null
     }
     
-    private var startId = 0
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.v(Const.TAG, "Service starting Id=$startId")
-        if (this.startId == 0) this.startId = startId
-        else {
-            Log.v(Const.TAG, "Skip")
-            return super.onStartCommand(intent, flags, startId)
-        }
 
         context = applicationContext
+        Permissions.initService(context)
+
         notiMan = context.getSystemService(NOTIFICATION_SERVICE)
                 as NotificationManager
-        
+
         launchIntent = PendingIntent.getActivity(
             context, Const.LAUNCH_REQUEST,
             Intent(context, MainActivity::class.java).apply {
@@ -67,24 +63,27 @@ class PebbleService:
         }
         context.registerReceiver(receiver, filter,RECEIVER_EXPORTED)
 
-        Permissions.initService(context)
-
+        val channel = NotificationChannel(
+            Const.CHANNEL_ID,
+            getString(R.string.app_title),
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            setShowBadge(false)
+            lockscreenVisibility = Notification.VISIBILITY_SECRET
+            description = getString(R.string.channel_description)
+            importance = NotificationManager.IMPORTANCE_LOW
+        }
+        notiMan.createNotificationChannel(channel)
+        
+        if (!Permissions.allGranted) {
+            return super.onStartCommand(intent, flags, startId)
+        }
+        
         try {
-            val channel = NotificationChannel(
-                Const.CHANNEL_ID,
-                getString(R.string.app_title),
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                setShowBadge(false)
-                lockscreenVisibility = Notification.VISIBILITY_SECRET
-                description = getString(R.string.channel_description)
-                importance = NotificationManager.IMPORTANCE_LOW
-            }
-            notiMan.createNotificationChannel(channel)
-
             restartService()
-            updateNofitication()
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e(Const.TAG, e.toString())
+            stopSelf()
         }
 
         return super.onStartCommand(intent, flags, startId)
@@ -92,6 +91,7 @@ class PebbleService:
     
     override fun onDestroy() {
         Log.v(Const.TAG, "Destroy Service")
+        notiMan.deleteNotificationChannel(Const.CHANNEL_ID)
         context.unregisterReceiver(receiver)
         stopModules()
         super.onDestroy()
@@ -173,7 +173,7 @@ class PebbleService:
                 
                 Const.INTENT_SEND_PEBBLE -> {
                     val msgType = intent.getIntExtra(Const.EXTRA_MSG_TYPE, 0)
-                    Log.v(Const.TAG, "out $msgType")
+                    Log.v(Const.TAG, "out ${MsgName[msgType]}")
 
                     val pebbleDict = PebbleDictionary()
                     pebbleDict.addInt8(DictKey.MSG_TYPE.ordinal, msgType.toByte())

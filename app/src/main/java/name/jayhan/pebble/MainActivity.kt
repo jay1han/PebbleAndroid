@@ -48,8 +48,10 @@ class MainActivity :
         val context = applicationContext
         Permissions.initActivity(mainActivity = this)
 
-        val intent = Intent(context, PebbleService::class.java)
-        context.startForegroundService(intent)
+        if (!Permissions.allInit) {
+            val intent = Intent(context, PebbleService::class.java)
+            context.startForegroundService(intent)
+        }
 
         enableEdgeToEdge()
         setContent {
@@ -57,6 +59,11 @@ class MainActivity :
                 AppScaffold(context)
             }
         }
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        Permissions.quitActivity(mainActivity = this)
     }
 }
 

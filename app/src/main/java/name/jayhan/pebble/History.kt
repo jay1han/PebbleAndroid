@@ -75,8 +75,7 @@ object History {
             Const.TAG,
             "History init ${historyData.historyCycles} " +
                     "since ${historyData.historyDate.formatDate()} rate=${historyData.historyRate}, " +
-                    "unplugged ${historyData.cycleDate.formatDateTime()} at ${historyData.cycleLevel}%\n" +
-                    "Now " + if (!historyData.nowPlugged) "un" else "" + "plugged"
+                    "unplugged ${historyData.cycleDate.formatDateTime()} at ${historyData.cycleLevel}%"
         )
 
         historyFlow.value = historyData

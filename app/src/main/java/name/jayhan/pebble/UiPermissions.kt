@@ -1,6 +1,5 @@
 package name.jayhan.pebble
 
-import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -40,9 +39,7 @@ import androidx.compose.ui.window.Dialog
 import name.jayhan.pebble.ui.theme.PebbleTheme
 
 @Composable
-fun PermissionsScaffold(
-    context: Context
-) {
+fun PermissionsScaffold() {
     val missingList by Permissions.missingFlow.collectAsState(listOf())
     var permissionHelp by remember { mutableStateOf(false) }
 

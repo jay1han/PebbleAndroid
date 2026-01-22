@@ -1,19 +1,17 @@
 package name.jayhan.pebble
 
-import android.Manifest
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import kotlinx.coroutines.flow.MutableStateFlow
 import androidx.core.net.toUri
+import kotlinx.coroutines.flow.MutableStateFlow
 
 const val SETTINGS_ENABLED_LISTENERS = "enabled_notification_listeners"
 const val ACTION_LISTENER_SETTING = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"
@@ -211,7 +209,7 @@ class PermissionsCallback():
 
 object Permissions
 {
-    private lateinit var mainActivity: ComponentActivity
+    private var mainActivity: ComponentActivity? = null
     var allGranted = false
     var allInit = false
     val grantFlow = MutableStateFlow(allGranted)
@@ -230,7 +228,7 @@ object Permissions
     fun initService(context: Context) {
         AllPermissionGroups.forEach { it.init(context) }
         allInit = true
-        if (this::mainActivity.isInitialized) {
+        if (this.mainActivity != null) {
             initFlow.value = true
         }
         updateAll()
@@ -243,11 +241,20 @@ object Permissions
         this.mainActivity = mainActivity
         val permissionsContract = ActivityResultContracts.RequestMultiplePermissions()
         permissionsLauncher =
-            this.mainActivity.registerForActivityResult(
+            mainActivity.registerForActivityResult(
                 permissionsContract,
                 PermissionsCallback()
             )
         if (allInit) initFlow.value = true
+    }
+    
+    fun quitActivity(
+        mainActivity: MainActivity
+    ) {
+        if (this.mainActivity == mainActivity) {
+            this.mainActivity = null
+            allInit = false
+        }
     }
 
     fun requestGroup(
@@ -259,7 +266,8 @@ object Permissions
     fun requestSingle(
         singlePermission: SinglePermission,
     ) {
-        singlePermission.request(mainActivity, permissionsLauncher)
+        if (mainActivity == null) allInit = false
+        else singlePermission.request(mainActivity!!, permissionsLauncher)
     }
 
     fun collectMissing() {
@@ -278,15 +286,6 @@ object Permissions
         if (singlePermission != null) {
             singlePermission.update()
             collectMissing()
-        }
-    }
-
-    fun restartService(
-        context: Context,
-    ) {
-        if (allGranted) {
-            val intent = Intent(context, PebbleService::class.java)
-            context.startForegroundService(intent)
         }
     }
 

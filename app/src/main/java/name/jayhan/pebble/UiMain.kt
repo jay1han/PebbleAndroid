@@ -71,12 +71,12 @@ fun AppScaffold(
         Splash()
     } else {
         if (!permissionsGranted) {
-            PermissionsScaffold(context)
+            PermissionsScaffold()
 
         } else {
             if (firstEntry) {
                 firstEntry = false
-                Permissions.restartService(context)
+                Pebble.restartService(context)
             }
 
             Scaffold(

@@ -66,6 +66,10 @@ enum class MsgType {
     NOTI,
 }
 
+val MsgName = listOf(
+    "NONE", "INFO", "FRESH", "WBATT", "ACTION", "TZ", "PHONE_DND", "PHONE_CHG", "NET", "WIFI", "BT", "NOTI"
+)
+
 enum class ActionType {
     NONE,
     FIND_PHONE,
