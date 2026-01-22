@@ -81,9 +81,7 @@ class PebbleService:
                 as NotificationManager
         notiMan.createNotificationChannel(channel)
         
-        startForeground(
-            startId,
-            buildNotification(),
+        startForeground(Const.NOTI_SERVICE, buildNotification(),
             ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         )
 
@@ -104,11 +102,18 @@ class PebbleService:
         super.onDestroy()
     }
     
-    private fun buildNotification(): Notification {
+    fun updateNofitication() {
+        Log.v(Const.TAG, "Update Notification")
+        notiMan.notify(Const.NOTI_SERVICE, buildNotification())
+    }
+    
+    fun buildNotification(): Notification {
         return Notification.Builder(
             context,
             Const.CHANNEL_ID
         ).apply {
+            setFlag(Notification.FLAG_FOREGROUND_SERVICE, true)
+            setOngoing(true)
             setDeleteIntent(reviveIntent)
             setContentIntent(launchIntent)
             setContentTitle("${Pebble.watchInfo.modelString()} ${Pebble.watchInfo.battery}%")
@@ -116,11 +121,6 @@ class PebbleService:
             setSmallIcon(R.mipmap.ic_launcher)
             setVisibility(Notification.VISIBILITY_SECRET)
         }.build()
-    }
-    
-    fun updateNofitication() {
-        Log.v(Const.TAG, "Update Notification")
-        notiMan.notify(Const.NOTI_SERVICE, buildNotification())
     }
     
     fun restartService() {
@@ -150,6 +150,7 @@ class PebbleService:
     }
     
     private fun stopService() {
+        stopForeground(STOP_FOREGROUND_REMOVE)
         notiMan.deleteNotificationChannel(Const.CHANNEL_ID)
         context.unregisterReceiver(receiver)
     }

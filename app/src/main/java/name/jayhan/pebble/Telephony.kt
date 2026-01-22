@@ -16,40 +16,10 @@ class PhoneCallback(
     private val subsMan = context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE)
             as SubscriptionManager
     private var mobileGen = 0
+    private var hasDataConnection = false
     private var activeSim = 0
+    private var isRoaming = false
     private var operator = ""
-
-    private fun scan() {
-        try {
-            val isRoaming = teleMan.isNetworkRoaming
-            if (isRoaming) activeSim = activeSim or 0x10
-
-            if (teleMan.isMultiSimSupported == TelephonyManager.MULTISIM_ALLOWED) {
-                activeSim = activeSim and 0x10
-                val simMccMnc = teleMan.simOperator
-                val subsList = subsMan.activeSubscriptionInfoList
-                subsList?.forEach {
-                    val simIndex = it.simSlotIndex
-                    val mcc = it.mccString
-                    val mnc = it.mncString
-                    if (simMccMnc == mcc + mnc) {
-                        activeSim = activeSim or (simIndex + 1)
-                    }
-                }
-            } else {
-                activeSim = activeSim and 0x10
-            }
-
-            operator = teleMan.networkOperatorName
-            val isDataConnected = teleMan.dataState
-            if (isDataConnected == TelephonyManager.DATA_CONNECTED) {
-                val cellType = teleMan.dataNetworkType
-                mobileGen = getCellGen(cellType)
-            } else mobileGen = 0
-            refresh()
-
-        } catch (_: SecurityException) { }
-    }
 
     init {
         scan()
@@ -63,12 +33,44 @@ class PhoneCallback(
         } catch (_: SecurityException) {}
     }
     
+    override fun onServiceStateChanged(serviceState: ServiceState) {
+        scan()
+    }
+
     fun deinit() {
         teleMan.unregisterTelephonyCallback(this)
     }
 
-    override fun onServiceStateChanged(serviceState: ServiceState) {
-        scan()
+    private fun scan() {
+        try {
+            activeSim = 1
+            if (teleMan.isMultiSimSupported == TelephonyManager.MULTISIM_ALLOWED) {
+                val simMccMnc = teleMan.simOperator
+                val subsList = subsMan.activeSubscriptionInfoList
+                subsList?.forEach {
+                    val simIndex = it.simSlotIndex
+                    val mcc = it.mccString
+                    val mnc = it.mncString
+                    if (simMccMnc == mcc + mnc) {
+                        activeSim = simIndex + 1
+                    }
+                }
+            }
+            isRoaming = teleMan.isNetworkRoaming
+
+            operator = teleMan.networkOperatorName
+            
+            hasDataConnection = true
+            if (teleMan.dataState == TelephonyManager.DATA_CONNECTED) {
+                mobileGen = getCellGen(teleMan.dataNetworkType)
+            } else mobileGen = 0
+            if (mobileGen == 0) {
+                hasDataConnection = false
+                mobileGen = getCellGen(teleMan.voiceNetworkType)
+            }
+            refresh()
+
+        } catch (_: SecurityException) { }
     }
 
     private fun getCellGen(gen: Int): Int {
@@ -90,8 +92,8 @@ class PhoneCallback(
 
     fun refresh() {
         Pebble.sendIntent(context, MsgType.NET) {
-            putExtra(Const.EXTRA_NET, mobileGen)
-            putExtra(Const.EXTRA_SIM, activeSim)
+            putExtra(Const.EXTRA_NET, mobileGen or if (hasDataConnection) 0x10 else 0)
+            putExtra(Const.EXTRA_SIM, activeSim or if (isRoaming) 0x10 else 0)
             putExtra(Const.EXTRA_CARRIER, operator)
         }
     }
