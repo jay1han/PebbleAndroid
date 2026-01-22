@@ -1,7 +1,6 @@
 package name.jayhan.pebble
 
 import androidx.compose.ui.unit.sp
-import java.util.UUID
 import kotlin.time.Instant
 
 object Const {
@@ -52,11 +51,12 @@ object Const {
     
     const val PREF_INDIC = "name.jayhan.pebble.INDICATORS"
     const val PREF_HISTORY = "name.jayhan.pebble.HISTORY"
-    const val HIST_DISCHG_RATE = "dischg_rate"
-    const val HIST_N_CYCLES = "n_cycles"
-    const val HIST_UNPLUG_TIME = "unplug_time"
+    const val HIST_RATE = "dischg_rate"
+    const val HIST_CYCLES = "n_cycles"
+    const val HIST_CYCLE_TIME = "unplug_time"
+    const val CYCLE_RATE = "cycle_rate"
     const val HIST_PLUG_STATE = "plug_state"
-    const val HIST_UNPLUG_LEVEL = "unplug_level"
+    const val HIST_CYCLE_LEVEL = "unplug_level"
     const val HIST_INIT_DATE = "init_date"
 
     const val MAX_NOTI_INDICATORS = 15

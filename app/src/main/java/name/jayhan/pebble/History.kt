@@ -10,44 +10,44 @@ import kotlin.time.Instant
 import kotlin.time.isDistantPast
 
 class HistoryData(
-    val initDate: Instant = Instant.DISTANT_PAST,
-    val lastUnplug: Instant = Instant.DISTANT_PAST,
-    val unpluggedLevel: Int = 0,
-    val numberOfCycles: Int = 0,
-    val dischargeRate: Float = 0f,
-    val currentlyPlugged: Boolean = false,
+    val historyDate: Instant = Instant.DISTANT_PAST,
+    val historyCycles: Int = 0,
+    val historyRate: Float = 0f,
+    val cycleDate: Instant = Instant.DISTANT_PAST,
+    val cycleLevel: Int = 0,
+    val cycleRate: Float = 0f,
+    val nowPlugged: Boolean = false,
 ) {
-    fun isValid(): Boolean {
-        return initDate != Instant.DISTANT_PAST
-    }
-
     fun set(
-        initDate: Instant? = null,
-        lastUnplug: Instant? = null,
-        unpluggedLevel: Int? = null,
-        numberOfCycles: Int? = null,
-        dischargeRate: Float? = null,
-        currentlyPlugged: Boolean? = null,
+        historyDate: Instant? = null,
+        historyCycles: Int? = null,
+        historyRate: Float? = null,
+        cycleDate: Instant? = null,
+        cycleLevel: Int? = null,
+        cycleRate: Float? = null,
+        nowPlugged: Boolean? = null,
     ): HistoryData {
         return HistoryData(
-            initDate ?: this.initDate,
-            lastUnplug ?:this.lastUnplug,
-            unpluggedLevel ?: this.unpluggedLevel,
-            numberOfCycles ?: this.numberOfCycles,
-            dischargeRate ?: this.dischargeRate,
-            currentlyPlugged ?: this.currentlyPlugged,
+            historyDate = historyDate ?: this.historyDate,
+            historyCycles = historyCycles ?: this.historyCycles,
+            historyRate = historyRate ?: this.historyRate,
+            cycleDate = cycleDate ?:this.cycleDate,
+            cycleLevel = cycleLevel ?: this.cycleLevel,
+            cycleRate = cycleRate ?: this.cycleRate,
+            nowPlugged = nowPlugged ?: this.nowPlugged,
         )
     }
     
     companion object {
         fun read(prefs: SharedPreferences): HistoryData {
             return HistoryData(
-                longToDate(prefs.getLong(Const.HIST_INIT_DATE, 0)),
-                longToDate(prefs.getLong(Const.HIST_UNPLUG_TIME, 0L)),
-                prefs.getInt(Const.HIST_UNPLUG_LEVEL, 0),
-                prefs.getInt(Const.HIST_N_CYCLES, 0),
-                prefs.getFloat(Const.HIST_DISCHG_RATE, 0f),
-                prefs.getBoolean(Const.HIST_PLUG_STATE, false),
+                historyDate = longToDate(prefs.getLong(Const.HIST_INIT_DATE, 0)),
+                historyCycles = prefs.getInt(Const.HIST_CYCLES, 0),
+                historyRate = prefs.getFloat(Const.HIST_RATE, 0f),
+                cycleDate = longToDate(prefs.getLong(Const.HIST_CYCLE_TIME, 0L)),
+                cycleLevel = prefs.getInt(Const.HIST_CYCLE_LEVEL, 0),
+                cycleRate = prefs.getFloat(Const.CYCLE_RATE, 0f),
+                nowPlugged = prefs.getBoolean(Const.HIST_PLUG_STATE, false),
             )
         }
     }
@@ -73,8 +73,10 @@ object History {
         val historyData = HistoryData.read(savedHistory)
         Log.v(
             Const.TAG,
-            "History init ${historyData.numberOfCycles} since ${historyData.initDate.formatDate()} rate=${historyData.dischargeRate}, " +
-                    "unplugged ${historyData.lastUnplug.formatDateTime()} at ${historyData.unpluggedLevel}%"
+            "History init ${historyData.historyCycles} " +
+                    "since ${historyData.historyDate.formatDate()} rate=${historyData.historyRate}, " +
+                    "unplugged ${historyData.cycleDate.formatDateTime()} at ${historyData.cycleLevel}%\n" +
+                    "Now " + if (!historyData.nowPlugged) "un" else "" + "plugged"
         )
 
         historyFlow.value = historyData
@@ -84,89 +86,115 @@ object History {
         level: Int,
         plugged: Boolean
     ) {
-        val hist = HistoryData.read(savedHistory)
+        var hist = HistoryData.read(savedHistory)
         Log.v(Const.TAG, "History event ($level,$plugged)" +
-                " when (${hist.unpluggedLevel},${hist.currentlyPlugged},${hist.lastUnplug})")
+                " now (${hist.cycleLevel},${hist.nowPlugged},${hist.cycleDate.formatDateTime()})")
 
+        val now = Clock.System.now()
         when {
-            plugged && !hist.currentlyPlugged ->
-                if (!hist.lastUnplug.isDistantPast) {
-                    val discharge = hist.unpluggedLevel - level
-                    val duration = Clock.System.now() - hist.lastUnplug
+            // Plugging in: recalculate historical rate
+            plugged && !hist.nowPlugged ->
+                if (!hist.cycleDate.isDistantPast) {
+                    val discharge = hist.cycleLevel - level
+                    val duration = now - hist.cycleDate
                     Log.v(Const.TAG, "History cycle $discharge% in ${duration.inWholeSeconds}s")
                     if (discharge >= 10 && duration.inWholeSeconds > 3600) {
                         val inDays = duration.inWholeSeconds.toFloat() / (3600 * 24)
                         val dischargeRate = discharge.toFloat() / inDays
-                        val newRate = (hist.dischargeRate * hist.numberOfCycles + dischargeRate) /
-                                (hist.numberOfCycles + 1)
-    
-                        savedHistory.edit {
-                            putInt(Const.HIST_N_CYCLES, hist.numberOfCycles + 1)
-                            putFloat(Const.HIST_DISCHG_RATE, newRate)
-                            putBoolean(Const.HIST_PLUG_STATE, plugged)
-                        }
-                        Log.v(Const.TAG, "History saved ${hist.numberOfCycles+1} cycles rate=$newRate")
-    
-                        historyFlow.value = hist.set(
-                            numberOfCycles = hist.numberOfCycles + 1,
-                            dischargeRate = newRate,
-                            currentlyPlugged = plugged,
+                        val newRate =
+                            if (hist.historyDate.isDistantPast) dischargeRate
+                            else (hist.historyRate * hist.historyCycles + dischargeRate) /
+                                    (hist.historyCycles + 1)
+                        
+                        hist = hist.set(
+                            historyCycles = hist.historyCycles + 1,
+                            historyRate = newRate,
+                            cycleRate = newRate,
                         )
+                        
+                        savedHistory.edit {
+                            if (hist.historyDate.isDistantPast) {
+                                hist = hist.set(historyDate = hist.cycleDate)
+                                putLong(Const.HIST_INIT_DATE, hist.cycleDate.epochSeconds)
+                            }
+                            putInt(Const.HIST_CYCLES, hist.historyCycles)
+                            putFloat(Const.HIST_RATE, hist.historyRate)
+                            putFloat(Const.CYCLE_RATE, hist.cycleRate)
+                            commit()
+                        }
+                        Log.v(Const.TAG, "History saved ${hist.historyCycles+1} cycles rate=$newRate")
+    
+                        historyFlow.value = hist
                     }
                 }
 
             !plugged ->
-                if (hist.currentlyPlugged || level > hist.unpluggedLevel) {
-                    val nowUnplug = Clock.System.now()
-                    Log.v(Const.TAG, "History aircharging at $level > ${hist.unpluggedLevel}")
+                // Unplugged, re-starting cycle
+                if (hist.nowPlugged || level > hist.cycleLevel) {
+                    Log.v(Const.TAG, "History unplugged at $level > ${hist.cycleLevel}")
                     
-                    savedHistory.edit {
-                        putLong(Const.HIST_UNPLUG_TIME, nowUnplug.epochSeconds)
-                        putInt(Const.HIST_UNPLUG_LEVEL, level)
-                        putBoolean(Const.HIST_PLUG_STATE, plugged)
-                    }
-    
-                    historyFlow.value = hist.set(
-                        lastUnplug = nowUnplug,
-                        unpluggedLevel = level,
-                        currentlyPlugged = plugged,
+                    hist = hist.set(
+                        cycleDate = now,
+                        cycleLevel = level,
                     )
                     
-                } else {
-                    val discharge = hist.unpluggedLevel - level
-                    val duration = Clock.System.now() - hist.lastUnplug
+                    savedHistory.edit {
+                        putLong(Const.HIST_CYCLE_TIME, hist.cycleDate.epochSeconds)
+                        putInt(Const.HIST_CYCLE_LEVEL, hist.cycleLevel)
+                        commit()
+                    }
+    
+                    historyFlow.value = hist
+                }
+                
+                // Continuing unplugged state
+                else {
+                    val discharge = hist.cycleLevel - level
+                    val duration = now - hist.cycleDate
                     if (discharge >= 10 && duration.inWholeSeconds > 3600) {
                         val inDays = duration.inWholeSeconds.toFloat() / (3600 * 24)
                         val dischargeRate = discharge.toFloat() / inDays
-                        historyFlow.value = hist.set(
-                            dischargeRate =
-                                if (historyFlow.value.numberOfCycles > 0)
-                                    (historyFlow.value.dischargeRate + dischargeRate) / 2f
+                        
+                        hist = hist.set(
+                            cycleRate =
+                                if (historyFlow.value.historyCycles > 0)
+                                    (historyFlow.value.historyRate + dischargeRate) / 2f
                                 else dischargeRate
                         )
+                        
+                        savedHistory.edit {
+                            putFloat(Const.CYCLE_RATE, hist.cycleRate)
+                            commit()
+                        }
+                        
+                        historyFlow.value = hist
                     }
                 }
         }
         
-        if (hist.currentlyPlugged != plugged) {
-            savedHistory.edit {
-                putBoolean(Const.HIST_PLUG_STATE, plugged)
-            }
+        // Changed plugged state
+        if (hist.nowPlugged != plugged) {
             Log.v(Const.TAG, "History plugged=$plugged")
-            historyFlow.value = historyFlow.value.set(currentlyPlugged = plugged)
+            hist = hist.set(nowPlugged = plugged)
+            savedHistory.edit {
+                putBoolean(Const.HIST_PLUG_STATE, hist.nowPlugged)
+                commit()
+            }
+            historyFlow.value = hist
         }
     }
 
     fun clear() {
         savedHistory.edit {
-            putInt(Const.HIST_N_CYCLES, 0)
-            putFloat(Const.HIST_DISCHG_RATE, 1f)
+            putInt(Const.HIST_CYCLES, 0)
+            putFloat(Const.HIST_RATE, 1f)
             putLong(Const.HIST_INIT_DATE, Instant.DISTANT_PAST.epochSeconds)
+            commit()
         }
         historyFlow.value = historyFlow.value.set(
-            initDate = Instant.DISTANT_PAST,
-            numberOfCycles = 0,
-            dischargeRate = 0f,
+            historyDate = Instant.DISTANT_PAST,
+            historyCycles = 0,
+            historyRate = 0f,
         )
     }
 }

@@ -93,37 +93,31 @@ fun HelpDialog(
                 )
 
                 val historyText = StringBuilder()
-                historyText.append(stringResource(R.string.format_cycle)
-                    .format(historyData.unpluggedLevel,
-                        historyData.lastUnplug.formatTime(),
-                        (clockNow - historyData.lastUnplug).formatDurationMinutes()
-                    ))
-                if (historyData.numberOfCycles > 0 && !historyData.initDate.isDistantPast)
-                    historyText.apply {
-                        append("\n")
-                        append(stringResource(R.string.format_history_since)
-                            .format(
-                                historyData.numberOfCycles,
-                                historyData.initDate.formatDate(),
+                
+                if (!historyData.cycleDate.isDistantPast) {
+                    historyText.append(stringResource(R.string.format_cycle)
+                        .format(historyData.cycleLevel,
+                            historyData.cycleDate.formatTime(),
+                            (clockNow - historyData.cycleDate).formatDurationMinutes()
                         ))
+                    if (historyData.cycleRate > 0f) {
+                        historyText.apply {
+                            append("\n")
+                            append(stringResource(R.string.format_rate)
+                                .format(
+                                    historyData.cycleRate,
+                                    100f / historyData.cycleRate
+                                ))
+                            append("\n")
+                        }
+                        val estimate = (watchInfo.battery.toFloat() - 10f) / historyData.cycleRate
+                        if (estimate > 0) {
+                            historyText.append(stringResource(R.string.format_estimate).format(estimate))
+                        } else {
+                            historyText.append("Please recharge")
+                        }
                     }
-                if (historyData.dischargeRate > 0) {
-                    historyText.apply {
-                        append("\n")
-                        append(stringResource(R.string.format_rate)
-                            .format(
-                                historyData.dischargeRate,
-                                100f / historyData.dischargeRate
-                            ))
-                        append("\n")
-                    }
-                    val estimate = (watchInfo.battery.toFloat() - 10f) / historyData.dischargeRate
-                    if (estimate > 0) {
-                        historyText.append(stringResource(R.string.format_estimate).format(estimate))
-                    } else {
-                        historyText.append("Please recharge")
-                    }
-                }
+                } else historyText.append("No past data")
 
                 Text(
                     text = historyText.toString(),
@@ -205,11 +199,12 @@ fun ClearBatteryDialog(
             Column(
                 modifier = Modifier.fillMaxWidth().padding(10.dp),
             ) {
-                if (historyData.isValid()) {
-                    val duration = Clock.System.now() - historyData.initDate
+                if (!historyData.historyDate.isDistantPast) {
+                    val duration = Clock.System.now() - historyData.historyDate
                     val historyText = stringResource(R.string.format_data_since)
                         .format(
-                            historyData.initDate.formatDate(),
+                            historyData.historyCycles,
+                            historyData.historyDate.formatDate(),
                             duration.formatDuration()
                         )
                     Text(
@@ -262,11 +257,12 @@ fun ClearBatteryDialog(
 }
 
 val PreviewHistoryData = HistoryData(
-    Clock.System.now(),
-    Clock.System.now(),
-    80,
-    10,
-    4.5f
+    historyDate = Clock.System.now(),
+    historyCycles = 10,
+    historyRate = 4.5f,
+    cycleDate = Clock.System.now(),
+    cycleLevel = 80,
+    cycleRate =7.5f,
 )
 
 @Preview
