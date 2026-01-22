@@ -6,7 +6,6 @@
 
 ## Non-functional
 
-- Change package name
 - Merge projects
 - Use theme
 - Remove hard-coded dimensions

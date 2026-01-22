@@ -7,13 +7,13 @@ plugins {
 }
 
 android {
-    namespace = "name.jayhan.pebble"
+    namespace = "name.jayhan.dolbom"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "name.jayhan.pebble"
+        applicationId = "name.jayhan.dolbom"
         minSdk = 35
         targetSdk = 35
         versionCode = 2
