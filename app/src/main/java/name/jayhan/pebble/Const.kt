@@ -1,5 +1,6 @@
 package name.jayhan.pebble
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import kotlin.time.Instant
 
@@ -15,6 +16,8 @@ object Const {
     val textSize = 20.sp
     val smallSize = 16.sp
     val subSize = 12.sp
+    val colorIndicatorBack = Color(0xFF000000)
+    val colorIndicatorLetter = Color(0xFFFFFFFF)
 
     const val INTENT_RESTART = "name.jayhan.pebble.RESTART_SERVICE"
     const val INTENT_REFRESH = "name.jayhan.pebble.REFRESH_SERVICE"

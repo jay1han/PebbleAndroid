@@ -272,7 +272,7 @@ fun EditIndicator(
                 ) {
                     Button(
                         onClick = {
-                            if (newLetter == ' ') indicatorError = true
+                            if (newLetter == ' ' && !ignore) indicatorError = true
                             else {
                                 if (newPackage.isNotEmpty()) {
                                     Indicators.remove(indicator)

@@ -2,11 +2,15 @@ package name.jayhan.pebble
 
 import android.content.Context
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,11 +27,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -140,6 +147,7 @@ fun IndicatorItem(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            .clickable { onEdit() }
     ) {
         Box(
             modifier = Modifier.fillMaxWidth(.1f).padding(4.dp)
@@ -203,21 +211,29 @@ fun IndicatorItem(
             }
         }
 
-        Text(
-            text = indicator.letter.toString(),
-            fontSize = Const.titleSize,
-            modifier = Modifier.fillMaxWidth(.1f).padding(horizontal = 16.dp),
-            textAlign = TextAlign.Center,
-        )
-
-        FilledIconButton(
-            onClick = onEdit,
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.background(color =
+                if (indicator.ignore) Color.Transparent else Const.colorIndicatorBack)
         ) {
-            Icon(
-                painter = painterResource(R.drawable.outline_edit_24),
-                contentDescription = stringResource(R.string.edit),
+            Text(
+                text = indicator.letter.toString(),
+                fontSize = Const.titleSize,
+                modifier = Modifier.fillMaxWidth(.1f).padding(horizontal = 16.dp),
+                textAlign = TextAlign.Center,
+                color = if (indicator.ignore) Color.Transparent else Const.colorIndicatorLetter,
             )
+            if (indicator.ignore)
+                Image(
+                    painter = painterResource(R.drawable.outline_toggle_on_24),
+                    contentDescription = "Ignored",
+                )
         }
+
+        Icon(
+            painterResource(R.drawable.outline_chevron_forward_24),
+            contentDescription = "Refresh",
+        )
     }
 }
 

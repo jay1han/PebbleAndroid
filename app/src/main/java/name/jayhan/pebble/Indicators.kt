@@ -200,9 +200,9 @@ val PreviewIndicators = listOf(
     SingleIndicator("com.android.google.apps.messaging", letter = 'T'),
     SingleIndicator("com.android.google.apps.gm", "jay", letter = 'j'),
     SingleIndicator("com.android.google.apps.gm", "pebble", letter = 'p'),
-    SingleIndicator("com.android.google.apps.gm", letter = 'G'),
+    SingleIndicator("com.android.google.apps.gm", letter = ' ', ignore = true),
     SingleIndicator("com.whatsapp", letter = 'W'),
-    SingleIndicator("com.kakao.talk", letter = 'K'),
+    SingleIndicator("com.kakao.talk", letter = ' ', ignore = true),
     SingleIndicator("com.kakao.talk", filterText = "Bob", letter = 'b'),
     SingleIndicator("com.kakao.talk", "talk", "Alice", FilterType.Subject, 'b'),
 )
