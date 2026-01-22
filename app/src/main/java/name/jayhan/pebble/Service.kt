@@ -13,7 +13,6 @@ import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.IBinder
 import android.util.Log
-import com.getpebble.android.kit.util.PebbleDictionary
 
 class PebbleService:
     Service()
@@ -29,6 +28,7 @@ class PebbleService:
     private lateinit var reviveIntent: PendingIntent
     private lateinit var launchIntent: PendingIntent
     private lateinit var phoneFinder: PhoneFinder
+    private val protocol = Protocol()
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -141,6 +141,7 @@ class PebbleService:
     
     fun refreshService() {
         Log.v(Const.TAG, "RefreshService")
+        protocol.reset()
         batteryReceiver.refresh()
         bluetoothReceiver.refresh()
         wifiCallback.refresh()
@@ -192,63 +193,8 @@ class PebbleService:
                     stopSelf()
                 }
                 
-                Const.INTENT_SEND_PEBBLE -> {
-                    val msgType = intent.getIntExtra(Const.EXTRA_MSG_TYPE, 0)
-                    Log.v(Const.TAG, "out ${MsgName[msgType]}")
-
-                    val pebbleDict = PebbleDictionary()
-                    pebbleDict.addInt8(DictKey.MSG_TYPE.ordinal, msgType.toByte())
-
-                    when(msgType) {
-                        MsgType.INFO.ordinal,
-                        MsgType.WBATT.ordinal -> {
-                        }
-
-                        MsgType.TZ.ordinal -> {
-                            val minutes = intent.getIntExtra(Const.EXTRA_TZ_MIN, 0)
-                            pebbleDict.addInt16(DictKey.TZ_MIN.ordinal, minutes.toShort())
-                        }
-
-                        MsgType.PHONE_CHG.ordinal -> {
-                            val isCharging = intent.getIntExtra(Const.EXTRA_PHONE_CHG, 0)
-                            pebbleDict.addInt8(DictKey.PHONE_CHG.ordinal, isCharging.toByte())
-                            val isPlugged = intent.getIntExtra(Const.EXTRA_PHONE_PLUG, 0)
-                            pebbleDict.addInt8(DictKey.PHONE_PLUG.ordinal, isPlugged.toByte())
-                            val percent = intent.getIntExtra(Const.EXTRA_PHONE_BATT, 0)
-                            pebbleDict.addInt8(DictKey.PHONE_BATT.ordinal, percent.toByte())
-                        }
-
-                        MsgType.WIFI.ordinal -> {
-                            val ssid = intent.getStringExtra(Const.EXTRA_WIFI) ?: ""
-                            pebbleDict.addString(DictKey.WIFI.ordinal, ssid.take(Const.MAX_LEN_ID))
-                        }
-
-                        MsgType.NET.ordinal -> {
-                            val gen = intent.getIntExtra(Const.EXTRA_NET, 0)
-                            pebbleDict.addInt8(DictKey.NET.ordinal, gen.toByte())
-                            val sim = intent.getIntExtra(Const.EXTRA_SIM, 0)
-                            pebbleDict.addInt8(DictKey.SIM.ordinal, sim.toByte())
-                            val carrier = intent.getStringExtra(Const.EXTRA_CARRIER) ?: ""
-                            pebbleDict.addString(DictKey.CARRIER.ordinal, carrier.take(Const.MAX_LEN_ID))
-                        }
-
-                        MsgType.NOTI.ordinal -> {
-                            val noti = intent.getStringExtra(Const.EXTRA_NOTI) ?: ""
-                            pebbleDict.addString(DictKey.NOTI.ordinal, noti.take(Const.MAX_NOTI_INDICATORS))
-                        }
-
-                        MsgType.BT.ordinal -> {
-                            val btid = intent.getStringExtra(Const.EXTRA_BTID) ?: ""
-                            pebbleDict.addString(DictKey.BTID.ordinal, btid.take(Const.MAX_LEN_ID))
-                            val btc = intent.getIntExtra(Const.EXTRA_BTC, 0)
-                            pebbleDict.addInt8(DictKey.BTC.ordinal, btc.toByte())
-                            val bton = intent.getBooleanExtra(Const.EXTRA_BTON, false)
-                            pebbleDict.addInt8(DictKey.BTON.ordinal, if (bton) 1.toByte() else 0.toByte())
-                        }
-                    }
-
-                    Pebble.sendData(context, pebbleDict)
-                }
+                Const.INTENT_SEND_PEBBLE ->
+                    protocol.send(context, intent)
             }
         }
     }
