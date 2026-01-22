@@ -31,8 +31,10 @@ class AppStart:
         when (intent.action) {
             Intent.ACTION_BOOT_COMPLETED -> {
                 Log.v(Const.TAG, "Boot completed")
-                val intent = Intent(context, PebbleService::class.java)
-                context.startForegroundService(intent)
+                if (!Permissions.allGranted) {
+                    val intent = Intent(context, PebbleService::class.java)
+                    context.startForegroundService(intent)
+                }
             }
         }
     }
@@ -46,12 +48,17 @@ class MainActivity :
         Log.v(Const.TAG, "Start activity")
 
         val context = applicationContext
-        Permissions.initActivity(mainActivity = this)
-
-        if (!Permissions.allInit) {
-            val intent = Intent(context, PebbleService::class.java)
-            context.startForegroundService(intent)
-        }
+        Permissions.initWithActivity(
+            mainActivity = this,
+            context = context,
+            onAllGranted =  {
+                val intent = Intent(context, PebbleService::class.java)
+                context.startForegroundService(intent)
+            },
+            onNotGranted = {
+                sendBroadcast(Intent(Const.INTENT_STOP))
+            },
+        )
 
         enableEdgeToEdge()
         setContent {

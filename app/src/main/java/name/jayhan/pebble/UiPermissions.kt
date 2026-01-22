@@ -57,10 +57,10 @@ fun PermissionsScaffold() {
             ) { permissionHelp = false }
         } else {
             UiPermissions(
-                missingList,
+                missingList = missingList,
                 modifier = Modifier
                     .padding(innerPadding)
-                    .consumeWindowInsets(innerPadding)
+                    .consumeWindowInsets(innerPadding),
             )
         }
     }
@@ -134,17 +134,17 @@ fun PermissionHelp(
 @Composable
 fun UiPermissions(
     missingList: List<PermissionGroup>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    var showDetails by remember { mutableStateOf<PermissionGroup?>(null) }
+    var showGroup by remember { mutableStateOf<PermissionGroup?>(null) }
 
-    if (showDetails != null) {
+    if (showGroup != null) {
         Rationale(
-            permissionGroup = showDetails!!,
+            permissionGroup = showGroup!!,
             onClick = {
-                Permissions.requestGroup(showDetails!!)
+                Permissions.requestGroup(showGroup!!)
             }) {
-            showDetails = null
+            showGroup = null
         }
     } else {
         val scrollState = rememberScrollState()
@@ -163,7 +163,7 @@ fun UiPermissions(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            showDetails = permissionGroup
+                            showGroup = permissionGroup
                         },
                     headlineContent = {
                         Text(
@@ -252,7 +252,7 @@ fun UiPermissionsPreview() {
     PebbleTheme {
         UiPermissions(
             AllPermissionGroups,
-            Modifier
+            Modifier,
         )
     }
 }

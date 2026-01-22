@@ -58,56 +58,45 @@ fun AppScaffold(
     val isConnected: Boolean by Pebble.isConnected.collectAsState(false)
     val lastReceived: Instant by Pebble.lastReceived.collectAsState(Clock.System.now())
     val permissionsGranted by Permissions.grantFlow.collectAsState(Permissions.allGranted)
-    val permissionsInit by Permissions.initFlow.collectAsState(false)
     val activeList by Notifications.activeFlow.collectAsState(emptyList())
     val allList by Notifications.allFlow.collectAsState(emptyList())
     val tzWatch: String by Timezone.tzFlow.collectAsState("")
     val indicators by Indicators.allFlow.collectAsState(listOf())
     val historyData: HistoryData by History.historyFlow.collectAsState(HistoryData())
     var showHelp by remember { mutableStateOf(false) }
-    var firstEntry by remember { mutableStateOf(true) }
 
-    if (!permissionsInit) {
-        Splash()
+    if (!permissionsGranted) {
+        PermissionsScaffold()
+
     } else {
-        if (!permissionsGranted) {
-            PermissionsScaffold()
-
-        } else {
-            if (firstEntry) {
-                firstEntry = false
-                Pebble.restartService(context)
-            }
-
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                topBar = {
-                    MainTopBar(context, isConnected, watchInfo) {
-                        showHelp = true
-                    }
-                },
-            ) { innerPadding ->
-                if (showHelp) {
-                    HelpDialog(
-                        watchInfo = watchInfo,
-                        lastReceived = lastReceived,
-                        historyData = historyData,
-                    ) {
-                        showHelp = false
-                    }
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                MainTopBar(context, isConnected, watchInfo) {
+                    showHelp = true
                 }
-
-                MainPage(
-                    context = context,
-                    activeList = activeList,
-                    allList = allList,
-                    indicators = indicators,
-                    isConnected = isConnected,
-                    tzWatch = tzWatch,
-                    modifier = Modifier.padding(innerPadding)
-                        .consumeWindowInsets(innerPadding)
-                )
+            },
+        ) { innerPadding ->
+            if (showHelp) {
+                HelpDialog(
+                    watchInfo = watchInfo,
+                    lastReceived = lastReceived,
+                    historyData = historyData,
+                ) {
+                    showHelp = false
+                }
             }
+
+            MainPage(
+                context = context,
+                activeList = activeList,
+                allList = allList,
+                indicators = indicators,
+                isConnected = isConnected,
+                tzWatch = tzWatch,
+                modifier = Modifier.padding(innerPadding)
+                    .consumeWindowInsets(innerPadding)
+            )
         }
     }
 }

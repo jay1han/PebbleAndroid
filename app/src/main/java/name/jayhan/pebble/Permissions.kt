@@ -106,40 +106,29 @@ class PermissionGroup(
 
     fun init(
         context: Context,
+        activity: ComponentActivity,
+        launcher: ActivityResultLauncher<Array<String>>
     ) {
-        listOfSingles = listOfNames.map { SinglePermission(context, it) }
+        listOfSingles = listOfNames.map { SinglePermission(it, context, activity, launcher) }
     }
 
     fun request() {
         listOfSingles
             .filter { !it.granted }
-            .forEach {
-                Permissions.requestSingle(it)
-            }
+            .forEach { it.request() }
     }
 
     fun update(): Boolean {
-        var allGranted = true
-
-        listOfSingles.forEach {
-            allGranted = allGranted and it.update()
-        }
-        granted = allGranted
-        return allGranted
-    }
-
-    fun findSingle(permission: String): SinglePermission? {
-        if (!this::listOfSingles.isInitialized) return null
-        val singlePermission = listOfSingles.find {
-            it.permission == permission
-        }
-        return singlePermission
+        granted = listOfSingles.all { it.update() }
+        return granted
     }
 }
 
 class SinglePermission(
-    private val context: Context,
     val permission: String,
+    private val context: Context,
+    val activity: ComponentActivity,
+    val launcher: ActivityResultLauncher<Array<String>>,
 ) {
     var granted = update()
 
@@ -165,19 +154,16 @@ class SinglePermission(
         return granted
     }
 
-    fun request(
-        mainActivity: ComponentActivity,
-        permissionsLauncher: ActivityResultLauncher<Array<String>>,
-    ) {
+    fun request() {
         when (permission) {
             NOTIFICATION_LISTENER -> {
-                mainActivity.startActivity(
+                activity.startActivity(
                     Intent(ACTION_LISTENER_SETTING))
                 return
             }
             
             USE_FULLSCREEN -> {
-                mainActivity.startActivity(
+                activity.startActivity(
                     Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
                         .setData("package:${context.packageName}".toUri())
                 )
@@ -185,9 +171,9 @@ class SinglePermission(
             }
             
             else ->
-                mainActivity.shouldShowRequestPermissionRationale(permission)
+                activity.shouldShowRequestPermissionRationale(permission)
         }
-        permissionsLauncher.launch(arrayOf(permission))
+        launcher.launch(arrayOf(permission))
     }
 }
 
@@ -198,10 +184,6 @@ class PermissionsCallback():
         result: Map<String, Boolean>,
     ) {
         if (result.isNotEmpty()) {
-            for (permission in result) {
-                if (permission.value)
-                    Permissions.update(permission.key)
-            }
             Permissions.updateAll()
         }
     }
@@ -209,43 +191,34 @@ class PermissionsCallback():
 
 object Permissions
 {
-    private var mainActivity: ComponentActivity? = null
     var allGranted = false
-    var allInit = false
     val grantFlow = MutableStateFlow(allGranted)
-    val initFlow = MutableStateFlow(false)
     val missingFlow = MutableStateFlow(listOf<PermissionGroup>())
+    private var mainActivity: ComponentActivity? = null
     private lateinit var permissionsLauncher: ActivityResultLauncher<Array<String>>
 
-    fun findSinglePermission(permission: String): SinglePermission? {
-        AllPermissionGroups.forEach {
-            val singlePermission = it.findSingle(permission)
-            if (singlePermission != null) return singlePermission
-        }
-        return null
-    }
-
-    fun initService(context: Context) {
-        AllPermissionGroups.forEach { it.init(context) }
-        allInit = true
-        if (this.mainActivity != null) {
-            initFlow.value = true
-        }
-        updateAll()
-        Log.v(Const.TAG, "Permissions allGranted=$allGranted")
-    }
-
-    fun initActivity(
+    private lateinit var onAllGranted: () -> Unit
+    fun initWithActivity(
         mainActivity: MainActivity,
+        context: Context,
+        onAllGranted: () -> Unit,
+        onNotGranted: () -> Unit,
     ) {
         this.mainActivity = mainActivity
+        this.onAllGranted = onAllGranted
         val permissionsContract = ActivityResultContracts.RequestMultiplePermissions()
         permissionsLauncher =
             mainActivity.registerForActivityResult(
                 permissionsContract,
                 PermissionsCallback()
             )
-        if (allInit) initFlow.value = true
+        
+        allGranted = false
+        grantFlow.value = false
+        
+        AllPermissionGroups.forEach { it.init(context, mainActivity, permissionsLauncher) }
+        
+        updateAll()
     }
     
     fun quitActivity(
@@ -253,7 +226,6 @@ object Permissions
     ) {
         if (this.mainActivity == mainActivity) {
             this.mainActivity = null
-            allInit = false
         }
     }
 
@@ -263,36 +235,18 @@ object Permissions
         permissionGroup.request()
     }
 
-    fun requestSingle(
-        singlePermission: SinglePermission,
-    ) {
-        if (mainActivity == null) allInit = false
-        else singlePermission.request(mainActivity!!, permissionsLauncher)
-    }
+    fun updateAll(): Boolean {
+        if (allGranted) return true
+        
+        AllPermissionGroups.forEach { it.update() }
 
-    fun collectMissing() {
-        val missingList = AllPermissionGroups
-            .filter { !it.granted }
-
+        val missingList = AllPermissionGroups.filter { !it.granted }
         allGranted = missingList.isEmpty()
         grantFlow.value = allGranted
         missingFlow.value = missingList
-    }
-
-    fun update(
-        name: String,
-    ) {
-        val singlePermission = findSinglePermission(name)
-        if (singlePermission != null) {
-            singlePermission.update()
-            collectMissing()
-        }
-    }
-
-    fun updateAll() {
-        AllPermissionGroups.forEach {
-            it.update()
-        }
-        collectMissing()
+        
+        Log.v(Const.TAG, "Permissions allGranted=$allGranted")
+        if (allGranted) onAllGranted()
+        return allGranted
     }
 }
