@@ -7,15 +7,11 @@
 ## Features
 
 - Indicators list: make whole listitem touchable
-- Ignoring indicators how?
 - Organize indicators in groups per app
-- Bigger font for BTC, smaller for DND
+- Ignoring indicators how?
 
 ## Non-functional
 
-- Save TZ to STOR
-- Use ping not info
-- Profile of exchanges, minimize Pebble battery
 - Change package name
 - Merge projects
 - Use theme

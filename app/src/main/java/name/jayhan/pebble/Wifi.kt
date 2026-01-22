@@ -18,7 +18,7 @@ class WifiCallback(
     private var ssid = ""
 
     init {
-        send()
+        refresh()
         val networkRequest = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
             .build()
@@ -37,7 +37,7 @@ class WifiCallback(
             val wifiInfo = info as WifiInfo
             ssid = wifiInfo.ssid
             if (ssid != WifiManager.UNKNOWN_SSID)
-                send()
+                refresh()
         }
     }
 
@@ -47,7 +47,7 @@ class WifiCallback(
         val info = connMan.getNetworkCapabilities(network)?.transportInfo
         ssid = ""
         if (info is WifiInfo) {
-            send()
+            refresh()
         }
     }
 
@@ -60,16 +60,12 @@ class WifiCallback(
         val info = capabilities.transportInfo as WifiInfo
         ssid = info.ssid.removeSurrounding("\"")
         if (ssid == WifiManager.UNKNOWN_SSID) return
-        send()
-    }
-
-    private fun send() {
-        Pebble.sendIntent(context, MsgType.WIFI) {
-            putExtra(Const.EXTRA_WIFI, ssid)
-        }
+        refresh()
     }
 
     fun refresh() {
-        send()
+        Pebble.sendIntent(context, MsgType.WIFI) {
+            putExtra(Const.EXTRA_WIFI, ssid)
+        }
     }
 }

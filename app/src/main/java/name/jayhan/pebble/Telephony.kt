@@ -46,7 +46,7 @@ class PhoneCallback(
                 val cellType = teleMan.dataNetworkType
                 mobileGen = getCellGen(cellType)
             } else mobileGen = 0
-            send()
+            refresh()
 
         } catch (_: SecurityException) { }
     }
@@ -60,9 +60,7 @@ class PhoneCallback(
                 context.mainExecutor,
                 this
             )
-        } catch (e: SecurityException) {
-            println(e)
-        }
+        } catch (_: SecurityException) {}
     }
     
     fun deinit() {
@@ -90,15 +88,11 @@ class PhoneCallback(
         }
     }
 
-    private fun send() {
+    fun refresh() {
         Pebble.sendIntent(context, MsgType.NET) {
             putExtra(Const.EXTRA_NET, mobileGen)
             putExtra(Const.EXTRA_SIM, activeSim)
             putExtra(Const.EXTRA_CARRIER, operator)
         }
-    }
-
-    fun refresh() {
-        scan()
     }
 }

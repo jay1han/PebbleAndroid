@@ -10,8 +10,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.ServiceInfo
-import android.content.res.Configuration
 import android.os.IBinder
 import android.util.Log
 import com.getpebble.android.kit.util.PebbleDictionary
@@ -35,8 +33,14 @@ class PebbleService:
         return null
     }
     
+    private var startId = 0
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.v(Const.TAG, "Service starting Id=$startId")
+        if (this.startId == 0) this.startId = startId
+        else {
+            Log.v(Const.TAG, "Skip")
+            return super.onStartCommand(intent, flags, startId)
+        }
 
         context = applicationContext
         notiMan = context.getSystemService(NOTIFICATION_SERVICE)
@@ -58,7 +62,7 @@ class PebbleService:
         val filter = IntentFilter().apply {
             addAction(Const.INTENT_RESTART)
             addAction(Const.INTENT_UPDATE)
-            addAction(Const.INTENT_REVIVE)
+            addAction(Const.INTENT_REFRESH)
             addAction(Const.INTENT_SEND_PEBBLE)
         }
         context.registerReceiver(receiver, filter,RECEIVER_EXPORTED)
@@ -74,11 +78,12 @@ class PebbleService:
                 setShowBadge(false)
                 lockscreenVisibility = Notification.VISIBILITY_SECRET
                 description = getString(R.string.channel_description)
+                importance = NotificationManager.IMPORTANCE_LOW
             }
             notiMan.createNotificationChannel(channel)
 
             restartService()
-            updateService()
+            updateNofitication()
         } catch (_: Exception) {
         }
 
@@ -92,8 +97,8 @@ class PebbleService:
         super.onDestroy()
     }
     
-    fun updateService() {
-        Log.v(Const.TAG, "UpdateService")
+    fun updateNofitication() {
+        Log.v(Const.TAG, "Update Notification")
         val notification = Notification.Builder(
             context,
             Const.CHANNEL_ID
@@ -105,20 +110,16 @@ class PebbleService:
             setSmallIcon(R.mipmap.ic_launcher)
             setVisibility(Notification.VISIBILITY_SECRET)
         }.build()
-
-        this.startForeground(
-            Const.NOTI_SERVICE,
-            notification,
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
-        )
+        
+        notiMan.notify(Const.NOTI_SERVICE, notification)
     }
     
     fun restartService() {
         Log.v(Const.TAG, "RestartService")
         if (Permissions.allGranted) {
-            Pebble.init(context)
             Notifications.init(context)
             History.init(context)
+            Pebble.init(context)
             
             stopModules()
             phoneFinder = PhoneFinder(context)
@@ -131,6 +132,15 @@ class PebbleService:
         } else {
             Log.v(Const.TAG, "Permissions missing")
         }
+    }
+    
+    fun refreshService() {
+        Log.v(Const.TAG, "RefreshService")
+        batteryReceiver.refresh()
+        bluetoothReceiver.refresh()
+        wifiCallback.refresh()
+        phoneCallback.refresh()
+        Notifications.refresh(context)
     }
     
     fun stopModules() {
@@ -153,16 +163,17 @@ class PebbleService:
 
                 Const.INTENT_UPDATE -> {
                     Log.v(Const.TAG, "Intent: Update service")
-                    updateService()
+                    updateNofitication()
                 }
 
-                Const.INTENT_REVIVE -> {
-                    Log.v(Const.TAG, "Intent: Revive service")
-                    restartService()
+                Const.INTENT_REFRESH -> {
+                    Log.v(Const.TAG, "Intent: Refresh service")
+                    refreshService()
                 }
                 
                 Const.INTENT_SEND_PEBBLE -> {
                     val msgType = intent.getIntExtra(Const.EXTRA_MSG_TYPE, 0)
+                    Log.v(Const.TAG, "out $msgType")
 
                     val pebbleDict = PebbleDictionary()
                     pebbleDict.addInt8(DictKey.MSG_TYPE.ordinal, msgType.toByte())

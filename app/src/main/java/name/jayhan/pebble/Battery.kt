@@ -15,7 +15,7 @@ class BatteryReceiver(
     private var isCharging = false
 
     init {
-        send()
+        refresh()
 
         val batteryFilter = IntentFilter().apply {
             addAction(Intent.ACTION_BATTERY_CHANGED)
@@ -45,14 +45,11 @@ class BatteryReceiver(
             BatteryManager.ACTION_CHARGING -> isCharging = true
             BatteryManager.ACTION_DISCHARGING -> isCharging = false
         }
-        send()
+        refresh()
     }
 
-    private fun send() {
-        Pebble.sendIntent(
-            context,
-            MsgType.PHONE_CHG
-        ) {
+    fun refresh() {
+        Pebble.sendIntent(context, MsgType.PHONE_CHG) {
             putExtra(Const.EXTRA_PHONE_BATT, percent)
             putExtra(Const.EXTRA_PHONE_CHG, if (isCharging) 1 else 0)
             putExtra(Const.EXTRA_PHONE_PLUG, if (isPlugged) 1 else 0)

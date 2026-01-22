@@ -110,8 +110,12 @@ class WatchInfo(
         }
     }
 
-    fun isValid(): Boolean {
+    fun hasInfo(): Boolean {
         return (model != 0 && version != 0)
+    }
+    
+    fun hasBatt(): Boolean {
+        return (battery != 0)
     }
 }
 
@@ -132,28 +136,33 @@ private object FaceDataReceiver:
             val msgType = data.getInteger(DictKey.MSG_TYPE.ordinal)?.toInt() ?: 0
             when (msgType) {
                 MsgType.FRESH.ordinal -> {
-                    Pebble.restartService(context)
+                    Log.v(Const.TAG, "in Fresh")
+                    Pebble.refreshService(context)
                 }
                 
                 MsgType.INFO.ordinal -> {
                     val watchModel = data.getInteger(DictKey.MODEL.ordinal)?.toInt() ?: 0
                     val watchFwVersion = data.getUnsignedIntegerAsLong(DictKey.FW_VERSION.ordinal)?.toInt() ?: 0
+                    val tzMinutes = data.getInteger(DictKey.TZ_MIN.ordinal)
+                    Log.v(Const.TAG, "in INFO $watchModel $watchFwVersion $tzMinutes")
+                    
                     if (watchModel != 0 && watchFwVersion != 0)
                         Pebble.setWatchInfo(watchModel, watchFwVersion)
-                    val tzMinutes = data.getInteger(DictKey.TZ_MIN.ordinal)
                     if (tzMinutes != null)
                         Timezone.fromMinutes(tzMinutes.toInt())
-                    if (context != null)
-                        Pebble.sendIntent(context, MsgType.WBATT) {}
+                    if (!Pebble.watchInfo.hasBatt())
+                        if (context != null) Pebble.sendIntent(context, MsgType.WBATT) {}
                 }
 
                 MsgType.WBATT.ordinal -> {
                     val watchBattery = data.getInteger(DictKey.WATCH_BATT.ordinal)?.toInt() ?: 0
                     val watchPlugged = data.getInteger(DictKey.WATCH_PLUG.ordinal)?.toInt() ?: 0
                     val watchCharging = data.getInteger(DictKey.WATCH_CHG.ordinal)?.toInt() ?: 0
+                    
+                    Log.v(Const.TAG, "in WBAT $watchBattery% plugged $watchPlugged charging $watchCharging")
                     Pebble.setBattery(context, watchBattery, watchPlugged != 0, watchCharging != 0)
-                    if (!Pebble.watchInfo.isValid())
-                        Pebble.restartService(context)
+                    if (!Pebble.watchInfo.hasInfo())
+                        if (context != null) Pebble.sendIntent(context, MsgType.INFO) {}
                 }
             }
         }
@@ -246,7 +255,7 @@ object Pebble
             context.registerReceiver(it.value, filter, Context.RECEIVER_EXPORTED)
         }
 
-        sendIntent(context, MsgType.INFO) {}
+        sendIntent(context, MsgType.WBATT) {}
     }
 
     // TODO: unregister at onPause
@@ -298,22 +307,22 @@ object Pebble
         watchInfo = watchInfo.setBattery(battery, plugged, charging)
         infoFlow.value = watchInfo
         History.event(battery, plugged)
-        updateService(context)
+        updateNotification(context)
     }
 
     fun received(
         context: Context?,
         isAcked: Boolean
     ) {
+        isConnected.value = isAcked
         if (isAcked) {
             lastReceived.value = clock.now()
         } else {
-            updateService(context)
+            updateNotification(context)
         }
-        isConnected.value = isAcked
     }
 
-    fun updateService(
+    private fun updateNotification(
         context: Context?
     ) {
         context?.sendBroadcast(Intent(Const.INTENT_UPDATE))
@@ -323,5 +332,11 @@ object Pebble
         context: Context?
     ) {
         context?.sendBroadcast(Intent(Const.INTENT_RESTART))
+    }
+    
+    fun refreshService(
+        context: Context?
+    ) {
+        context?.sendBroadcast(Intent(Const.INTENT_REFRESH))
     }
 }

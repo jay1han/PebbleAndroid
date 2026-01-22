@@ -17,7 +17,7 @@ object Const {
     val subSize = 12.sp
 
     const val INTENT_RESTART = "name.jayhan.pebble.RESTART_SERVICE"
-    const val INTENT_REVIVE = "name.jayhan.pebble.REVIVE_SERVICE"
+    const val INTENT_REFRESH = "name.jayhan.pebble.REFRESH_SERVICE"
     const val INTENT_UPDATE = "name.jayhan.pebble.UPDATE_SERVICE"
 
     const val INTENT_SEND_PEBBLE = "name.jayhan.pebble.SEND_PEBBLE"

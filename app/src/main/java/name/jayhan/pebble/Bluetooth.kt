@@ -63,13 +63,16 @@ class BluetoothReceiver(
     private fun send(
         device: ConnectedDevice,
     ) {
-        if (!lastDevice.isSameAs(device)) {
-            Pebble.sendIntent(context, MsgType.BT) {
-                putExtra(Const.EXTRA_BTID, device.name)
-                putExtra(Const.EXTRA_BTC, device.battery)
-                putExtra(Const.EXTRA_BTON, device.active)
-            }
+        if (!lastDevice.isSameAs(device))
             lastDevice = device
+        refresh()
+    }
+
+    fun refresh() {
+        Pebble.sendIntent(context, MsgType.BT) {
+            putExtra(Const.EXTRA_BTID, lastDevice.name)
+            putExtra(Const.EXTRA_BTC, lastDevice.battery)
+            putExtra(Const.EXTRA_BTON, lastDevice.active)
         }
     }
     
