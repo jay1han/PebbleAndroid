@@ -16,8 +16,8 @@
 
     <string name="no_indicators">Nothing!</string>
     <string name="filter_title">Title</string>
+    <string name="filter_people">People</string>
     <string name="filter_text">Text</string>
-    <string name="filter_subject">Subject</string>
     <string name="reset_question">Do you want to clear all indicators?</string>
     <string name="reset_no">No</string>
     <string name="reset_yes">Reset!</string>

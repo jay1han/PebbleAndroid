@@ -163,19 +163,11 @@ object Indicators
 
 enum class FilterType {
     Title { override val r = R.string.filter_title },
-    Text { override val r = R.string.filter_text },
-    Subject { override val r = R.string.filter_subject };
+    Text { override val r = R.string.filter_people },
+    Subject { override val r = R.string.filter_text };
     
     abstract val r: Int
 }
-
-val FilterTypeStringIdList = FilterType.entries.map { it.r }
-
-val FilterTypeExtra = listOf(
-    Notification.EXTRA_TITLE,
-    Notification.EXTRA_TEXT,
-    Notification.EXTRA_CONVERSATION_TITLE,
-)
 
 fun getFilterType(
     index: Int
@@ -187,11 +179,35 @@ fun getFilterType(
             )
 }
 
+val FilterTypeStringIdList = FilterType.entries.map { it.r }
+
+val FilterTypeExtra = listOf(
+    listOf(
+        Notification.EXTRA_TITLE,
+        Notification.EXTRA_CONVERSATION_TITLE,
+        Notification.EXTRA_TITLE_BIG,
+    ),
+    listOf(
+        Notification.EXTRA_TEXT,
+        Notification.EXTRA_TEXT_LINES,
+        Notification.EXTRA_BIG_TEXT,
+        Notification.EXTRA_INFO_TEXT,
+        Notification.EXTRA_SUB_TEXT,
+        Notification.EXTRA_SUMMARY_TEXT,
+    ),
+    listOf(
+        Notification.EXTRA_PEOPLE_LIST,
+    )
+)
+
 fun Notification.matches(
     indicator: SingleIndicator
 ): Boolean {
     return indicator.filterText.isNotEmpty() &&
-            this.extras.getCharSequence(FilterTypeExtra[indicator.filterType.ordinal], "")
+            FilterTypeExtra[indicator.filterType.ordinal]
+                .joinToString(separator = "") {
+                    this.extras.getCharSequence(it, "")
+                }
                 .contains(indicator.filterText)
 }
 
