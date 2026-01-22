@@ -45,7 +45,7 @@ fun HelpDialog(
     var showDump by remember { mutableStateOf(false) }
     
     if (showDump) {
-        DumpDialog() {
+        DumpDialog(Notifications.dump) {
             showDump =false
         }
     }

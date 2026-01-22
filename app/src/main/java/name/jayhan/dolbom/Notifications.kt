@@ -1,11 +1,11 @@
 package name.jayhan.dolbom
 
+import android.app.Notification
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.net.http.UrlRequest
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,23 +31,29 @@ class NotificationListener:
     }
 }
 
-class NotificationDump (
-    sbn: StatusBarNotification
-)
-{
-    val packageName = sbn.packageName
-    val notification = sbn.notification
-    val channelId = notification.channelId
-    val extraMap = mutableMapOf<FilterType, Map<String, String>>()
-
-    init {
-        for (filterType in FilterType.entries) {
-            val filterMap = mutableMapOf<String, String>()
-            for (key in FilterTypeExtra[filterType.ordinal]) {
-                val value = notification.extras.getCharSequence(key, "")
-                if (value != "") filterMap[key] = value.toString()
+class NotificationDump(
+    val packageName: String,
+    val channelId: String,
+    val extraMap: Map<FilterType, Map<String, String>>,
+) {
+    companion object {
+        fun fromSBN(sbn: StatusBarNotification): NotificationDump {
+            val notification: Notification = sbn.notification
+            val extraMap = mutableMapOf<FilterType, Map<String, String>>()
+            for (filterType in FilterType.entries) {
+                val filterMap = mutableMapOf<String, String>()
+                for (key in FilterTypeExtra[filterType.ordinal]) {
+                    val value = notification.extras.getCharSequence(key, "")
+                    if (value != "") filterMap[key] = value.toString()
+                }
+                extraMap[filterType] = filterMap
             }
-            extraMap[filterType] = filterMap
+            
+            return NotificationDump(
+                sbn.packageName,
+                notification.channelId,
+                extraMap
+            )
         }
     }
 }
@@ -89,7 +95,7 @@ object Notifications : BroadcastReceiver()
                 for (sbn in activeNotifications
                     .filter { !it.isOngoing && it.isClearable }
                 ) {
-                    dump.add(NotificationDump(sbn))
+                    dump.add(NotificationDump.fromSBN(sbn))
                     
                     if (sbn.packageName.startsWith(BuildConfig.APPLICATION_ID))
                         continue

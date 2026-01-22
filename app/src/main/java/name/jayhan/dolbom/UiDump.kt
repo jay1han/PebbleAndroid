@@ -9,14 +9,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
 @Composable
 fun DumpDialog(
+    dump: List<NotificationDump>,
     onClose: () -> Unit
 ) {
     Dialog(
@@ -33,7 +34,7 @@ fun DumpDialog(
             ) {
                 item { HorizontalDivider(thickness = 1.dp) }
                 items(
-                    items = Notifications.dump,
+                    items = dump,
                 ) { notificationDump ->
                     Text(notificationDump.packageName)
                     Text(notificationDump.channelId)
@@ -48,4 +49,28 @@ fun DumpDialog(
             }
         }
     }
+}
+
+val PreviewDump = listOf(
+    NotificationDump(
+        "com.google",
+        "channelId",
+        mapOf(
+            FilterType.Title to mapOf(
+                "Title" to "Hello"
+            ),
+            FilterType.People to mapOf(
+                "People" to "You"
+            ),
+            FilterType.Text to mapOf(
+                "Text" to "World"
+            ),
+        )
+    )
+)
+
+@Preview
+@Composable
+fun DumpDialogPreview() {
+    DumpDialog(PreviewDump) {}
 }

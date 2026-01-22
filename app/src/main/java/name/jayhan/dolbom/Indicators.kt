@@ -163,8 +163,8 @@ object Indicators
 
 enum class FilterType {
     Title { override val r = R.string.filter_title },
-    Text { override val r = R.string.filter_people },
-    Subject { override val r = R.string.filter_text };
+    People { override val r = R.string.filter_people },
+    Text { override val r = R.string.filter_text };
     
     abstract val r: Int
 }
@@ -172,7 +172,7 @@ enum class FilterType {
 fun getFilterType(
     index: Int
 ): FilterType {
-    val values = listOf(FilterType.Title, FilterType.Text, FilterType.Subject)
+    val values = listOf(FilterType.Title, FilterType.People, FilterType.Text)
     return (
             if (index in 0..< FilterType.entries.size) values[index]
             else FilterType.Title
@@ -220,7 +220,7 @@ val PreviewIndicators = listOf(
     SingleIndicator("com.whatsapp", letter = 'W'),
     SingleIndicator("com.kakao.talk", letter = ' ', ignore = true),
     SingleIndicator("com.kakao.talk", filterText = "Bob", letter = 'b'),
-    SingleIndicator("com.kakao.talk", "talk", "Alice", FilterType.Subject, 'b'),
+    SingleIndicator("com.kakao.talk", "talk", "Alice", FilterType.Text, 'b'),
 )
 
 val PreviewActiveList = listOf(

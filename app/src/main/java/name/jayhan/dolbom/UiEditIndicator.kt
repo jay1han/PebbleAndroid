@@ -369,7 +369,7 @@ fun EditIndicatorPreview() {
             packageName = "com.android.google.apps.messaging",
             channel = "jayhan.dev",
             filterText = "text",
-            filterType = FilterType.Text,
+            filterType = FilterType.People,
             letter = 'S',
             ignore = false
         ),
