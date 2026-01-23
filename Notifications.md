@@ -19,9 +19,31 @@ There are 3 levels of filtering.
     mostly related to the presentation, not the content.
     However, we group these fields in 4 categories to make the filtering more useful.
     
-    | Category | Notification extras                         | Gmail | WhatsApp | SMS |
-    |----------|---------------------------------------------|-------|----------|-----|
-    | Title    | `EXTRA_TITLE`<br>`EXTRA_CONVERSATION_TITLE` |       |          |     |
-    | Info     | `EXTRA_INFO_TEXT`<br>`EXTRA_SUMMARY_TEXT`   |       |          |     |
-    | Subtitle | `EXTRA_SUB_TEXT`<br>`EXTRA_PEOPLE_LIST`     |       |          |     |
-    | Text     | `EXTRA_TEXT`<br>`EXTRA_BIG_TEXT`            |       |          |     |
+    | Category | Notification extras                         |
+    |----------|---------------------------------------------|
+    | Title    | `EXTRA_TITLE`<br>`EXTRA_CONVERSATION_TITLE` |
+    | Subtitle | `EXTRA_SUB_TEXT`<br>`EXTRA_PEOPLE_LIST`     |
+    | Info     | `EXTRA_INFO_TEXT`<br>`EXTRA_SUMMARY_TEXT`   |
+    | Text     | `EXTRA_TEXT`<br>`EXTRA_BIG_TEXT`            |
+
+Here are some reverse-engineered utilizations for a few popular apps.
+
+| App       | Title         | Subtitle       | Info    | Text      |
+|-----------|---------------|----------------|---------|-----------|
+| Gmail     | Email subject | Google account | (empty) | Full text |
+| Messaging |               |                |         |           |
+| WhatsApp  |               |                |         |           |
+| KakaoTalk |               |                |         |           |
+
+Ignoring a specific configuration means that no indicator will be shown.
+You can also mix ignored notifications at some levels with
+active ones at other levels.
+For example, you can ignore all Gmail notifications except those
+on a specific account:
+
+- Set the general Gmail configuration to "Ignore"
+
+- Set the specific Subtitle (account address) to a specific letter
+
+You can also do the opposite, to ignore specific configurations
+while allowing the general one to activate in other cases.
