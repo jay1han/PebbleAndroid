@@ -225,13 +225,13 @@ fun EditIndicator(
                 Spacer(Modifier.height(8.dp))
                 var editFilter by remember { mutableStateOf(false) }
 
-                val labels = FilterTypeStringIdList
+                val labels = FilterType.Strings
                 SingleChoiceSegmentedButtonRow(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     labels.forEachIndexed { index, label ->
                         SegmentedButton(
-                            onClick = { newType = getFilterType(index) },
+                            onClick = { newType = FilterType.index(index) },
                             selected = index == newType.ordinal,
                             shape = SegmentedButtonDefaults.itemShape(
                                 index = index,
@@ -369,7 +369,7 @@ fun EditIndicatorPreview() {
             packageName = "com.android.google.apps.messaging",
             channel = "jayhan.dev",
             filterText = "text",
-            filterType = FilterType.People,
+            filterType = FilterType.Subtitle,
             letter = 'S',
             ignore = false
         ),

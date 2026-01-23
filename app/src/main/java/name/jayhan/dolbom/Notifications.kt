@@ -1,6 +1,5 @@
 package name.jayhan.dolbom
 
-import android.app.Notification
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -8,6 +7,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class NotificationListener:
@@ -15,6 +15,7 @@ class NotificationListener:
     private lateinit var context: Context
 
     override fun onListenerConnected() {
+        Log.v(Const.TAG, "Listener connected")
         context = applicationContext
         super.onListenerConnected()
         Notifications.onNotification(context, activeNotifications)
@@ -29,6 +30,11 @@ class NotificationListener:
         super.onNotificationRemoved(sbn)
         Notifications.onNotification(context, activeNotifications)
     }
+    
+    override fun onListenerDisconnected() {
+        Log.v(Const.TAG, "Listener disconnected")
+        super.onListenerDisconnected()
+    }
 }
 
 class NotificationDump(
@@ -37,16 +43,12 @@ class NotificationDump(
     val extraMap: Map<FilterType, Map<String, String>>,
 ) {
     companion object {
-        fun fromSBN(sbn: StatusBarNotification): NotificationDump {
-            val notification: Notification = sbn.notification
-            val extraMap = mutableMapOf<FilterType, Map<String, String>>()
-            for (filterType in FilterType.entries) {
-                val filterMap = mutableMapOf<String, String>()
-                for (key in FilterTypeExtra[filterType.ordinal]) {
-                    val value = notification.extras.getCharSequence(key, "")
-                    if (value != "") filterMap[key] = value.toString()
-                }
-                extraMap[filterType] = filterMap
+        fun fromSBN(
+            sbn: StatusBarNotification,
+        ): NotificationDump {
+            val notification = sbn.notification
+            val extraMap = FilterType.entries.toList().associateWith {
+                it.mapExtrasForFilter(notification)
             }
             
             return NotificationDump(
@@ -60,7 +62,7 @@ class NotificationDump(
 
 object Notifications : BroadcastReceiver()
 {
-    private lateinit var packageManager: PackageManager
+    private lateinit var packMan: PackageManager
 
     val activeFlow = MutableStateFlow<List<String>>(mutableListOf())
     val allFlow = MutableStateFlow<List<String>>(mutableListOf())
@@ -73,14 +75,14 @@ object Notifications : BroadcastReceiver()
         context: Context,
         activeNotifications: Array<StatusBarNotification>
     ) {
-        if (!this::packageManager.isInitialized) {
+        if (!this::packMan.isInitialized) {
             savedNotifications = activeNotifications
             return
         }
 
         savedNotifications = activeNotifications
         process(context, activeNotifications)
-        updateAllList()
+        // TODO Check this: updateAllList()
     }
 
     fun process(
@@ -122,7 +124,7 @@ object Notifications : BroadcastReceiver()
     fun init(
         context: Context
     ) {
-        packageManager = context.packageManager
+        packMan = context.packageManager
 
         val filter = IntentFilter()
             .apply {
@@ -141,7 +143,7 @@ object Notifications : BroadcastReceiver()
     }
 
     private fun updateAllList() {
-        val newList = packageManager
+        val newList = packMan
             .queryIntentActivities(
                 Intent(Intent.ACTION_MAIN)
                     .apply { addCategory(Intent.CATEGORY_LAUNCHER) },
@@ -153,8 +155,8 @@ object Notifications : BroadcastReceiver()
         val newPairs = mutableListOf<Pair<String, String>>()
             .apply {
                 for (packageName in newList) {
-                    val appInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
-                    val appName = packageManager.getApplicationLabel(appInfo).toString()
+                    val appInfo = packMan.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+                    val appName = packMan.getApplicationLabel(appInfo).toString()
                     add(Pair(packageName, appName))
                 }
             }

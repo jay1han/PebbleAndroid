@@ -180,7 +180,7 @@ class PebbleService:
                 }
 
                 Const.INTENT_UPDATE -> {
-                    Log.v(Const.TAG, "Intent: Update service")
+                    Log.v(Const.TAG, "Intent: Update notification")
                     updateNofitication()
                 }
 

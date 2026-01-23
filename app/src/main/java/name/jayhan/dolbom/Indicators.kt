@@ -163,52 +163,90 @@ object Indicators
 
 enum class FilterType {
     Title { override val r = R.string.filter_title },
-    People { override val r = R.string.filter_people },
+    Subtitle { override val r = R.string.filter_sub },
+    Info { override val r = R.string.filter_info },
     Text { override val r = R.string.filter_text };
-    
     abstract val r: Int
+    
+    fun mapExtrasForFilter(
+        notification: Notification,
+    ): Map<String, String> {
+        when (this) {
+            Title -> return mapExtrasForList(notification, listOf(
+                Notification.EXTRA_TITLE,
+                Notification.EXTRA_CONVERSATION_TITLE,
+                Notification.EXTRA_TITLE_BIG,
+            ))
+            
+            Subtitle -> return mapExtrasForList(notification, listOf(
+                Notification.EXTRA_PEOPLE_LIST,
+                Notification.EXTRA_SUB_TEXT,
+            ))
+            
+            Info -> return mapExtrasForList(notification, listOf(
+                Notification.EXTRA_SUMMARY_TEXT,
+                Notification.EXTRA_INFO_TEXT,
+            ))
+            
+            Text -> return mapExtrasForList(notification, listOf(
+                Notification.EXTRA_TEXT,
+                Notification.EXTRA_TEXT_LINES,
+                Notification.EXTRA_BIG_TEXT,
+            ))
+        }
+    }
+
+    companion object {
+        val Strings = FilterType.entries.map { it.r }
+        
+        fun index(index: Int): FilterType {
+            for (filterType in FilterType.entries) {
+                if (index == filterType.ordinal) return filterType
+            }
+            return Info
+        }
+        
+        private fun mapExtrasForList(
+            notification: Notification,
+            extraList: List<String>
+        ): Map<String, String> {
+            // Kotlin's very sweet syntactic sugar
+            return extraList.associateWith {
+                notification.extras.getCharSequence(it)?.toString()
+            }.filter { it.value != null } as Map<String, String>
+        }
+        
+        val Extras = mapOf(
+            Info to listOf(
+                "ticker"
+            ),
+            Title to listOf(
+                Notification.EXTRA_TITLE,
+                Notification.EXTRA_CONVERSATION_TITLE,
+                Notification.EXTRA_TITLE_BIG,
+            ),
+            Subtitle to listOf(
+                Notification.EXTRA_PEOPLE_LIST,
+            ),
+            Text to listOf(
+                Notification.EXTRA_TEXT,
+                Notification.EXTRA_TEXT_LINES,
+                Notification.EXTRA_BIG_TEXT,
+                Notification.EXTRA_INFO_TEXT,
+                Notification.EXTRA_SUB_TEXT,
+                Notification.EXTRA_SUMMARY_TEXT,
+            ),
+        )
+    }
 }
-
-fun getFilterType(
-    index: Int
-): FilterType {
-    val values = listOf(FilterType.Title, FilterType.People, FilterType.Text)
-    return (
-            if (index in 0..< FilterType.entries.size) values[index]
-            else FilterType.Title
-            )
-}
-
-val FilterTypeStringIdList = FilterType.entries.map { it.r }
-
-val FilterTypeExtra = listOf(
-    listOf(
-        Notification.EXTRA_TITLE,
-        Notification.EXTRA_CONVERSATION_TITLE,
-        Notification.EXTRA_TITLE_BIG,
-    ),
-    listOf(
-        Notification.EXTRA_TEXT,
-        Notification.EXTRA_TEXT_LINES,
-        Notification.EXTRA_BIG_TEXT,
-        Notification.EXTRA_INFO_TEXT,
-        Notification.EXTRA_SUB_TEXT,
-        Notification.EXTRA_SUMMARY_TEXT,
-    ),
-    listOf(
-        Notification.EXTRA_PEOPLE_LIST,
-    )
-)
 
 fun Notification.matches(
     indicator: SingleIndicator
 ): Boolean {
     return indicator.filterText.isNotEmpty() &&
-            FilterTypeExtra[indicator.filterType.ordinal]
-                .joinToString(separator = "") {
-                    this.extras.getCharSequence(it, "")
-                }
-                .contains(indicator.filterText)
+            indicator.filterType.mapExtrasForFilter(this).any { (key, value) ->
+                value.contains(indicator.filterText)
+            }
 }
 
 val PreviewIndicators = listOf(

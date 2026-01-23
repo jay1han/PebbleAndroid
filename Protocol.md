@@ -82,6 +82,3 @@ Once the connection is stable, ongoing information is exchanged:
 - from Phone to Watch: 4, 5, 6, 7, 8
 
 - from Watch to Phone: 9, 10
-
-
-

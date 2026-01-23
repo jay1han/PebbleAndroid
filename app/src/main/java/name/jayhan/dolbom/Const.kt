@@ -18,6 +18,8 @@ object Const {
     val subSize = 12.sp
     val colorIndicatorBack = Color(0xFF000000)
     val colorIndicatorLetter = Color(0xFFFFFFFF)
+    val colorRui = Color(0xFFD86DCB)
+    val colorNene = Color(0xFF47D459)
 
     const val INTENT_RESTART = "name.jayhan.dolbom.RESTART_SERVICE"
     const val INTENT_REFRESH = "name.jayhan.dolbom.REFRESH_SERVICE"

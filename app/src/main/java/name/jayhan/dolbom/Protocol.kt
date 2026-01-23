@@ -79,6 +79,7 @@ class Protocol
     ) {
         val msgType = intent.getIntExtra(Const.EXTRA_MSG_TYPE, 0)
         Log.v(Const.TAG, "out ${MsgName[msgType]}")
+        var suppress = false
     
         val pebbleDict = PebbleDictionary()
         pebbleDict.addInt8(DictKey.MSG_TYPE.ordinal, msgType.toByte())
@@ -90,7 +91,7 @@ class Protocol
     
             MsgType.TZ.ordinal -> {
                 val minutes = intent.getIntExtra(Const.EXTRA_TZ_MIN, 0).toShort()
-                if (isSameOrUpdate(DictKey.TZ_MIN, minutes)) return
+                suppress = isSameOrUpdate(DictKey.TZ_MIN, minutes)
                 pebbleDict.addInt16(DictKey.TZ_MIN.ordinal, minutes)
             }
     
@@ -98,10 +99,9 @@ class Protocol
                 val isCharging = intent.getIntExtra(Const.EXTRA_PHONE_CHG, 0).toByte()
                 val isPlugged = intent.getIntExtra(Const.EXTRA_PHONE_PLUG, 0).toByte()
                 val percent = intent.getIntExtra(Const.EXTRA_PHONE_BATT, 0).toByte()
-                if (isSameOrUpdate(DictKey.PHONE_CHG, isCharging) &&
-                    isSameOrUpdate(DictKey.PHONE_PLUG, isPlugged) &&
-                    isSameOrUpdate(DictKey.PHONE_BATT, percent)
-                    ) return
+                suppress = isSameOrUpdate(DictKey.PHONE_CHG, isCharging) &&
+                        isSameOrUpdate(DictKey.PHONE_PLUG, isPlugged) &&
+                        isSameOrUpdate(DictKey.PHONE_BATT, percent)
                 pebbleDict.addInt8(DictKey.PHONE_CHG.ordinal, isCharging)
                 pebbleDict.addInt8(DictKey.PHONE_PLUG.ordinal, isPlugged)
                 pebbleDict.addInt8(DictKey.PHONE_BATT.ordinal, percent)
@@ -109,7 +109,7 @@ class Protocol
     
             MsgType.WIFI.ordinal -> {
                 val ssid = (intent.getStringExtra(Const.EXTRA_WIFI) ?: "").take(Const.MAX_LEN_ID)
-                if (isSameOrUpdate(DictKey.WIFI, ssid)) return
+                suppress = isSameOrUpdate(DictKey.WIFI, ssid)
                 pebbleDict.addString(DictKey.WIFI.ordinal, ssid)
             }
     
@@ -117,10 +117,9 @@ class Protocol
                 val gen = intent.getIntExtra(Const.EXTRA_NET, 0).toByte()
                 val sim = intent.getIntExtra(Const.EXTRA_SIM, 0).toByte()
                 val carrier = (intent.getStringExtra(Const.EXTRA_CARRIER) ?: "").take(Const.MAX_LEN_ID)
-                if (isSameOrUpdate(DictKey.NET, gen) &&
-                    isSameOrUpdate(DictKey.SIM, sim) &&
-                    isSameOrUpdate(DictKey.CARRIER, carrier)
-                ) return
+                suppress = isSameOrUpdate(DictKey.NET, gen) &&
+                        isSameOrUpdate(DictKey.SIM, sim) &&
+                        isSameOrUpdate(DictKey.CARRIER, carrier)
                 pebbleDict.addInt8(DictKey.NET.ordinal, gen)
                 pebbleDict.addInt8(DictKey.SIM.ordinal, sim)
                 pebbleDict.addString(DictKey.CARRIER.ordinal, carrier)
@@ -128,7 +127,7 @@ class Protocol
     
             MsgType.NOTI.ordinal -> {
                 val noti = (intent.getStringExtra(Const.EXTRA_NOTI) ?: "").take(Const.MAX_NOTI_INDICATORS)
-                if (isSameOrUpdate(DictKey.NOTI, noti)) return
+                suppress = isSameOrUpdate(DictKey.NOTI, noti)
                 pebbleDict.addString(DictKey.NOTI.ordinal, noti)
             }
     
@@ -136,16 +135,16 @@ class Protocol
                 val btid = (intent.getStringExtra(Const.EXTRA_BTID) ?: "").take(Const.MAX_LEN_ID)
                 val btc = intent.getIntExtra(Const.EXTRA_BTC, 0).toByte()
                 val bton = if (intent.getBooleanExtra(Const.EXTRA_BTON, false)) 1.toByte() else 0.toByte()
-                if (isSameOrUpdate(DictKey.BTID, btid) &&
+                suppress = isSameOrUpdate(DictKey.BTID, btid) &&
                     isSameOrUpdate(DictKey.BTC, btc) &&
                     isSameOrUpdate(DictKey.BTON, bton)
-                ) return
                 pebbleDict.addString(DictKey.BTID.ordinal, btid)
                 pebbleDict.addInt8(DictKey.BTC.ordinal, btc)
                 pebbleDict.addInt8(DictKey.BTON.ordinal, bton)
             }
         }
-        
-        Pebble.sendData(context, pebbleDict)
+
+        if (suppress) Log.v(Const.TAG, "suppressed")
+        else Pebble.sendData(context, pebbleDict)
     }
 }
